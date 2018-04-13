@@ -8,7 +8,7 @@ from configparser import ConfigParser
 
 class Keyword_update:
     def __init__(self, server, user, password):
-        print("opa")        
+        print("opa")
 
     def connect_to_vm(self, server, user, password):
         print "==> Connecting to VM...... ",

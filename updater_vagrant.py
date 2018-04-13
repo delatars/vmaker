@@ -9,6 +9,23 @@ from datetime import datetime
 import Plugins
 
 
+
+class AliasObject(object):
+    _type = "alias"
+    pass
+
+class GroupObject(AliasObject):
+    _type = "group"
+    group = None
+
+class VmObject(GroupObject):
+    _type = "vm"
+    actions = None    
+    server = "127.0.0.1"
+    port = 2220
+    
+
+
 class RunManager(object):
     _SESSION_FILE = '/run/vms.session'
     _PID_FILE = '/run/vms.pid'
