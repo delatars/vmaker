@@ -4,7 +4,12 @@ import os
 from subprocess import Popen, PIPE
 from time import sleep
 from configparser import ConfigParser
+from aux import VmsMetaclass
 
+# - metaclass to build classes in that module
+# - Do not delete them!
+__metaclass__ = VmsMetaclass
+# --------------------------------------------
 
 class Keyword_update:
     def __init__(self, server, user, password):
@@ -38,65 +43,81 @@ class Keyword_update:
         print ssh_stdout.read()
 
 
-def Keyword_vm_start(vm_name):
+class Keyword_test:
 
-    def check_vm_status():
-        print "==> Check Vm status......",
-        rvms = Popen("VBoxManage list runningvms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)
-        data = rvms.stdout.read()
-        if vm_name in data:
-            print "VM is ON"
-            return True
-        print "VM is turned off"
-        return False
+    def main(self):
+        print "Test Keyword", Keyword_test.port
 
-    if check_vm_status():
-        print "VM already booted!"
-        return
-    print "==> Forwarding ssh ports 22(guest) => 2020(host)"
-    Popen("vboxmanage modifyvm %s --natpf1 delete vm_ssh" % vm_name, shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
-    Popen("vboxmanage modifyvm %s --natpf1 vm_ssh,tcp,127.0.0.1,2020,,22" % vm_name, shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
-    print "==> Starting VM......",
-    Popen("vboxmanage startvm %s --type headless" % vm_name, shell=True, stdout=PIPE, stderr=PIPE)
-    while 1:
-        sleep(10)
-        rvms = Popen("VBoxManage list runningvms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)
-        data = rvms.stdout.read()
-        if vm_name in data:
-            break            
-    print "OK"    
+
+class Keyword_vm_start:
+
+    def main(self):
+        # - Config attributes
+        vm_name = Keyword_vm_start.vm_name
+        #----------------------------------
+        
+        def check_vm_status():
+            print "==> Check Vm status......",
+            rvms = Popen("VBoxManage list runningvms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)
+            data = rvms.stdout.read()
+            if vm_name in data:
+                print "VM is ON"
+                return True
+            print "VM is turned off"
+            return False
+
+        if check_vm_status():
+            print "VM already booted!"
+            return
+        print "==> Forwarding ssh ports 22(guest) => 2020(host)"
+        Popen("vboxmanage modifyvm %s --natpf1 delete vm_ssh" % vm_name, shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
+        Popen("vboxmanage modifyvm %s --natpf1 vm_ssh,tcp,127.0.0.1,2020,,22" % vm_name, shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
+        print "==> Starting VM......",
+        Popen("vboxmanage startvm %s --type headless" % vm_name, shell=True, stdout=PIPE, stderr=PIPE)
+        while 1:
+            sleep(10)
+            rvms = Popen("VBoxManage list runningvms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)
+            data = rvms.stdout.read()
+            if vm_name in data:
+                break            
+        print "OK"    
     
 
-def Keyword_vm_stop(vm_name):
+class Keyword_vm_stop:
+    
+    def main(self):
+        # - Config attributes
+        vm_name = Keyword_vm_start.vm_name
+        #----------------------------------
 
-    def check_vm_status():
-        print "==> Check Vm status......",
-        rvms = Popen("VBoxManage list runningvms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)
-        data = rvms.stdout.read()
-        if vm_name in data:
-            print "VM is ON"
-            return True
-        print "VM is turned off"
-        return False
+        def check_vm_status():
+            print "==> Check Vm status......",
+            rvms = Popen("VBoxManage list runningvms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)
+            data = rvms.stdout.read()
+            if vm_name in data:
+                print "VM is ON"
+                return True
+            print "VM is turned off"
+            return False
 
-    if not check_vm_status():
-        print "VM already stoped!"
-        return
-    print "==> Attempting to gracefull shutdown VM"
-    Popen("VBoxManage controlvm %s acpipowerbutton" % vm_name, shell=True,
-            stdout=sys.stdout, stderr=sys.stdout)
-    tries = 0
-    while 1:
-        rvms = Popen("VBoxManage list runningvms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)
-        data = rvms.stdout.read()
-        if vm_name not in data:
-            break            
-        if tries==3:
-            print " |= Forcing shutdown VM"
-            Popen("VBoxManage controlvm %s poweroff soft" % vm_name, shell=True,stdout=sys.stdout, stderr=sys.stdout).communicate()
-            break
-        tries += 1
-        sleep(4)
+        if not check_vm_status():
+            print "VM already stoped!"
+            return
+        print "==> Attempting to gracefull shutdown VM"
+        Popen("VBoxManage controlvm %s acpipowerbutton" % vm_name, shell=True,
+                stdout=sys.stdout, stderr=sys.stdout)
+        tries = 0
+        while 1:
+            rvms = Popen("VBoxManage list runningvms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)
+            data = rvms.stdout.read()
+            if vm_name not in data:
+                break            
+            if tries==4:
+                print " |= Forcing shutdown VM"
+                Popen("VBoxManage controlvm %s poweroff soft" % vm_name, shell=True,stdout=sys.stdout, stderr=sys.stdout).communicate()
+                break
+            tries += 1
+            sleep(5)
 
 if __name__=="__main__":
     print "main"
