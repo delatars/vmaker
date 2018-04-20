@@ -8,12 +8,12 @@ class fabric:
 
 class VmsMetaclass(type):
     
-    def __new__(cls, future_class_name, future_class_parents, future_class_attr):
-        base_attrs = {name: value for name, value in future_class_attr.items() if not name.startswith('__')}
+    def __new__(cls, name, bases, dct):
+        base_attrs = {name: value for name, value in dct.items() if not name.startswith('__')}
         inject_attrs = {name: getattr(fabric.gen_class(), name) for name in dir(fabric.gen_class()) if not name.startswith('__')}
-        for a,b in inject_attrs.items():
-            base_attrs[a]=b
-        return type(future_class_name, future_class_parents, base_attrs)
+        for key, value in inject_attrs.items():
+            base_attrs[key]=value
+        return type.__new__(cls, name, bases, base_attrs)
 
 
 if __name__=="__main__":

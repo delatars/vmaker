@@ -81,7 +81,7 @@ class Core(RunManager):
         self.main()
     
     def main(self):
-        obj = self.config[self.config_sequence[0]]        
+        obj = self.config[self.config_sequence[1]]        
         fabric.obj = obj
         i = importlib.import_module("Plugins")
         for action in obj._actions:
