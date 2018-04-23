@@ -1,19 +1,32 @@
+# -*- coding: utf-8 -*-
+
+############################################################################################
+# This module provide you to write your own action keywords and use it in Actions.ini
+# Requirements:
+#   - Keywords must be class objects
+#   - Keywords names must be started with <Keyword_> prefix example: class Keyword_my:
+#   - Each Keywords must contain <main> method, it's an entrypoint of Keyword
+#   - You can specify your attributes in Actions.ini and use it in your keywords
+############################################################################################
+
+#############################################
+# - metaclass to build classes in that module
+# - Do not delete it!
+from auxilary import VmsMetaclass
+__metaclass__ = VmsMetaclass
+#############################################
+
+############################################################################################
 import paramiko
 import sys
-import os
 from subprocess import Popen, PIPE
 from time import sleep
-from configparser import ConfigParser
-from aux import VmsMetaclass
 
-# - metaclass to build classes in that module
-# - Do not delete them!
-__metaclass__ = VmsMetaclass
-# --------------------------------------------
 
 class Keyword_update:
-    def __init__(self, server, user, password):
-        print("opa")
+
+    def main(self):
+        pass
 
     def connect_to_vm(self, server, user, password):
         print "==> Connecting to VM...... ",
@@ -46,7 +59,7 @@ class Keyword_update:
 class Keyword_test:
 
     def main(self):
-        print "Test Keyword", Keyword_test.port
+        print "Testing"  # Keyword_test.port
 
 
 class Keyword_vm_start:
