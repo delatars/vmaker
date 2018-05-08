@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import __builtin__
 
 
 class Fabric:
@@ -6,7 +7,7 @@ class Fabric:
 
     @staticmethod
     def gen_class():
-        return type("vm", (Fabric.obj,),{})
+        return type("vm", (Fabric.obj, ), {})
 
 
 class VmsMetaclass(type):
@@ -17,6 +18,21 @@ class VmsMetaclass(type):
         for key, value in inject_attrs.items():
             base_attrs[key] = value
         return type.__new__(cls, name, bases, base_attrs)
+
+
+# class metaobject(object):
+#     __metaclass__ = VmsMetaclass
+
+
+# class AttributeInjector:
+#     orig_object = __builtin__.object
+
+#     def enable(classobj):
+#         Fabric.obj = classobj
+#         __builtin__.object = metaobject
+
+#     def disable(classobj):
+#         __builtin__.object = orig_object
 
 
 if __name__ == "__main__":
