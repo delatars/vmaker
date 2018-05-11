@@ -8,14 +8,13 @@ from Logger import STREAM
 
 class ConfigManager:
 
-    def  __init__(self, config_path):
-        self.CONFIG_PATH = config_path
+    def __init__(self, config_file):
+        self.CONFIG_FILE = config_file
 
     def load_config(self):
-        STREAM.info("...................................................................")
         STREAM.info("==> Loading config...")
         config = ConfigParser()
-        config.read(self.CONFIG_PATH)
+        config.read(self.CONFIG_FILE)
         aliases, groups, vms = {}, {}, {}
         # - Generating aliases objects
         for sec in config.sections():
@@ -83,11 +82,11 @@ class ConfigManager:
         return vms, vms_work_sequence
 
     def load_general_config(self):
-        if not os.path.exists(self.CONFIG_PATH):
+        if not os.path.exists(self.CONFIG_FILE):
             STREAM.critical("Config Error: Actions.ini not found! You may generate it by add -g key.\nExitting...")
             sys.exit()
         config = ConfigParser()
-        config.read(self.CONFIG_PATH)
+        config.read(self.CONFIG_FILE)
         try:
             general_config = {key: value for key, value in config.items("General")}
         except NoSectionError as err:

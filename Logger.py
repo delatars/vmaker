@@ -1,8 +1,8 @@
-import coloredlogs, logging
-
+import coloredlogs
+import verboselogs
 
 def logger_options():
-    log = logging.getLogger(__name__)
+    log = verboselogs.VerboseLogger(__name__)
     coloredlogs.install(fmt='%(asctime)s [%(levelname)s] %(message)s' ,logger=log)
     return log
 

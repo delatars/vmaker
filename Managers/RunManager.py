@@ -13,11 +13,11 @@ class RunManager(object):
 
     _SESSION_FILE = '/run/vms.session'
     _PID_FILE = '/run/vms.pid'
-    _CONFIG_PATH = "./actions.ini"
+    _CONFIG_FILE = "./actions.ini"
 
     def __init__(self):
         self.check_running_state()
-        config = ConfigManager(self._CONFIG_PATH)        
+        config = ConfigManager(self._CONFIG_FILE)
         self.general_config = config.load_general_config()
         self.config, self.config_sequence = config.load_config()
         plugins = PluginManager(self.general_config)
@@ -56,3 +56,6 @@ class RunManager(object):
 
     def destroy_session(self):
         os.remove(RunManager._SESSION_FILE)
+
+    def parse_args(self):
+        pass
