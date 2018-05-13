@@ -106,5 +106,5 @@ class Core(RunManager):
               shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
 
 
-if __name__ == "__name__":
-    upd = Core()
+# if __name__ == "__name__":
+upd = Core()
