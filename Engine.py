@@ -1,22 +1,31 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import importlib
 from subprocess import Popen, PIPE
 from datetime import datetime
-from auxilary import Fabric
+from time import sleep
+from multiprocessing import Process
 from Managers.RunManager import RunManager
 from Logger import STREAM
 
 
-class Core(RunManager):    
+
+class Core(RunManager):
+
+    # self.general_config - dict with general config section items {key: value}
+    # self.config - dict with vm objects {vm_name: object(vm)}
+    # self.config_sequence - sequence to work with vms list[vm_name, ...]
+    # self.loaded_plugins - dict with loaded plugins {plugin_name: object(plugin)}
 
     def __init__(self):
         super(Core, self).__init__()
+        # Current working vm
         self.current_vm = None
         self.current_vm_snapshot = self.check_session()
+        # If job is interrupted, restore to previous state
         if self.current_vm_snapshot is not None:
             self.restore_from_snapshot()
+        # Current working plugin
         self.plugins_module = None
         self.main()
     
@@ -25,33 +34,61 @@ class Core(RunManager):
             self.current_vm = self.config[vm]
             STREAM.info(">>>>> Initialize %s <<<<<" % self.current_vm.__name__)
             # self.take_snapshot(self.current_vm.name)
-            # Fabric.obj = self.current_vm
-            # self.plugins_module = importlib.import_module("Plugins")
-            # self.do_actions(self.current_vm.actions)
-            # self.plugins_module = importlib.import_module("Plugins")
+            self.do_actions(self.current_vm.actions)
 
-    # recursion function
+    # recursion function which unpack aliases
     def do_actions(self, actions_list):
         def _restore(exception):
-            STREAM.warning("==> Exception in vm <%s>:" % self.current_vm.__name__)
+            # This function restore vm to previous state
+            STREAM.error(" -> Exception in vm <%s>:" % self.current_vm.__name__)
             STREAM.error(" -> %s" % exception)
             STREAM.error(" -> Can't proceed with this vm")
             # self.restore_from_snapshot(self.current_vm.name)
-            STREAM.info("! - Restore complete, going next...")
+            STREAM.info("==> Restore complete, going next vm...")
+
+        def _get_timeout(keyword):
+            try:
+                ttk = keyword.time_to_kill
+            except AttributeError:
+                ttk = self.general_config["time_to_kill"]
+            ttk = int(ttk)*60
+            return ttk
+
+        def _process_guard(timeout, proc):
+            # This function kill proccess if it hung up
+            timer = 0
+            while 1:
+                if proc.is_alive():
+                    if timer > timeout:
+                        proc.terminate()
+                        _restore("Keyword timeout exceed, Terminated!")
+                        break
+                else:
+                    STREAM.info("Keyword successfully exited, going next keyword...")
+                    break
+                sleep(1)
+                timer += 1
 
         for action in actions_list:
             try:
-                keyword = getattr(self.plugins_module, "Keyword_"+action)
+                keyword = self.loaded_plugins[action]
+                # Injecting config attributes to plugin
+                mutual_keyword = type("new_cls", (keyword, self.current_vm), {})
                 try:
-                    keyword().main()
+                    # Execute plugin in child process
+                    ttk = _get_timeout(mutual_keyword)
+                    keyword_process = Process(target=mutual_keyword().main)
+                    keyword_process.start()
+                    _process_guard(ttk, keyword_process)
                 except Exception as exc:
                     _restore(exc)
                     break
-            except AttributeError:
+            except KeyError:
+                # Going to alias actions list
                 try:
                     self.do_actions(self.current_vm.aliases[action])
                 except KeyError as exc:
-                    exc = "Unknown action! " + str(exc)
+                    STREAM.error(" -> Unknown action! (%s)" % str(exc))
                     _restore(exc)
                     break
 
@@ -68,5 +105,5 @@ class Core(RunManager):
               shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
 
 
-# if __name__ == "__name__":    
-upd = Core()
+if __name__ == "__name__":
+    upd = Core()

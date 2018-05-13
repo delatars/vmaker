@@ -89,7 +89,7 @@ class ConfigManager:
         config.read(self.CONFIG_FILE)
         try:
             general_config = {key: value for key, value in config.items("General")}
-        except NoSectionError as err:
+        except NoSectionError:
             STREAM.critical("Config Error: Section <General> does not exist!\nExitting...")
             sys.exit()
         return general_config
@@ -104,3 +104,6 @@ class ConfigManager:
         # cfg = open("actions.ini", "w")
         # config.write(cfg)
         # cfg.close()
+
+if __name__ == "__main__":
+    pass

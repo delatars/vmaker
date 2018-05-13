@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
-import sys
-from time import sleep
-from subprocess import PIPE, Popen
+from Logger import STREAM
 
 class Keyword(object):
 
     def main(self):
-        print "testing", Keyword.port
-    
+        STREAM.info("Config attribute: %s " % Keyword.port)
 
-if __name__=="__main__":
+if __name__ == "__main__":
     pass

@@ -2,7 +2,6 @@
 
 import sys
 import os
-import importlib
 from subprocess import Popen, PIPE
 from ConfigManager import ConfigManager
 from PluginManager import PluginManager
@@ -59,3 +58,6 @@ class RunManager(object):
 
     def parse_args(self):
         pass
+
+if __name__ == "__main__":
+    pass

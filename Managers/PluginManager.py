@@ -34,7 +34,7 @@ class PluginManager:
         try:
             plugin = importlib.import_module("Plugins.%s" % plugin_name)
             cls = getattr(plugin, "Keyword")
-            entrypoint = getattr(cls, "main")
+            getattr(cls, "main")
             STREAM.success(" -> Checking plugin <%s>.........OK" % plugin_name)
         except ImportError as err:
             STREAM.warning(" -> Checking plugin <%s>.........FAILED" % plugin_name)
@@ -44,4 +44,8 @@ class PluginManager:
             STREAM.warning(" -> Checking plugin <%s>.........FAILED" % plugin_name)
             STREAM.critical("  -> %s" % err)
             sys.exit
-        sleep(0.5)
+        finally:
+            sleep(0.5)
+
+if __name__ == "__main__":
+    pass
