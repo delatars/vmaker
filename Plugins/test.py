@@ -4,7 +4,7 @@ from Logger import STREAM
 class Keyword(object):
 
     def main(self):
-        STREAM.info("Config attribute: %s " % Keyword.port)
+        STREAM.info("Config attribute: %s " % str(Keyword.port))
 
 if __name__ == "__main__":
     pass

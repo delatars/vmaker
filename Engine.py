@@ -44,7 +44,6 @@ class Core(RunManager):
             STREAM.error(" -> %s" % exception)
             STREAM.error(" -> Can't proceed with this vm")
             # self.restore_from_snapshot(self.current_vm.name)
-            STREAM.info("==> Restore complete, going next vm...")
 
         def _get_timeout(keyword):
             try:
@@ -61,10 +60,10 @@ class Core(RunManager):
                 if process.is_alive():
                     if timer > timeout:
                         process.terminate()
-                        _restore("Keyword timeout exceed, Terminated!", )
+                        _restore("Keyword timeout exceed, Terminated!", action)
                         break
                 else:
-                    print process.exitcode()
+                    print process.exitcode
                     STREAM.info("Keyword successfully exited, going next keyword...")
                     break
                 sleep(1)
@@ -104,7 +103,7 @@ class Core(RunManager):
         STREAM.info("==> Restoring to previous state...")
         Popen('VBoxManage snapshot restore %s' % (self.current_vm_snapshot),
               shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
-
+        STREAM.info("==> Restore complete, going next vm...")
 
 # if __name__ == "__name__":
 upd = Core()
