@@ -38,9 +38,9 @@ class Core(RunManager):
 
     # recursion function which unpack aliases
     def do_actions(self, actions_list):
-        def _restore(exception):
+        def _restore(exception, action):
             # This function restore vm to previous state
-            STREAM.error(" -> Exception in vm <%s>:" % self.current_vm.__name__)
+            STREAM.error(" -> Exception in vm <%s> and action <%s>:" % self.current_vm.__name__, action)
             STREAM.error(" -> %s" % exception)
             STREAM.error(" -> Can't proceed with this vm")
             # self.restore_from_snapshot(self.current_vm.name)
@@ -54,14 +54,14 @@ class Core(RunManager):
             ttk = int(ttk)*60
             return ttk
 
-        def _process_guard(timeout, process):
+        def _process_guard(timeout, process, action):
             # This function kill proccess if it hung up
             timer = 0
             while 1:
                 if process.is_alive():
                     if timer > timeout:
                         process.terminate()
-                        _restore("Keyword timeout exceed, Terminated!")
+                        _restore("Keyword timeout exceed, Terminated!", )
                         break
                 else:
                     print process.exitcode()
@@ -80,9 +80,9 @@ class Core(RunManager):
                     ttk = _get_timeout(mutual_keyword)
                     keyword_process = Process(target=mutual_keyword().main)
                     keyword_process.start()
-                    _process_guard(ttk, keyword_process)
+                    _process_guard(ttk, keyword_process, action)
                 except Exception as exc:
-                    _restore(exc)
+                    _restore(exc, action)
                     break
             except KeyError:
                 # Going to alias actions list
@@ -90,7 +90,7 @@ class Core(RunManager):
                     self.do_actions(self.current_vm.aliases[action])
                 except KeyError as exc:
                     STREAM.error(" -> Unknown action! (%s)" % str(exc))
-                    _restore(exc)
+                    _restore(exc, action)
                     break
 
     def take_snapshot(self, vm_name):

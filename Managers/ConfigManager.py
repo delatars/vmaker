@@ -83,6 +83,7 @@ class ConfigManager:
         return vms, vms_work_sequence
 
     def load_general_config(self):
+        STREAM.info("==> Loading general section...")
         if not os.path.exists(self.CONFIG_FILE):
             STREAM.critical("Config Error: Actions.ini not found! You may generate it by add -g key.\nExitting...")
             sys.exit()
