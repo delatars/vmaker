@@ -61,13 +61,13 @@ class Core(RunManager):
                     if timer > timeout:
                         process.terminate()
                         _restore("Keyword timeout exceed, Terminated!", action)
-                        break
+                        return
                 else:
                     if process.exitcode == 0:
                         STREAM.info("Keyword successfully exited, going next keyword...")
                     else:
                         _restore("Error in keyword!", action)
-                    break
+                    return
                 sleep(1)
                 timer += 1
 
@@ -84,7 +84,7 @@ class Core(RunManager):
                     _process_guard(ttk, keyword_process, action)
                 except Exception as exc:
                     _restore(exc, action)
-                    break
+                    return
             except KeyError:
                 # Going to alias actions list
                 try:
@@ -92,7 +92,7 @@ class Core(RunManager):
                 except KeyError as exc:
                     STREAM.error(" -> Unknown action! (%s)" % str(exc))
                     _restore(exc, action)
-                    break
+                    return
 
     def take_snapshot(self, vm_name):
         STREAM.info("==> Taking a snapshot")
