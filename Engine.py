@@ -54,16 +54,17 @@ class Core(RunManager):
             ttk = int(ttk)*60
             return ttk
 
-        def _process_guard(timeout, proc):
+        def _process_guard(timeout, process):
             # This function kill proccess if it hung up
             timer = 0
             while 1:
-                if proc.is_alive():
+                if process.is_alive():
                     if timer > timeout:
-                        proc.terminate()
+                        process.terminate()
                         _restore("Keyword timeout exceed, Terminated!")
                         break
                 else:
+                    print process.exitcode()
                     STREAM.info("Keyword successfully exited, going next keyword...")
                     break
                 sleep(1)

@@ -13,7 +13,6 @@ class PluginManager:
 
     def load_plugins(self):
         lst_of_plugins = [plug.strip() for plug in self.general_config["enabled_plugins"].split(",")]
-        STREAM.info("...................................................................")
         STREAM.info("==> Checking plugins...")
         for plugin in lst_of_plugins:
             self.check_plugin(plugin)

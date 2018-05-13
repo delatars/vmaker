@@ -79,6 +79,7 @@ class ConfigManager:
                     vms_work_sequence.append(sec)
             except KeyError:
                 pass
+        STREAM.success(" -> Config loaded")
         return vms, vms_work_sequence
 
     def load_general_config(self):
@@ -92,6 +93,7 @@ class ConfigManager:
         except NoSectionError:
             STREAM.critical("Config Error: Section <General> does not exist!\nExitting...")
             sys.exit()
+        STREAM.success(" -> General section loaded")
         return general_config
     
     def generate_default_config(self):
