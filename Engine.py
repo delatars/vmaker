@@ -63,8 +63,10 @@ class Core(RunManager):
                         _restore("Keyword timeout exceed, Terminated!", action)
                         break
                 else:
-                    print process.exitcode
-                    STREAM.info("Keyword successfully exited, going next keyword...")
+                    if process.exitcode == 0:
+                        STREAM.info("Keyword successfully exited, going next keyword...")
+                    else:
+                        _restore("Error in keyword!", action)
                     break
                 sleep(1)
                 timer += 1
@@ -74,9 +76,9 @@ class Core(RunManager):
                 keyword = self.loaded_plugins[action]
                 # Injecting config attributes to plugin
                 mutual_keyword = type("new_cls", (keyword, self.current_vm), {})
+                ttk = _get_timeout(mutual_keyword)
                 try:
                     # Execute plugin in child process
-                    ttk = _get_timeout(mutual_keyword)
                     keyword_process = Process(target=mutual_keyword().main)
                     keyword_process.start()
                     _process_guard(ttk, keyword_process, action)
