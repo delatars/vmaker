@@ -40,7 +40,7 @@ class Core(RunManager):
     def do_actions(self, actions_list):
         def _restore(exception, action):
             # This function restore vm to previous state
-            STREAM.error(" -> Exception in vm <%s> and action <%s>:" % self.current_vm.__name__, action)
+            STREAM.error(" -> Exception in vm <%s> and action <%s>:" % (self.current_vm.__name__, action))
             STREAM.error(" -> %s" % exception)
             STREAM.error(" -> Can't proceed with this vm")
             # self.restore_from_snapshot(self.current_vm.name)
