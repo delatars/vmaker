@@ -3,7 +3,7 @@ import verboselogs
 
 def logger_options():
     log = verboselogs.VerboseLogger(__name__)
-    coloredlogs.install(fmt='%(asctime)s [%(levelname)s] %(message)s' ,logger=log)
+    coloredlogs.install(fmt='%(asctime)s [%(levelname)s] %(message)s', logger=log, level="debug")
     return log
 
 STREAM = logger_options()

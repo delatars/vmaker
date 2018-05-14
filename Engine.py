@@ -5,6 +5,7 @@ from subprocess import Popen, PIPE
 from datetime import datetime
 from time import sleep
 from multiprocessing import Process
+from traceback import format_exc
 from Managers.RunManager import RunManager
 from Logger import STREAM
 
@@ -38,17 +39,22 @@ class Core(RunManager):
 
     # recursion function which unpack aliases
     def do_actions(self, actions_list):
-        def _restore(exception, action):
+        def _restore(exception, action, debug=None):
             # This function restore vm to previous state
             STREAM.error(" -> Exception in vm <%s> and action <%s>:" % (self.current_vm.__name__, action))
             STREAM.error(" -> %s" % exception)
+            STREAM.debug(debug)
             STREAM.error(" -> Can't proceed with this vm")
             # self.restore_from_snapshot(self.current_vm.name)
 
         def _get_timeout(keyword):
             try:
                 ttk = keyword.time_to_kill
+                STREAM.debug("Keyword attribute 'time_to_kill' detected, using it:"
+                             " time_to_kill = %s min" % keyword.time_to_kill)
             except AttributeError:
+                STREAM.debug("Keyword attribute 'time_to_kill' not detected, using genereal config:"
+                             " time_to_kill = %s min" % self.general_config["time_to_kill"])
                 ttk = self.general_config["time_to_kill"]
             ttk = int(ttk)*60
             return ttk
@@ -60,20 +66,24 @@ class Core(RunManager):
                 if process.is_alive():
                     if timer > timeout:
                         process.terminate()
+                        STREAM.debug("Keyword timeout exceed, Terminated!")
                         raise Exception("Keyword timeout exceed, Terminated!")
                 else:
                     if process.exitcode == 0:
                         STREAM.info("Keyword successfully exited, going next keyword...")
+                        break
                     else:
                         raise Exception("Error in keyword!")
                 sleep(1)
+                if timer % 60 == 0:
+                    STREAM.debug("%s min remaining to terminate Keyword!" % str((timeout-timer)/60))
                 timer += 1
 
         for action in actions_list:
             try:
                 keyword = self.loaded_plugins[action]
                 # Injecting config attributes to plugin
-                mutual_keyword = type("new_cls", (keyword, self.current_vm), {})
+                mutual_keyword = type("mutual_keyword", (keyword, self.current_vm), {})
                 ttk = _get_timeout(mutual_keyword)
                 try:
                     # Execute plugin in child process
@@ -81,7 +91,7 @@ class Core(RunManager):
                     keyword_process.start()
                     _process_guard(ttk, keyword_process)
                 except Exception as exc:
-                    _restore(exc, action)
+                    _restore(exc, action, format_exc())
                     return
             except KeyError:
                 # Going to alias actions list
@@ -89,7 +99,7 @@ class Core(RunManager):
                     self.do_actions(self.current_vm.aliases[action])
                 except KeyError as exc:
                     STREAM.error(" -> Unknown action! (%s)" % str(exc))
-                    _restore(exc, action)
+                    _restore(exc, action, format_exc())
                     return
 
     def take_snapshot(self, vm_name):
