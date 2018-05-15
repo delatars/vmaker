@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from subprocess import Popen, PIPE
+from subprocess import Popen
 from datetime import datetime
 from time import sleep
 from multiprocessing import Process
 from traceback import format_exc
 from Managers.RunManager import RunManager
-from Logger import STREAM
+from utils.Logger import STREAM
 
 
 
@@ -66,13 +66,16 @@ class Core(RunManager):
                 if process.is_alive():
                     if timer > timeout:
                         process.terminate()
+                        STREAM.notice("# # # # # # # # # # # # # END OF %s OUTPUT STREAM # # # # # # # # # # # # #" % action)
                         STREAM.debug("Keyword timeout exceed, Terminated!")
                         raise Exception("Keyword timeout exceed, Terminated!")
                 else:
                     if process.exitcode == 0:
+                        STREAM.notice("# # # # # # # # # # # # # END OF %s OUTPUT STREAM # # # # # # # # # # # # #" % action)
                         STREAM.info("Keyword successfully exited, going next keyword...")
                         break
                     else:
+                        STREAM.notice("# # # # # # # # # # # # # END OF %s OUTPUT STREAM # # # # # # # # # # # # #" % action)
                         raise Exception("Error in keyword!")
                 sleep(1)
                 if timer % 60 == 0:
@@ -87,6 +90,7 @@ class Core(RunManager):
                 ttk = _get_timeout(mutual_keyword)
                 try:
                     # Execute plugin in child process
+                    STREAM.notice("######################## START OF %s OUTPUT STREAM ########################" % action)
                     keyword_process = Process(target=mutual_keyword().main)
                     keyword_process.start()
                     _process_guard(ttk, keyword_process)

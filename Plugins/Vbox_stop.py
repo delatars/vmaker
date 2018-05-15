@@ -3,13 +3,13 @@
 import sys
 from time import sleep
 from subprocess import PIPE, Popen
-from  Logger import STREAM
+from utils.Logger import STREAM
 
 class Keyword:
     
     def main(self):
-        # - Config attributes
-        self.vm_name = Keyword.vm_name
+        # - Use Config attributes
+        self.vm_name = self.vm_name
         #----------------------------------
         self.stop()
 

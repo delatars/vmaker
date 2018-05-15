@@ -3,7 +3,7 @@
 import importlib
 import sys
 from time import sleep
-from Logger import STREAM
+from utils.Logger import STREAM
 
 
 class PluginManager:

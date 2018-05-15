@@ -2,7 +2,7 @@
 import paramiko
 import platform
 from time import sleep
-from Logger import STREAM
+from utils.Logger import STREAM
 
 
 class Keyword:

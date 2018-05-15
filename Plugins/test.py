@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-from time import sleep
-from Logger import STREAM
+from utils.Logger import STREAM
 
 
 class Keyword(object):
     time_to_kill = 2
 
     def main(self):
+        self.port = self.port
         STREAM.info("Config attribute: %s " % str(self.port))
         # s = 1
         # while 1:

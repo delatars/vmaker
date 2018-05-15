@@ -5,7 +5,7 @@ import os
 from subprocess import Popen, PIPE
 from ConfigManager import ConfigManager
 from PluginManager import PluginManager
-from Logger import STREAM
+from utils.Logger import STREAM
 
 
 class RunManager(object):

@@ -3,7 +3,7 @@
 import os
 import sys
 from configparser import ConfigParser, NoSectionError
-from Logger import STREAM
+from utils.Logger import STREAM
 
 
 class ConfigManager:
