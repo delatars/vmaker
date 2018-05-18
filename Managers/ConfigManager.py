@@ -96,8 +96,9 @@ class ConfigManager:
             sys.exit()
         STREAM.success(" -> General section loaded")
         return general_config
-    
-    def generate_default_config(self):
+
+    @staticmethod
+    def generate_default_config():
         config = ConfigParser()
         # cmd = Popen("vboxmanage list vms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)
         # vms = cmd.stdout.read()
