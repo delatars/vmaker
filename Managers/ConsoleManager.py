@@ -12,11 +12,11 @@ class ConsoleManager:
         self.args()
 
     def args(self):
-        parser = optparse.OptionParser('\n\t--test <test type> --from <mail from> --to <mail to>\n\nAdditional arguments:\n\t--server Specify server address (default=127.0.0.1:25)')
+        parser = optparse.OptionParser('Engine.py [options]\n\nOptions:\n  -c  - Specify config file\n  -g  - Generate default config\n  -i  - Enabling interactive mode, affects to print to stdout\n\nAdditional options:\n\t--debug Enabling debug prints')
         parser.add_option("-c", dest="config_path", type="string", help="Specify config file location")
         parser.add_option("-g", dest="generate_default", type="string", help="Generate default config")
-        parser.add_option("-i", dest="interactive", help="Enabling interactive mode, affects to print to stdout")
-        parser.add_option("--debug", dest="debug", type="string", help="Enabling debug prints")
+        parser.add_option("-i", dest="interactive", action="store_true", help="Enabling interactive mode, affects to print to stdout")
+        parser.add_option("--debug", dest="debug", action="store_true", help="Enabling debug prints")
         options, args = parser.parse_args()
 
         if options.config_path:

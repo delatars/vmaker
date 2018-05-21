@@ -6,8 +6,10 @@ from datetime import datetime
 from time import sleep
 from multiprocessing import Process
 from traceback import format_exc
+from Managers.ConsoleManager import ConsoleManager
 from Managers.RunManager import RunManager
 from utils.Logger import STREAM
+
 
 
 
@@ -19,6 +21,7 @@ class Core(RunManager):
     # self.loaded_plugins - dict with loaded plugins {plugin_name: object(plugin)}
 
     def __init__(self):
+        ConsoleManager()
         super(Core, self).__init__()
         # Current working vm
         self.current_vm = None

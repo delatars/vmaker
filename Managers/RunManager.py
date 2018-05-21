@@ -5,7 +5,6 @@ import os
 from subprocess import Popen, PIPE
 from ConfigManager import ConfigManager
 from PluginManager import PluginManager
-from ConsoleManager import ConsoleManager
 from utils.Logger import STREAM
 
 
@@ -17,7 +16,6 @@ class RunManager(object):
 
     def __init__(self):
         self.check_running_state()
-        console = ConsoleManager()
         config = ConfigManager(self._CONFIG_FILE)
         self.general_config = config.load_general_config()
         self.config, self.config_sequence = config.load_config()
