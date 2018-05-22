@@ -98,16 +98,42 @@ class ConfigManager:
         return general_config
 
     @staticmethod
-    def generate_default_config():
-        config = ConfigParser()
-        # cmd = Popen("vboxmanage list vms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)
-        # vms = cmd.stdout.read()
-        # vms = vms.strip().replace('"', "").split("\n")
-        # for vm in vms:
-        #     config[vm] = {"actions": "keyword1, keyword2, keyword3..."}
-        # cfg = open("actions.ini", "w")
-        # config.write(cfg)
-        # cfg.close()
+    def generate_default_config(config_file):
+        template = """;Mandatory section        
+[General]
+; List of enabled plugins, you can create your plugin, put it to the plugins dir and enabling it here.
+enabled_plugins = Vbox_start, Vbox_stop, test
+; Global parameter (in minutes) to the end of which plugin process will be terminated. default=20 (mins)
+;   You can specify your own "time_to_kill" parameter for each plugin.
+;   Just add "time_to_kill" argument to your Plugin classobj.
+time_to_kill = 20
+
+; Specify preffered section name
+[my centos]
+; Mandatory keys.
+; Key specifies, which type of object will be generated (vm, group, alias).
+type = vm
+; Key specifies plugins which will be performed for this object.
+actions = Vbox_start, Vbox_stop
+; Key specifies to which group this object belongs
+group = linux
+
+; User keys.
+; You can specify your keys and use it in your plugin's classobj attributes. ex: self.vm_name
+vm_name = ubuntu1610-amd64_ubuntu1610_1523264320143_80330
+cred = root:root
+ssh_port = 2020
+
+; You can create groups and combine it with other objects.
+; Groups support attribute inheritance (groups attributes have a higher priority than vm attributes)
+; Specify name of the group 
+[linux]
+; Mandatory keys.
+; Key specifies, which type of object will be generated (vm, group, alias).
+type = group
+"""
+        with open(config_file, "w") as config:
+            config.write(template)
 
 
 if __name__ == "__main__":

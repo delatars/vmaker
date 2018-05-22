@@ -23,7 +23,7 @@ class PluginManager:
         return loaded_plugins
 
     def load_plugin(self, plugin_name):        
-        plugin = importlib.import_module("Plugins.%s" % plugin_name)
+        plugin = importlib.import_module("plugins.%s" % plugin_name)
         cls = getattr(plugin, "Keyword")
         STREAM.success(" -> Loading plugin <%s>..........OK" % plugin_name)
         sleep(0.5)
@@ -31,7 +31,7 @@ class PluginManager:
 
     def check_plugin(self, plugin_name):        
         try:
-            plugin = importlib.import_module("Plugins.%s" % plugin_name)
+            plugin = importlib.import_module("plugins.%s" % plugin_name)
             cls = getattr(plugin, "Keyword")
             getattr(cls, "main")
             STREAM.success(" -> Checking plugin <%s>.........OK" % plugin_name)

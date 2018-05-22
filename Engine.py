@@ -6,8 +6,8 @@ from datetime import datetime
 from time import sleep
 from multiprocessing import Process
 from traceback import format_exc
-from Managers.ConsoleManager import ConsoleManager
-from Managers.RunManager import RunManager
+from init.args import ConsoleManager
+from init.start import RunManager
 from utils.Logger import STREAM
 
 

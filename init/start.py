@@ -3,8 +3,8 @@
 import sys
 import os
 from subprocess import Popen, PIPE
-from ConfigManager import ConfigManager
-from PluginManager import PluginManager
+from config import ConfigManager
+from plugins import PluginManager
 from utils.Logger import STREAM
 
 

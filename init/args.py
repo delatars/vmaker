@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import optparse
-from RunManager import RunManager
-from ConfigManager import ConfigManager
+from start import RunManager
+from config import ConfigManager
 
 
 class ConsoleManager:
@@ -20,5 +20,5 @@ class ConsoleManager:
         if options.config_path:
             RunManager._CONFIG_FILE = options.config_path
         if options.generate_default:
-            ConfigManager.generate_default_config()
+            ConfigManager.generate_default_config(RunManager._CONFIG_FILE)
             exit(0)
