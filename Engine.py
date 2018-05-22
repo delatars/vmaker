@@ -11,8 +11,6 @@ from Managers.RunManager import RunManager
 from utils.Logger import STREAM
 
 
-
-
 class Core(RunManager):
 
     # self.general_config - dict with general config section items {key: value}
@@ -122,5 +120,13 @@ class Core(RunManager):
               shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
         STREAM.info("==> Restore complete, going next vm...")
 
+
 # if __name__ == "__name__":
+# try:
 upd = Core()
+# except IOError:
+#     print "==> Escalating privilegies"
+#     Popen('sudo python %s' % (sys.argv[0]), shell=True, stdout=sys.stdout, stderr=sys.stdout)
+#     sys.exit()
+
+

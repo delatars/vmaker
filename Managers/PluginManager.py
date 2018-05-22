@@ -42,9 +42,10 @@ class PluginManager:
         except AttributeError as err:
             STREAM.warning(" -> Checking plugin <%s>.........FAILED" % plugin_name)
             STREAM.critical("  -> %s" % err)
-            sys.exit
+            sys.exit()
         finally:
             sleep(0.5)
+
 
 if __name__ == "__main__":
     pass
