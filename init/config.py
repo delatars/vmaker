@@ -17,6 +17,7 @@ class ConfigManager:
         config.read(self.CONFIG_FILE)
         aliases, groups, vms = {}, {}, {}
         # - Generating aliases objects
+        STREAM.debug("==> Generating alias objects...")
         for sec in config.sections():
             try:
                 if sec != "General" and config[sec]["type"] == "aliases":
@@ -102,7 +103,7 @@ class ConfigManager:
         template = """;Mandatory section.      
 [General]
 ; List of enabled plugins, you can create your plugin, put it to the plugins dir and enabling it here.
-enabled_plugins = Vbox_start, Vbox_x_update, Vbox_stop
+enabled_plugins = vbox_start, vbox_x_update, vbox_stop
 ; Global parameter (in minutes) to the end of which plugin process will be terminated. default=20 (mins)
 ;   You can specify your own "time_to_kill" parameter for each plugin.
 ;   Just add "time_to_kill" argument to your Plugin classobj.
@@ -115,7 +116,7 @@ time_to_kill = 20
 ;   Key specifies, which type of object will be created (vm, group, alias).
 type = vm
 ;   Key specifies plugins which will be performed for this object.
-actions = Vbox_start, Vbox_stop
+actions = vbox_start, vbox_stop
 ;   Key specifies to which group this object belongs.
 group = linux
 ; User keys.
@@ -131,7 +132,7 @@ ssh_port = 2020
 ; Mandatory keys.
 type = group
 ; User keys.
-;actions = Vbox_start, ...
+;actions = vbox_start, ...
 ;cred = root:root
 
 ; You can combine some plugins in one action, named alias.
@@ -139,7 +140,7 @@ type = group
 type = alias
 ; By default aliases extends to all objects, but you can assign aliases at specific group
 ;group = linux
-common_actions = Vbox_start, Vbox_x_update, Vbox_stop
+common_actions = vbox_start, vbox_x_update, vbox_stop
 """
         STREAM.info("==> Generating default configuration file...")
         if os.path.exists(config_file):
