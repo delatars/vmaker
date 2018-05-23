@@ -99,41 +99,65 @@ class ConfigManager:
 
     @staticmethod
     def generate_default_config(config_file):
-        template = """;Mandatory section        
+        template = """;Mandatory section.      
 [General]
 ; List of enabled plugins, you can create your plugin, put it to the plugins dir and enabling it here.
-enabled_plugins = Vbox_start, Vbox_stop, test
+enabled_plugins = Vbox_start, Vbox_x_update, Vbox_stop
 ; Global parameter (in minutes) to the end of which plugin process will be terminated. default=20 (mins)
 ;   You can specify your own "time_to_kill" parameter for each plugin.
 ;   Just add "time_to_kill" argument to your Plugin classobj.
 time_to_kill = 20
 
-; Specify preffered section name
+; You can create vm objects and assign them any actions.
+; Specify preffered section name.
 [my centos]
 ; Mandatory keys.
-; Key specifies, which type of object will be generated (vm, group, alias).
+;   Key specifies, which type of object will be created (vm, group, alias).
 type = vm
-; Key specifies plugins which will be performed for this object.
+;   Key specifies plugins which will be performed for this object.
 actions = Vbox_start, Vbox_stop
-; Key specifies to which group this object belongs
+;   Key specifies to which group this object belongs.
 group = linux
-
 ; User keys.
-; You can specify your keys and use it in your plugin's classobj attributes. ex: self.vm_name
+;   You can specify your keys and use it in your plugin's classobj attributes. ex: self.vm_name
 vm_name = ubuntu1610-amd64_ubuntu1610_1523264320143_80330
 cred = root:root
 ssh_port = 2020
 
 ; You can create groups and combine it with other objects.
-; Groups support attribute inheritance (groups attributes have a higher priority than vm attributes)
-; Specify name of the group 
+;   Groups support attribute inheritance (groups attributes have a higher priority than vm attributes).
+;   Specify name of the group.
 [linux]
 ; Mandatory keys.
-; Key specifies, which type of object will be generated (vm, group, alias).
 type = group
+; User keys.
+;actions = Vbox_start, ...
+;cred = root:root
+
+; You can combine some plugins in one action, named alias.
+[linux_aliases]
+type = alias
+; By default aliases extends to all objects, but you can assign aliases at specific group
+;group = linux
+common_actions = Vbox_start, Vbox_x_update, Vbox_stop
 """
-        with open(config_file, "w") as config:
-            config.write(template)
+        STREAM.info("==> Generating default configuration file...")
+        if os.path.exists(config_file):
+            STREAM.warning(" -> File %s already exists!" % config_file)
+            STREAM.warning(" -> Do you want to overwrite it? (y/n): ")
+            answers = ["y", "n"]
+            while 1:
+                choice = raw_input().lower()
+                if choice in answers:
+                    break
+                STREAM.error("Choose y or n! : ")
+            if choice == answers[0]:
+                with open(config_file, "w") as config:
+                    config.write(template)
+                STREAM.success(" -> Generated %s" % config_file)
+            else:
+                STREAM.notice(" -> Cancelled by user.")
+                sys.exit()
 
 
 if __name__ == "__main__":
