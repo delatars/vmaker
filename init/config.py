@@ -6,7 +6,7 @@ from configparser import ConfigParser, NoSectionError
 from utils.Logger import STREAM
 
 
-class ConfigManager:
+class ConfigController:
 
     def __init__(self, config_file):
         self.CONFIG_FILE = config_file
@@ -40,7 +40,7 @@ class ConfigManager:
             except KeyError as wrong_key:
                 STREAM.error(" -> Config Error: Wrong section <%s>! Key <%s> not specified" % (sec, wrong_key))
                 STREAM.warning(" -> Section <%s> will be passed..." % sec)
-        STREAM.debug("==> Generated alias objects: %s" % aliases)
+        STREAM.debug("==> Generated alias objects: %s\n" % aliases)
         # - Generating group objects
         STREAM.debug("==> Generating group objects...")
         for sec in config.sections():
@@ -82,7 +82,7 @@ class ConfigManager:
                     STREAM.debug("    [%s] Section doesn't seem like group object. Passed..." % sec)
             except KeyError:
                 pass
-        STREAM.debug("==> Generated alias objects: %s" % groups)
+        STREAM.debug("==> Generated group objects: %s\n" % groups)
         # - Generating VM objects
         STREAM.debug("==> Generating vm objects...")
         for sec in config.sections():
@@ -110,11 +110,17 @@ class ConfigManager:
                             STREAM.debug("    [%s] Aliases assigned: global" % sec)
                             # => alias global
                             vms[sec] = type(str(sec), (aliases.get("global"), ), args)
+                    retro = "    [%s] Section inheritance retrospective:"
+                    final_attrs = {attr for attr in dir(vms[sec]) if not attr.startswith('__')}
+                    for attr in final_attrs:
+                        val = getattr(vms[sec], attr)
+                        retro += "\n\t\t\t\t\t\t%s = %s" % (attr, val)
+                    STREAM.debug(retro % sec)
                 else:
                     STREAM.debug("    [%s] Section doesn't seem like vm object. Passed..." % sec)
             except KeyError:
                 pass
-        vms_work_sequence = [] 
+        vms_work_sequence = []
         for sec in config.sections():
             try:
                 if sec != "General" and config[sec]["type"] == "vm":
@@ -170,7 +176,7 @@ cred = root:root
 ssh_port = 2020
 
 ; You can create groups and combine it with other objects.
-;   Groups support attribute inheritance (groups attributes have a higher priority than vm attributes).
+;   Groups support attribute inheritance (groups attributes have a lower priority than vm attributes).
 ;   Specify name of the group.
 [linux]
 ; Mandatory keys.

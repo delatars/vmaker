@@ -6,12 +6,11 @@ from datetime import datetime
 from time import sleep
 from multiprocessing import Process
 from traceback import format_exc
-from init.args import ConsoleManager
-from init.start import RunManager
+from init.engine import Engine
 from utils.Logger import STREAM
 
 
-class Core(RunManager):
+class Core(Engine):
 
     # self.general_config - dict with general config section items {key: value}
     # self.config - dict with vm objects {vm_name: object(vm)}
@@ -19,7 +18,6 @@ class Core(RunManager):
     # self.loaded_plugins - dict with loaded plugins {plugin_name: object(plugin)}
 
     def __init__(self):
-        ConsoleManager()
         super(Core, self).__init__()
         # Current working vm
         self.current_vm = None

@@ -6,7 +6,7 @@ from time import sleep
 from utils.Logger import STREAM
 
 
-class PluginManager:
+class PluginController:
     
     def __init__(self, gen_config):
         self.general_config = gen_config
