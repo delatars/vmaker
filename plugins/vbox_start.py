@@ -5,6 +5,11 @@ from subprocess import PIPE, Popen
 from utils.Logger import STREAM
 
 class Keyword:
+    """
+    This plugin allows to start your virtual machine.
+    Arguments of actions.ini:
+    vm_name = name of the virtual machine in VboxManage (example: vm_name = ubuntu1610-amd64_1523264320143_80330)
+    """
 
     def main(self):
         # - Use Config attributes
@@ -26,11 +31,8 @@ class Keyword:
         if self.check_vm_status():
             STREAM.info(" -> VM already booted!")
             return
-        STREAM.info("==> Forwarding ssh ports 22(guest) => 2020(host)")
-        Popen("vboxmanage modifyvm %s --natpf1 delete vm_ssh" % self.vm_name, shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
-        Popen("vboxmanage modifyvm %s --natpf1 vm_ssh,tcp,127.0.0.1,2020,,22" % vm_name, shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
         STREAM.info("==> Starting VM...")
-        Popen("vboxmanage startvm %s --type headless" % self.vm_name, shell=True, stdout=PIPE, stderr=PIPE)
+        Popen("VBoxManage startvm %s --type headless" % self.vm_name, shell=True, stdout=PIPE, stderr=PIPE)
         while 1:
             sleep(10)
             rvms = Popen("VBoxManage list runningvms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)

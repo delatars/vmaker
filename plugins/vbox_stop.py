@@ -6,6 +6,11 @@ from subprocess import PIPE, Popen
 from utils.Logger import STREAM
 
 class Keyword:
+    """
+    This plugin allows to stop your virtual machine.
+    Arguments of actions.ini:
+    vm_name = name of the virtual machine in VboxManage (example: vm_name = ubuntu1610-amd64_1523264320143_80330)
+    """
     
     def main(self):
         # - Use Config attributes
@@ -15,7 +20,7 @@ class Keyword:
 
     def check_vm_status(self):
         STREAM.info("==> Check Vm status...")
-        rvms = Popen(" -> VBoxManage list runningvms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)
+        rvms = Popen("VBoxManage list runningvms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)
         data = rvms.stdout.read()
         if self.vm_name in data:
             STREAM.info("VM is ON")

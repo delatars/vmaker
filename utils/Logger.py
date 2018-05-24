@@ -5,7 +5,7 @@ import verboselogs
 
 class LoggerOptions:
     _LOGFILE = "stdout.log"
-    DEBUG = False
+    DEBUG = True
 
     @staticmethod
     def logger():
