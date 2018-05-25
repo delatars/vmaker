@@ -16,7 +16,6 @@ class Keyword:
         self.vm_name = self.vm_name
         self.vagrant_catalog = self.vagrant_catalog
         # ----------------------------
-        self.first_export = False
         self.vagrant_server_box_location_url = "http:\/\/vagrant.i.drweb.ru\/files\/unix"
         self.provider = "virtualbox"
         self.version = datetime.now().strftime("%Y%m%d%H%M")
@@ -25,6 +24,9 @@ class Keyword:
         if result:
             self.create_vagrant_template()
             self.create_box()
+            self.create_metadata_file()
+            # self.renew_vm()
+            STREAM.success("==> Exporting into vagrant successfully completed.")
 
     def _calculate_box_hash(self):
         with open(os.path.join(self.work_dir, self.boxname), 'rb') as f:
@@ -93,17 +95,7 @@ load include_vagrantfile if File.exist?(include_vagrantfile)
             return False
         self.work_dir = os.path.join(self.vagrant_catalog, self.vm_name)
         self.tmp_dir = os.path.join(self.vagrant_catalog, self.vm_name, "tmp")
-        try:
-            os.mkdir(self.tmp_dir)
-        except OSError:
-            STREAM.info(" -> Look likes it's first export of this vm.")
-            STREAM.info(" -> Creating directory.")
-            STREAM.debug(" -> Create vm dir: %s"% self.work_dir)
-            os.mkdir(self.work_dir)
-            STREAM.debug(" -> Create tmp dir: %s"% self.tmp_dir)
-            os.mkdir(self.tmp_dir)
-            self.first_export = True
-
+        os.makedirs(self.tmp_dir)
         Popen('VBoxManage export %s --output %s' % (self.vm_name, os.path.join(self.tmp_dir, self.vm_name + ".ovf")),
               shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
         os.rename(os.path.join(self.tmp_dir, self.vm_name + ".ovf"), os.path.join(self.tmp_dir, "box.ovf"))
@@ -113,6 +105,7 @@ load include_vagrantfile if File.exist?(include_vagrantfile)
     def renew_vm(self):
         for fil in os.listdir(self.work_dir):
             if fil.endswith(".box"):
+                STREAM.info("==> Renew old box...")
                 os.remove(os.path.join(self.work_dir, fil))
         os.rename(os.path.join(self.work_dir, self.boxname), os.path.join(self.work_dir, self.boxname[:-5]))
 
