@@ -26,7 +26,7 @@ class PluginController:
         plugin = importlib.import_module("plugins.%s" % plugin_name)
         cls = getattr(plugin, "Keyword")
         STREAM.success(" -> Loading plugin <%s>..........OK" % plugin_name)
-        sleep(0.5)
+        sleep(0.3)
         return cls        
 
     def check_plugin(self, plugin_name):        
@@ -44,7 +44,7 @@ class PluginController:
             STREAM.critical("  -> %s" % err)
             sys.exit()
         finally:
-            sleep(0.5)
+            sleep(0.3)
 
 
 if __name__ == "__main__":

@@ -12,7 +12,7 @@ class Keyword:
     """
 
     def main(self):
-        # - Use Config attributes
+        # - Config attributes
         self.vm_name = self.vm_name
         #----------------------------------
         self.start()

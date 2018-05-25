@@ -11,8 +11,8 @@ from utils.Logger import STREAM
 
 class Engine(object):
 
-    _SESSION_FILE = '/run/vms.session'
-    _PID_FILE = '/run/vms.pid'
+    _SESSION_FILE = './vms.session'
+    _PID_FILE = './vms.pid'
     _CONFIG_FILE = "./actions.ini"
 
     def __init__(self):
