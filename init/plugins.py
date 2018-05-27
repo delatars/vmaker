@@ -3,7 +3,7 @@
 import importlib
 import sys
 from time import sleep
-from utils.Logger import STREAM
+from utils.logger import STREAM
 
 
 class PluginController:

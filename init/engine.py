@@ -6,7 +6,7 @@ import optparse
 from subprocess import Popen, PIPE
 from config import ConfigController
 from plugins import PluginController
-from utils.Logger import STREAM
+from utils.logger import STREAM
 
 
 class Engine(object):

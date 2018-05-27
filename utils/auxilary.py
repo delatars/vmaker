@@ -1,5 +1,16 @@
 # -*- coding: utf-8 -*-
 import __builtin__
+from time import time
+
+
+def timer( function):
+    def wrapper(self, *args, **kwargs):
+        t = time()
+        func = function(self, *args, **kwargs)
+        res = time() - t
+        print "Function spent: %s" % res
+        return True
+    return wrapper
 
 
 class Fabric:

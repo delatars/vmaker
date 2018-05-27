@@ -3,9 +3,16 @@ import logging
 import verboselogs
 
 
+class Component_filter(logging.Filter):
+    def filter(self, record):
+        record.component = LoggerOptions.COMPONENT
+        return True
+
+
 class LoggerOptions:
     _LOGFILE = "stdout.log"
-    DEBUG = False
+    DEBUG = True
+    COMPONENT = "Engine"
 
     @staticmethod
     def logger():
@@ -13,11 +20,12 @@ class LoggerOptions:
         handler = logging.StreamHandler(stream=logfile)
         handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(message)s', "%Y-%m-%d %H:%M:%S"))
         log = verboselogs.VerboseLogger(__name__)
+        log.addFilter(Component_filter())
         log.addHandler(handler)
         if LoggerOptions.DEBUG:
-            coloredlogs.install(fmt='%(asctime)s [%(levelname)s] %(message)s', logger=log, level="debug")
+            coloredlogs.install(fmt='%(asctime)s [%(component)s] [%(levelname)s] %(message)s', logger=log, level="debug")
         else:
-            coloredlogs.install(fmt='%(asctime)s [%(levelname)s] %(message)s', logger=log)
+            coloredlogs.install(fmt='%(asctime)s [%(component)s] [%(levelname)s] %(message)s', logger=log)
         return log
 
 

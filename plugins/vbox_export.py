@@ -6,10 +6,17 @@ import shutil
 import tarfile
 from datetime import datetime
 from subprocess import Popen
-from utils.Logger import STREAM
+from utils.logger import STREAM
+from utils.auxilary import timer
 
 
 class Keyword:
+    """
+    This plugin allows to export your virtual machine, to vagrant catalog.
+    Arguments of actions.ini:
+    vm_name = name of the virtual machine in VboxManage (example: vm_name = ubuntu1610-amd64_1523264320143_80330)
+    self.vagrant_catalog = path to vagrant catalog (example: self.vagrant_catalog = /var/www/vagrant)
+    """
 
     def main(self):
         # - Config attributes
@@ -25,7 +32,7 @@ class Keyword:
             self.create_vagrant_template()
             self.create_box()
             self.create_metadata_file()
-            # self.renew_vm()
+            self.renew_vm()
             STREAM.success("==> Exporting into vagrant successfully completed.")
 
     def _calculate_box_hash(self):
@@ -34,6 +41,7 @@ class Keyword:
             hash = hashlib.sha1(contents).hexdigest()
             return hash
 
+    @timer
     def create_box(self):
         STREAM.info("==> Creating box...")
         with tarfile.open(os.path.join(self.work_dir, self.boxname), "w") as tar:
@@ -95,11 +103,23 @@ load include_vagrantfile if File.exist?(include_vagrantfile)
             return False
         self.work_dir = os.path.join(self.vagrant_catalog, self.vm_name)
         self.tmp_dir = os.path.join(self.vagrant_catalog, self.vm_name, "tmp")
-        os.makedirs(self.tmp_dir)
+        try:
+            os.makedirs(self.tmp_dir)
+        except OSError as errno:
+            if "Errno 17" in str(errno):
+                STREAM.info("==> Temporary directory detected, cleaning before start...")
+                shutil.rmtree(self.tmp_dir)
+                os.makedirs(self.tmp_dir)
+            else:
+                STREAM.error(errno)
+                return False
         Popen('VBoxManage export %s --output %s' % (self.vm_name, os.path.join(self.tmp_dir, self.vm_name + ".ovf")),
               shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
-        os.rename(os.path.join(self.tmp_dir, self.vm_name + ".ovf"), os.path.join(self.tmp_dir, "box.ovf"))
-        os.rename(os.path.join(self.tmp_dir, self.vm_name + "-disk001.vmdk"), os.path.join(self.tmp_dir, "box-disk.vmdk"))
+        for fil in os.listdir(self.tmp_dir):
+            if fil.endswith(".vmdk"):
+                os.rename(os.path.join(self.tmp_dir, fil), os.path.join(self.tmp_dir, "box-disk.vmdk"))
+            elif fil.endswith(".ovf"):
+                os.rename(os.path.join(self.tmp_dir, fil), os.path.join(self.tmp_dir, "box.ovf"))
         return True
 
     def renew_vm(self):

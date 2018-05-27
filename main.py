@@ -7,7 +7,7 @@ from time import sleep
 from multiprocessing import Process
 from traceback import format_exc
 from init.engine import Engine
-from utils.Logger import STREAM
+from utils.logger import LoggerOptions, STREAM
 
 
 class Core(Engine):
@@ -26,7 +26,6 @@ class Core(Engine):
         if self.current_vm_snapshot is not None:
             self.restore_from_snapshot()
         # Current working plugin
-        self.plugins_module = None
         self.main()
     
     def main(self):
@@ -35,6 +34,8 @@ class Core(Engine):
             STREAM.info(">>>>> Initialize %s <<<<<" % self.current_vm.__name__)
             # self.take_snapshot(self.current_vm.name)
             self.do_actions(self.current_vm.actions)
+            STREAM.success("==> There are no more Keywords, going next vm.")
+        STREAM.success("==> There are no more virtual machines, exiting")
 
     # recursion function which unpack aliases
     def do_actions(self, actions_list):
@@ -46,15 +47,13 @@ class Core(Engine):
             STREAM.error(" -> Can't proceed with this vm")
             # self.restore_from_snapshot(self.current_vm.name)
 
-        def _get_timeout(keyword):
+        def _get_timeout():
             try:
-                ttk = keyword.time_to_kill
-                STREAM.debug("Keyword attribute 'time_to_kill' detected, using it:"
-                             " time_to_kill = %s min" % keyword.time_to_kill)
+                ttk = getattr(self.current_vm, "%s_kill_timeout" % action)
+                STREAM.debug(" Assigned 'kill_timeout' for action: %s = %s min" % (action, ttk))
             except AttributeError:
-                STREAM.debug("Keyword attribute 'time_to_kill' not detected, using genereal config:"
-                             " time_to_kill = %s min" % self.general_config["time_to_kill"])
-                ttk = self.general_config["time_to_kill"]
+                ttk = self.general_config["kill_timeout"]
+                STREAM.debug(" Parameter 'kill_timeout' not assigned, for action, using global: %s = %s min" % (action, ttk))
             ttk = int(ttk)*60
             return ttk
 
@@ -65,16 +64,12 @@ class Core(Engine):
                 if process.is_alive():
                     if timer > timeout:
                         process.terminate()
-                        STREAM.notice("# # # # # # # # # # # # # END OF %s OUTPUT STREAM # # # # # # # # # # # # #" % action)
-                        STREAM.debug("Keyword timeout exceed, Terminated!")
-                        raise Exception("Keyword timeout exceed, Terminated!")
+                        STREAM.debug("==> Keyword timeout exceed, Terminated!")
+                        raise Exception("==> Keyword timeout exceed, Terminated!")
                 else:
                     if process.exitcode == 0:
-                        STREAM.notice("# # # # # # # # # # # # # END OF %s OUTPUT STREAM # # # # # # # # # # # # #" % action)
-                        STREAM.info("Keyword successfully exited, going next keyword...")
                         break
                     else:
-                        STREAM.notice("# # # # # # # # # # # # # END OF %s OUTPUT STREAM # # # # # # # # # # # # #" % action)
                         raise Exception("Error in keyword!")
                 sleep(1)
                 if timer % 60 == 0:
@@ -86,10 +81,10 @@ class Core(Engine):
                 keyword = self.loaded_plugins[action]
                 # Injecting config attributes to plugin
                 mutual_keyword = type("mutual_keyword", (keyword, self.current_vm), {})
-                ttk = _get_timeout(mutual_keyword)
+                ttk = _get_timeout()
                 try:
                     # Execute plugin in child process
-                    STREAM.notice("######################## START OF %s OUTPUT STREAM ########################" % action)
+                    LoggerOptions.COMPONENT = action
                     keyword_process = Process(target=mutual_keyword().main)
                     keyword_process.start()
                     _process_guard(ttk, keyword_process)
@@ -104,6 +99,7 @@ class Core(Engine):
                     STREAM.error(" -> Unknown action! (%s)" % str(exc))
                     _restore(exc, action, format_exc())
                     return
+            LoggerOptions.COMPONENT = "Engine"
 
     def take_snapshot(self, vm_name):
         STREAM.info("==> Taking a snapshot")
@@ -120,11 +116,6 @@ class Core(Engine):
 
 
 # if __name__ == "__name__":
-# try:
-upd = Core()
-# except IOError:
-#     print "==> Escalating privilegies"
-#     Popen('sudo python %s' % (sys.argv[0]), shell=True, stdout=sys.stdout, stderr=sys.stdout)
-#     sys.exit()
 
+upd = Core()
 
