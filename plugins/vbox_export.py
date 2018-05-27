@@ -7,7 +7,6 @@ import tarfile
 from datetime import datetime
 from subprocess import Popen
 from utils.logger import STREAM
-from utils.auxilary import timer
 
 
 class Keyword:
@@ -41,7 +40,6 @@ class Keyword:
             hash = hashlib.sha1(contents).hexdigest()
             return hash
 
-    @timer
     def create_box(self):
         STREAM.info("==> Creating box...")
         with tarfile.open(os.path.join(self.work_dir, self.boxname), "w") as tar:

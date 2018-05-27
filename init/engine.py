@@ -11,8 +11,8 @@ from utils.logger import STREAM
 
 class Engine(object):
 
-    _SESSION_FILE = './vms.session'
-    _PID_FILE = './vms.pid'
+    _SESSION_FILE = './utils/vms.session'
+    _PID_FILE = './utils/vms.pid'
     _CONFIG_FILE = "./actions.ini"
 
     def __init__(self):
@@ -36,7 +36,8 @@ class Engine(object):
         else:
             self.create_pid()
 
-    def create_pid(self):        
+    def create_pid(self):
+        STREAM.debug("==> Creating pid file: %s" % self._PID_FILE)
         with open(self._PID_FILE, "w") as pf:
             pf.write(str(os.getpid()))
 

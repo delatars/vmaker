@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-import __builtin__
+import hashlib
 from time import time
 
 
-def timer( function):
+def method_timer(function):
     def wrapper(self, *args, **kwargs):
         t = time()
         func = function(self, *args, **kwargs)
@@ -12,38 +12,45 @@ def timer( function):
         return True
     return wrapper
 
-
-class Fabric:
-    obj = None
-
-    @staticmethod
-    def gen_class():
-        return type("vm", (Fabric.obj, ), {})
-
-
-class VmsMetaclass(type):
-    def __new__(cls, name, bases, dct):
-        base_attrs = {name: value for name, value in dct.items() if not name.startswith('__')}
-        inject_attrs = {name: getattr(Fabric.gen_class(), name) for name in dir(Fabric.gen_class())
-                        if not name.startswith('__') and name != "actions" and name != "aliases"}
-        for key, value in inject_attrs.items():
-            base_attrs[key] = value
-        return type.__new__(cls, name, bases, base_attrs)
+def timer(function):
+    def wrapper(*args, **kwargs):
+        t = time()
+        func = function(*args, **kwargs)
+        res = time() - t
+        print "Function spent: %s" % res
+        return True
+    return wrapper
 
 
-# class metaobject(object):
-#     __metaclass__ = VmsMetaclass
+@timer
+def hash_value_for_file(block_size=65536):
+
+    sha1 = hashlib.sha1()
+    with open('Fedora-Workstation.iso', 'rb') as input_file:
+        while True:
+        # we use the read passing the size of the block to avoid
+        # heavy ram usage
+            data = input_file.read(block_size)
+            if not data:
+                # if we don't have any more data to read, stop.
+                break
+        # we partially calculate the hash
+            sha1.update(data)
+    hash = sha1.digest()
+    print hash
+    return hash
 
 
-# class AttributeInjector:
-#     orig_object = __builtin__.object
+@timer
+def calculate_box_hash():
+        with open('Fedora-Workstation.iso', 'rb') as f:
+            contents = f.read()
+            hash = hashlib.sha1(contents).hexdigest()
+            print hash
+            return hash
 
-#     def enable(classobj):
-#         Fabric.obj = classobj
-#         __builtin__.object = metaobject
-
-#     def disable(classobj):
-#         __builtin__.object = orig_object
+t1 = calculate_box_hash()
+t2 = hash_value_for_file()
 
 
 if __name__ == "__main__":

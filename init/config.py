@@ -10,6 +10,9 @@ class ConfigController:
 
     def __init__(self, config_file):
         self.CONFIG_FILE = config_file
+        if not os.path.exists(self.CONFIG_FILE):
+            STREAM.critical("Config Error: Configuration file not found!\nSolutions:\n\t - Specify your configuration file by adding '-c <path>' key\n\t - Generate default configuration file by adding '-g' key\nExitting...")
+            sys.exit()
 
     def load_config(self):
         STREAM.info("==> Loading config...")
@@ -134,9 +137,6 @@ class ConfigController:
 
     def load_general_config(self):
         STREAM.info("==> Loading general section...")
-        if not os.path.exists(self.CONFIG_FILE):
-            STREAM.critical("Config Error: Configuration file not found!\nSolutions:\n\t - Specify your configuration file by adding '-c <path>' key\n\t - Generate default configuration file by adding '-g' key\nExitting...")
-            sys.exit()
         config = ConfigParser()
         config.read(self.CONFIG_FILE)
         try:
