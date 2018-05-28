@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*-
 import os
+
 
 class vars:
     WORK_DIR = os.path.join(os.path.expanduser("~"), ".vmaker")

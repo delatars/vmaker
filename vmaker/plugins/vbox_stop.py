@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import sys
 from time import sleep
 from subprocess import PIPE, Popen

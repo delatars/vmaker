@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import sys
 from subprocess import Popen
 from datetime import datetime
@@ -117,3 +116,6 @@ class Core(Engine):
 
 def entry():
     upd = Core()
+
+if __name__ == "__main__":
+    entry()
