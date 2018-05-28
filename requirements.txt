@@ -1,3 +1,4 @@
 configparser == 3.5.0
 coloredlogs == 9.3.1
 verboselogs == 1.7
+paramiko == 2.4.1
