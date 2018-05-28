@@ -115,7 +115,7 @@ load include_vagrantfile if File.exist?(include_vagrantfile)
         for fil in os.listdir(self.tmp_dir):
             if fil.endswith(".vmdk"):
                 diskname = fil
-                os.rename(diskname, os.path.join(self.tmp_dir, "box-disk.vmdk"))
+                os.rename(self.tmp_dir, os.path.join(self.tmp_dir, "box-disk.vmdk"))
             elif fil.endswith(".ovf"):
                 os.rename(os.path.join(self.tmp_dir, fil), os.path.join(self.tmp_dir, "box.ovf"))
         with open(os.path.join(self.tmp_dir, "box.ovf"), "r") as ovf:
