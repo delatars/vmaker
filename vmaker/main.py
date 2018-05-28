@@ -6,8 +6,8 @@ from datetime import datetime
 from time import sleep
 from multiprocessing import Process
 from traceback import format_exc
-from init.engine import Engine
-from utils.logger import LoggerOptions, STREAM
+from vmaker.init.engine import Engine
+from vmaker.utils.logger import LoggerOptions, STREAM
 
 
 class Core(Engine):

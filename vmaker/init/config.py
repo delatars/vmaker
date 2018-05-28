@@ -3,19 +3,20 @@
 import os
 import sys
 from configparser import ConfigParser, NoSectionError
-from utils.logger import STREAM
+from vmaker.utils.logger import STREAM
 
 
 class ConfigController:
 
-    def __init__(self, config_file):
+    def __init__(self, config_file, general_config):
         self.CONFIG_FILE = config_file
+        self.GENERAL_CONFIG_FILE = general_config
         if not os.path.exists(self.CONFIG_FILE):
             STREAM.critical("Config Error: Configuration file not found!\nSolutions:\n\t - Specify your configuration file by adding '-c <path>' key\n\t - Generate default configuration file by adding '-g' key\nExitting...")
             sys.exit()
 
     def load_config(self):
-        STREAM.info("==> Loading config...")
+        STREAM.info("==> Loading user configuration file...")
         config = ConfigParser()
         config.read(self.CONFIG_FILE)
         aliases, groups, vms = {}, {}, {}
@@ -24,7 +25,7 @@ class ConfigController:
         for sec in config.sections():
             STREAM.debug(" -> Loading section <%s>" % sec)
             try:
-                if sec != "General" and config[sec]["type"] == "aliases":
+                if config[sec]["type"] == "aliases":
                     STREAM.debug("    [%s] Section seems like alias object" % sec)
                     args = {key: [val.strip() for val in value.split(",")]
                             for key, value in config.items(sec) if key != "type"}
@@ -49,7 +50,7 @@ class ConfigController:
         for sec in config.sections():
             STREAM.debug(" -> Loading section <%s>" % sec)
             try:
-                if sec != "General" and config[sec]["type"] == "group":
+                if config[sec]["type"] == "group":
                     STREAM.debug("    [%s] Section seems like group object" % sec)
                     args = {key: value for key, value in config.items(sec) if key != "type"}
                     STREAM.debug("    [%s] -> Section attributes: %s" % (sec, args))
@@ -91,7 +92,7 @@ class ConfigController:
         for sec in config.sections():
             STREAM.debug(" -> Loading section <%s>" % sec)
             try:
-                if sec != "General" and config[sec]["type"] == "vm":
+                if config[sec]["type"] == "vm":
                     STREAM.debug("    [%s] Section seems like vm object" % sec)
                     args = {key: value for key, value in config.items(sec)
                             if key != "type" and key != "group" and key != "actions"}
@@ -126,7 +127,7 @@ class ConfigController:
         vms_work_sequence = []
         for sec in config.sections():
             try:
-                if sec != "General" and config[sec]["type"] == "vm":
+                if config[sec]["type"] == "vm":
                     vms_work_sequence.append(sec)
             except KeyError:
                 pass
@@ -136,9 +137,9 @@ class ConfigController:
         return vms, vms_work_sequence
 
     def load_general_config(self):
-        STREAM.info("==> Loading general section...")
+        STREAM.info("==> Loading General configuration file...")
         config = ConfigParser()
-        config.read(self.CONFIG_FILE)
+        config.read(self.GENERAL_CONFIG_FILE)
         try:
             general_config = {key: value for key, value in config.items("General")}
         except NoSectionError:
@@ -150,16 +151,7 @@ class ConfigController:
 
     @staticmethod
     def generate_default_config(config_file):
-        template = """;Mandatory section.      
-[General]
-; List of enabled plugins, you can create your plugin, put it to the plugins dir and enabling it here.
-enabled_plugins = vbox_start, vbox_x_update, vbox_stop
-; Global parameter (in minutes) to the end of which plugin process will be terminated. default=20 (mins)
-;   You can specify your own "time_to_kill" parameter for each plugin.
-;   Just add "time_to_kill" argument to your Plugin classobj.
-time_to_kill = 20
-
-; You can create vm objects and assign them any actions.
+        template = """; You can create vm objects and assign them any actions.
 ; Specify preffered section name.
 [my centos]
 ; Mandatory keys.

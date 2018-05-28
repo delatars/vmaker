@@ -4,21 +4,22 @@ import sys
 import os
 import optparse
 from subprocess import Popen, PIPE
-from config import ConfigController
-from plugins import PluginController
-from utils.logger import STREAM
+from vmaker.init.config import ConfigController
+from vmaker.init.plugins import PluginController
+from vmaker.init.settings import vars
+from vmaker.utils.logger import STREAM
 
 
 class Engine(object):
-
-    _SESSION_FILE = './utils/vms.session'
-    _PID_FILE = './utils/vms.pid'
-    _CONFIG_FILE = "./actions.ini"
+    _SESSION_FILE = vars.SESSION_FILE
+    _PID_FILE = vars.PID_FILE
+    _GENERAL_CONFIG = vars.GENERAL_CONFIG
+    _CONFIG_FILE = vars.CONFIG_FILE
 
     def __init__(self):
         self.check_running_state()
         self.args()
-        config = ConfigController(self._CONFIG_FILE)
+        config = ConfigController(self._CONFIG_FILE, self._GENERAL_CONFIG)
         self.general_config = config.load_general_config()
         self.config, self.config_sequence = config.load_config()
         plugins = PluginController(self.general_config)

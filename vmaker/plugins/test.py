@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from utils.logger import STREAM
+from vmaker.utils.logger import STREAM
 
 
 class Keyword(object):

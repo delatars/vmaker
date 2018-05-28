@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 import os
-import hashlib
 import sys
 import shutil
 import tarfile
 from datetime import datetime
-from subprocess import Popen
-from utils.logger import STREAM
+from subprocess import Popen, PIPE
+from vmaker.utils.logger import STREAM
 
 
 class Keyword:
@@ -35,10 +34,9 @@ class Keyword:
             STREAM.success("==> Exporting into vagrant successfully completed.")
 
     def _calculate_box_hash(self):
-        with open(os.path.join(self.work_dir, self.boxname), 'rb') as f:
-            contents = f.read()
-            hash = hashlib.sha1(contents).hexdigest()
-            return hash
+        hash = Popen('sha1sum %s' % os.path.join(self.work_dir, self.boxname), shell=True, stdout=PIPE, stderr=PIPE).communicate()
+        hash = hash[0].split(" ")[0]
+        return hash
 
     def create_box(self):
         STREAM.info("==> Creating box...")
