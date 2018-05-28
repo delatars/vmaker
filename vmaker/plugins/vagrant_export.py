@@ -111,11 +111,18 @@ load include_vagrantfile if File.exist?(include_vagrantfile)
                 return False
         Popen('VBoxManage export %s --output %s' % (self.vm_name, os.path.join(self.tmp_dir, self.vm_name + ".ovf")),
               shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
+        diskname = ""
         for fil in os.listdir(self.tmp_dir):
             if fil.endswith(".vmdk"):
-                os.rename(os.path.join(self.tmp_dir, fil), os.path.join(self.tmp_dir, "box-disk.vmdk"))
+                diskname = os.path.join(self.tmp_dir, fil)
+                os.rename(diskname, os.path.join(self.tmp_dir, "box-disk.vmdk"))
             elif fil.endswith(".ovf"):
                 os.rename(os.path.join(self.tmp_dir, fil), os.path.join(self.tmp_dir, "box.ovf"))
+        with open(os.path.join(self.tmp_dir, "box.ovf"), "r") as ovf:
+            ovf_file = ovf.read()
+        with open(os.path.join(self.tmp_dir, "box.ovf"), "w") as ovf:
+            ovf.write(ovf_file.replace(diskname, "box-disk.vmdk"))
+
         return True
 
     def renew_vm(self):
