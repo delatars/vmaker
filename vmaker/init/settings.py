@@ -18,7 +18,7 @@ class vars:
         template = """;Mandatory section.      
 [General]
 ; List of enabled plugins, you can create your plugin, put it to the plugins dir and enabling it here.
-enabled_plugins = vbox_start, unix_update, vbox_stop, port_forwarding, test, vbox_export
+enabled_plugins = vbox_start, unix_update, vbox_stop, port_forwarding, test, vagrant_export
 ; Global parameter (in minutes) to the end of which plugin process will be terminated. default=20 (mins)
 ;   You can specify your own "time_to_kill" parameter for each plugin.
 ;   Just add "kill_timeout" argument to your Plugin classobj.

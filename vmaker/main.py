@@ -94,7 +94,7 @@ class Core(Engine):
                 # Going to alias actions list
                 try:
                     self.do_actions(self.current_vm.aliases[action])
-                except KeyError as exc:
+                except AttributeError as exc:
                     STREAM.error(" -> Unknown action! (%s)" % str(exc))
                     _restore(exc, action, format_exc())
                     return
