@@ -51,7 +51,7 @@ class Keyword:
         checksum = self._calculate_box_hash()
         STREAM.debug(" -> sha1 checksum: %s" % checksum)
         STREAM.info("==> Creating metadata.json")
-        url = "\/".join([self.vagrant_server_box_location_url, self.vm_name, self.boxname])
+        url = "\/".join([self.vagrant_server_box_location_url, self.vm_name, self.boxname[:-5]])
         template = """{
     "name": "unix\/%s",
     "versions": [
