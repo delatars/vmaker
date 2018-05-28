@@ -133,7 +133,7 @@ class ConfigController:
                 pass
         STREAM.debug("==> Generated vm objects: %s" % vms)
         STREAM.debug("==> Generated vm objects work sequence: %s" % vms_work_sequence)
-        STREAM.success(" -> Config loaded")
+        STREAM.success(" -> User configuration file loaded")
         return vms, vms_work_sequence
 
     def load_general_config(self):
@@ -146,7 +146,7 @@ class ConfigController:
             STREAM.critical("Config Error: Section <General> does not exist!\nExitting...")
             sys.exit()
         STREAM.debug("Loaded values: %s" % general_config)
-        STREAM.success(" -> General section loaded")
+        STREAM.success(" -> General configuration file loaded")
         return general_config
 
     @staticmethod
