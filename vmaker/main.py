@@ -115,7 +115,5 @@ class Core(Engine):
         STREAM.info("==> Restore complete, going next vm...")
 
 
-# if __name__ == "__name__":
-
-upd = Core()
-
+def entry():
+    upd = Core()

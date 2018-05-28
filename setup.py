@@ -17,6 +17,6 @@ setup(
     packages=['vmaker', "vmaker.init", "vmaker.plugins", "vmaker.utils"],
     install_requires=get_requirements(),
     entry_points={
-        'console_scripts': ['vmaker=vmaker.main'],
+        'console_scripts': ['vmaker=vmaker.main:entry'],
     }
 )
