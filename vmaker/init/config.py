@@ -163,8 +163,8 @@ actions = vbox_start, vbox_stop
 group = linux
 ; User keys.
 ;   You can specify your keys and use it in your plugin's classobj attributes. ex: self.vm_name
-vm_name = ubuntu1610-amd64_ubuntu1610_1523264320143_80330
-cred = root:root
+vm_name = 
+credentials = root:root
 ssh_port = 2020
 
 ; You can create groups and combine it with other objects.

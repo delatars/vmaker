@@ -13,7 +13,7 @@ class Keyword:
     This plugin allows to export your virtual machine, to vagrant catalog.
     Arguments of actions.ini:
     vm_name = name of the virtual machine in VboxManage (example: vm_name = ubuntu1610-amd64_1523264320143_80330)
-    self.vagrant_catalog = path to vagrant catalog (example: self.vagrant_catalog = /var/www/vagrant)
+    vagrant_catalog = path to vagrant catalog (example: vagrant_catalog = /var/www/vagrant)
     """
 
     def main(self):
