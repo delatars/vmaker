@@ -201,6 +201,10 @@ common_actions = vbox_start, vbox_x_update, vbox_stop
             else:
                 STREAM.notice(" -> Cancelled by user.")
                 sys.exit()
+        else:
+            with open(config_file, "w") as config:
+                config.write(template)
+            STREAM.success(" -> Generated %s" % config_file)
 
 
 if __name__ == "__main__":
