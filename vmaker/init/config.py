@@ -175,14 +175,14 @@ class ConfigController:
 ;   Key specifies, which type of object will be created (vm, group, alias).
 type = vm
 ;   Key specifies plugins which will be performed for this object.
-actions = vbox_start, vbox_stop
+actions = vagrant_export
 ;   Key specifies to which group this object belongs.
 group = linux
 ; User keys.
 ;   You can specify your keys and use it in your plugin's classobj attributes. ex: self.vm_name
-vm_name = 
-credentials = root:root
-ssh_port = 2020
+vm_name = centos7-amd64
+vagrant_catalog = /vagrant/boxes
+vagrant_export_kill_timeout = 15
 
 ; You can create groups and combine it with other objects.
 ;   Groups support attribute inheritance (groups attributes have a lower priority than vm attributes).
@@ -192,14 +192,14 @@ ssh_port = 2020
 type = group
 ; User keys.
 ;actions = vbox_start, ...
-;cred = root:root
+;credentials = root:root
 
 ; You can combine some plugins in one action, named alias.
 [linux_aliases]
 type = alias
 ; By default aliases extends to all objects, but you can assign aliases at specific group
 ;group = linux
-common_actions = vbox_start, vbox_x_update, vbox_stop
+reboot = vbox_stop, vbox_start
 """
         STREAM.info("==> Generating default configuration file...")
         if os.path.exists(config_file):

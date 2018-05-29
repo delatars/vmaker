@@ -19,11 +19,13 @@ class vars:
 [General]
 ; List of enabled plugins, you can create your plugin, put it to the plugins dir and enabling it here.
 enabled_plugins = vbox_start, unix_update, vbox_stop, port_forwarding, test, vagrant_export
-; Global parameter (in minutes) to the end of which plugin process will be terminated. default=20 (mins)
-;   You can specify your own "time_to_kill" parameter for each plugin.
-;   Just add "kill_timeout" argument to your Plugin classobj.
+; Global parameter (in minutes) to the end of which plugin process will be terminated.
+;   You can specify your own "kill_timeout" parameter for each action in vm, like <action>_kill_timeout = 10
+;   Example: vbox_start_kill_timeout = 5
 kill_timeout = 20
+; Specify path to output log
 log = %s
+; Enable/Disable debug prints
 debug = false
 
         """ % os.path.join(os.path.dirname(self.GENERAL_CONFIG), "stdout.log")
