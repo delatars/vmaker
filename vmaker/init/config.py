@@ -150,6 +150,22 @@ class ConfigController:
         return general_config
 
     @staticmethod
+    def super_generate(path):
+        """Generating config by adding path to Virtual box"""
+
+        cfg = "super.ini"
+        with open(cfg, "w"):
+            pass
+        config = ConfigParser()
+        config.read(cfg)
+        for vm in os.listdir(path):
+            if os.path.isdir(vm):
+                config.add_section(vm)
+                config.set(vm, "type", "vm")
+                config.set(vm, "vm_name", vm)
+                config.set(vm, "actions", "vagrant_export")
+
+    @staticmethod
     def generate_default_config(config_file):
         template = """; You can create vm objects and assign them any actions.
 ; Specify preffered section name.
