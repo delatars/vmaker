@@ -155,8 +155,6 @@ class ConfigController:
         """Generating config by adding path to Virtual box"""
 
         cfg = os.path.join(vars.WORK_DIR, "super.ini")
-        with open(cfg, "w"):
-            pass
         config = ConfigParser()
         config.read(cfg)
         for vm in os.listdir(path):
@@ -166,7 +164,7 @@ class ConfigController:
                 config.set(vm, "vm_name", vm)
                 config.set(vm, "actions", "vagrant_export")
         with open(cfg, "w") as conf:
-            conf.write(config)
+            config.write(conf)
         STREAM.success("Generated %s" % cfg)
 
     @staticmethod
