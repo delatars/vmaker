@@ -163,6 +163,7 @@ class ConfigController:
                 config.set(vm, "type", "vm")
                 config.set(vm, "vm_name", vm)
                 config.set(vm, "actions", "vagrant_export")
+                config.set(vm, "vagrant_catalog", "/var/www/html/files/unix")
         with open(cfg, "w") as conf:
             config.write(conf)
         STREAM.success("Generated %s" % cfg)
