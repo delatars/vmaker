@@ -3,6 +3,7 @@
 import os
 import sys
 from configparser import ConfigParser, NoSectionError
+from vmaker.init.settings import vars
 from vmaker.utils.logger import STREAM
 
 
@@ -153,7 +154,7 @@ class ConfigController:
     def super_generate(path):
         """Generating config by adding path to Virtual box"""
 
-        cfg = "super.ini"
+        cfg = os.path.join(vars.WORK_DIR, "super.ini")
         with open(cfg, "w"):
             pass
         config = ConfigParser()
