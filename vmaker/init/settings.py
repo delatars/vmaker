@@ -7,7 +7,7 @@ class vars:
     SESSION_FILE = os.path.join(WORK_DIR, 'vms.session')
     PID_FILE = os.path.join(WORK_DIR, 'vms.pid')
     GENERAL_CONFIG = os.path.join(WORK_DIR, '.vmaker.ini')
-    CONFIG_FILE = os.path.join(WORK_DIR, 'actions.ini')
+    CONFIG_FILE = os.path.join(WORK_DIR, 'default.ini')
 
     def __init__(self):
         if not os.path.exists(self.WORK_DIR):

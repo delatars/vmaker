@@ -151,10 +151,10 @@ class ConfigController:
         return general_config
 
     @staticmethod
-    def super_generate(path):
-        """Generating config by adding path to Virtual box"""
+    def generate_from_path(path):
+        """Generating config based on path to Virtual box"""
 
-        cfg = os.path.join(vars.WORK_DIR, "super.ini")
+        cfg = os.path.join(vars.WORK_DIR, "generated.ini")
         config = ConfigParser()
         config.read(cfg)
         for vm in os.listdir(path):
@@ -162,8 +162,6 @@ class ConfigController:
                 config.add_section(vm)
                 config.set(vm, "type", "vm")
                 config.set(vm, "vm_name", vm)
-                config.set(vm, "actions", "vagrant_export")
-                config.set(vm, "vagrant_catalog", "/var/www/html/files/unix")
         with open(cfg, "w") as conf:
             config.write(conf)
         STREAM.success("Generated %s" % cfg)

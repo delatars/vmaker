@@ -64,7 +64,7 @@ class Engine(object):
         parser = optparse.OptionParser('main.py [options]\n\nOptions:\n  -c  - Specify config file\n  -g  - Generate default config')
         parser.add_option("-c", dest="config_path", type="string", help="Specify config file location")
         parser.add_option("-g", dest="generate_default", action="store_true", help="Generate default config")
-        parser.add_option("--sg", dest="super_generate", type="string", help="Super generate config")
+        parser.add_option("--gfp", dest="generate_from_path", type="string", help="Generate config from path")
         options, args = parser.parse_args()
         # defaults
 
@@ -74,7 +74,7 @@ class Engine(object):
             ConfigController.generate_default_config(self._CONFIG_FILE)
             exit(0)
         if options.super_generate:
-            ConfigController.super_generate(options.super_generate)
+            ConfigController.generate_from_path(options.super_generate)
             exit(0)
 
 

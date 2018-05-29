@@ -91,11 +91,17 @@ load include_vagrantfile if File.exist?(include_vagrantfile)
             vagrant_file.write(template)
 
     def export_vm_configuration(self):
+        STREAM.info("==> Checking if vm exists...")
+        vms = Popen("vboxmanage list vms |awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE).communicate()
+        if not self.vm_name in vms:
+            STREAM.error(" -> Vm doesn't exist, passed.")
+            return False
+        STREAM.success(" -> Exists: True")
         STREAM.info("==> Exporting configuration...")
         STREAM.debug(" -> vagrant catalog directory: %s" % self.vagrant_catalog)
         if not os.path.exists(self.vagrant_catalog):
             STREAM.critical(" -> Vagrant catalog (%s) directory does not exist" % self.vagrant_catalog)
-            STREAM.warning(" -> Export, passed...")
+            STREAM.warning(" -> Export, passed.")
             return False
         self.work_dir = os.path.join(self.vagrant_catalog, self.vm_name)
         self.tmp_dir = os.path.join(self.vagrant_catalog, self.vm_name, "tmp")
