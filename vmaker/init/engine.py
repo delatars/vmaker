@@ -73,7 +73,7 @@ class Engine(object):
         if options.generate_default:
             ConfigController.generate_default_config(self._CONFIG_FILE)
             exit(0)
-        if options.super_generate:
+        if options.generate_from_path:
             ConfigController.generate_from_path(options.super_generate)
             exit(0)
 
