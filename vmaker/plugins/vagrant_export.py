@@ -93,6 +93,7 @@ load include_vagrantfile if File.exist?(include_vagrantfile)
     def export_vm_configuration(self):
         STREAM.info("==> Checking if vm exists...")
         vms = Popen("vboxmanage list vms |awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE).communicate()
+        vms = vms[0]
         if not self.vm_name in vms:
             STREAM.error(" -> Vm doesn't exist, passed.")
             return False
