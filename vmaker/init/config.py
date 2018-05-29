@@ -160,11 +160,12 @@ class ConfigController:
         config = ConfigParser()
         config.read(cfg)
         for vm in os.listdir(path):
-            if os.path.isdir(vm):
+            if os.path.isdir(os.path.join(path, vm)):
                 config.add_section(vm)
                 config.set(vm, "type", "vm")
                 config.set(vm, "vm_name", vm)
                 config.set(vm, "actions", "vagrant_export")
+        STREAM.success("Generated %s" % cfg)
 
     @staticmethod
     def generate_default_config(config_file):
