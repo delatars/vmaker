@@ -8,6 +8,7 @@ class Keyword(object):
     def main(self):
         self.port = self.port
         STREAM.info("Config attribute: %s " % str(self.port))
+        raise Exception
         # s = 1
         # while 1:
         #     if s > 1000:

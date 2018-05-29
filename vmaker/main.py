@@ -18,12 +18,12 @@ class Core(Engine):
 
     def __init__(self):
         super(Core, self).__init__()
-        # Current working vm
+        # Current working vm object
         self.current_vm = None
-        self.current_vm_snapshot = self.check_session()
+        self.current_vm_snapshot, vm_name = self.check_session()
         # If job is interrupted, restore to previous state
         if self.current_vm_snapshot is not None:
-            self.restore_from_snapshot()
+            self.restore_from_snapshot(vm_name)
         # Current working plugin
         self.main()
     
@@ -31,7 +31,10 @@ class Core(Engine):
         for vm in self.config_sequence:
             self.current_vm = self.config[vm]
             STREAM.info(">>>>> Initialize %s <<<<<" % self.current_vm.__name__)
-            # self.take_snapshot(self.current_vm.name)
+            # if vm exists "snapshot" attribute, creating snapshot
+            if self.current_vm.snapshot.lower() == "true":
+                self.need_snapshot = True
+                self.take_snapshot(self.current_vm.vm_name)
             self.do_actions(self.current_vm.actions)
             STREAM.success("==> There are no more Keywords, going next vm.")
         STREAM.success("==> There are no more virtual machines, exiting")
@@ -44,7 +47,8 @@ class Core(Engine):
             STREAM.error(" -> %s" % exception)
             STREAM.debug(debug)
             STREAM.error(" -> Can't proceed with this vm")
-            # self.restore_from_snapshot(self.current_vm.name)
+            if self.need_snapshot:
+                self.restore_from_snapshot(self.current_vm.vm_name)
 
         def _get_timeout():
             try:
@@ -105,17 +109,18 @@ class Core(Engine):
         self.current_vm_snapshot = vm_name+"__"+str(datetime.now())[:-7].replace(" ", "_")
         Popen('VBoxManage snapshot %s take %s' % (vm_name, self.current_vm_snapshot),
               shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
-        self.update_session(self.current_vm.__name__, self.current_vm_snapshot)
+        self.update_session(self.current_vm.vm_name, self.current_vm_snapshot)
 
-    def restore_from_snapshot(self):
+    def restore_from_snapshot(self, vm_name):
         STREAM.info("==> Restoring to previous state...")
-        Popen('VBoxManage snapshot restore %s' % (self.current_vm_snapshot),
+        Popen('VBoxManage snapshot %s restore %s' % (vm_name, self.current_vm_snapshot),
               shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
         STREAM.info("==> Restore complete, going next vm...")
 
 
 def entry():
     upd = Core()
+
 
 if __name__ == "__main__":
     entry()

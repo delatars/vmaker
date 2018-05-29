@@ -47,15 +47,18 @@ class Engine(object):
             STREAM.warning("==> Detecting uncompleted session, restoring...")
             with open(self._SESSION_FILE, "r") as sf:
                 vms = sf.readlines()
-            last_modified_vm_snapshot = vms.pop(-1)[1].strip()
+            STREAM.debug("vms: %s" % vms)
+            last_vm_name, last_modified_vm_snapshot = vms.pop(-1).split("<--->")
+            STREAM.debug("Taken snapshot: %s" % last_modified_vm_snapshot)
             ready_vms = [vm.split(" - ")[0].strip() for vm in vms]
+            STREAM.debug("Ready vms: %s" % ready_vms)
             map(lambda x: self.config_sequence.remove(x), ready_vms)
-            return last_modified_vm_snapshot
+            return last_modified_vm_snapshot.strip(), last_vm_name.strip()
         return None
 
-    def update_session(self, vm, snapshot):
+    def update_session(self, vm_name, snapshot):
         with open(self._SESSION_FILE, "a") as sf:
-            sf.write("%s - %s\n" % (vm, snapshot))
+            sf.write("%s <---> %s\n" % (vm_name, snapshot))
 
     def destroy_session(self):
         os.remove(self._SESSION_FILE)
