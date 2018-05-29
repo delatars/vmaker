@@ -6,7 +6,7 @@ The program is intended for automatic updating of virtual machines, their upload
 
 Install from Githib
 
-    pip install git+https://gitlab.i.drweb.ru/a.morokov/vmaker.git
+    pip install git+https://github.com/delatars/vmaker
     
 ### Usage
 
