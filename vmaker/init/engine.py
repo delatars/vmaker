@@ -61,7 +61,7 @@ class Engine(object):
         os.remove(self._SESSION_FILE)
 
     def args(self):
-        parser = optparse.OptionParser('main.py [options]\n\nOptions:\n  -c  - Specify config file\n  -g  - Generate default config')
+        parser = optparse.OptionParser('main.py [options]\n\nOptions:\n  -c  - Specify config file\n  -g  - Generate default config\n  --gfp <path>  - Generate config, based on specified path')
         parser.add_option("-c", dest="config_path", type="string", help="Specify config file location")
         parser.add_option("-g", dest="generate_default", action="store_true", help="Generate default config")
         parser.add_option("--gfp", dest="generate_from_path", type="string", help="Generate config from path")
