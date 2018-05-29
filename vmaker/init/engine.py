@@ -75,6 +75,7 @@ class Engine(object):
             exit(0)
         if options.super_generate:
             ConfigController.super_generate(options.super_generate)
+            exit(0)
 
 
 if __name__ == "__main__":
