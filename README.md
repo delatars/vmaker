@@ -58,13 +58,13 @@ vagrant_catalog = /vagrant/boxes
 vagrant_export_kill_timeout = 15
 
 ; You can create groups and combine it with other objects.
-;   Groups support attribute inheritance (groups attributes have a higher priority than vm attributes).
+;   Groups support attribute inheritance (groups attributes have a lower priority than vm attributes).
 ;   Specify name of the group.
 [linux]
 ; Mandatory keys.
 type = group
-openstack_catalog = openstack_cluster1
 ; User keys.
+openstack_catalog = openstack_cluster1
 ;actions = Vbox_start, ...
 ;credentials = root:root
 
