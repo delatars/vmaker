@@ -20,6 +20,7 @@ class Core(Engine):
         super(Core, self).__init__()
         # Current working vm object
         self.current_vm = None
+        self.need_snapshot = False
         self.current_vm_snapshot, vm_name = self.check_session()
         # If job is interrupted, restore to previous state
         if self.current_vm_snapshot is not None:
