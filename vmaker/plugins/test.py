@@ -3,7 +3,6 @@ from vmaker.utils.logger import STREAM
 
 
 class Keyword(object):
-    time_to_kill = 2
 
     def main(self):
         self.port = self.port

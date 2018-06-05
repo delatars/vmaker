@@ -23,7 +23,7 @@ class Core(Engine):
         self.need_snapshot = False
         self.current_vm_snapshot, vm_name = self.check_session()
         # If job is interrupted, restore to previous state
-        if self.current_vm_snapshot is not None:
+        if self.current_vm_snapshot is not None and self.current_vm_snapshot != "None":
             self.restore_from_snapshot(vm_name)
         # Current working plugin
         self.main()
@@ -36,9 +36,13 @@ class Core(Engine):
             if self.current_vm.snapshot.lower() == "true":
                 self.need_snapshot = True
                 self.take_snapshot(self.current_vm.vm_name)
+                self.update_session(self.current_vm.vm_name, self.current_vm_snapshot)
+            else:
+                self.update_session(self.current_vm.vm_name)
             self.do_actions(self.current_vm.actions)
             STREAM.success("==> There are no more Keywords, going next vm.")
         STREAM.success("==> There are no more virtual machines, exiting")
+        self.destroy_session()
 
     # recursion function which unpack aliases
     def do_actions(self, actions_list):
@@ -110,7 +114,6 @@ class Core(Engine):
         self.current_vm_snapshot = vm_name+"__"+str(datetime.now())[:-7].replace(" ", "_")
         Popen('VBoxManage snapshot %s take %s' % (vm_name, self.current_vm_snapshot),
               shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
-        self.update_session(self.current_vm.vm_name, self.current_vm_snapshot)
 
     def restore_from_snapshot(self, vm_name):
         STREAM.info("==> Restoring to previous state...")

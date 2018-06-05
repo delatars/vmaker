@@ -56,7 +56,7 @@ class Engine(object):
             return last_modified_vm_snapshot.strip(), last_vm_name.strip()
         return None
 
-    def update_session(self, vm_name, snapshot):
+    def update_session(self, vm_name, snapshot="None"):
         with open(self._SESSION_FILE, "a") as sf:
             sf.write("%s <---> %s\n" % (vm_name, snapshot))
 
