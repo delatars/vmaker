@@ -48,17 +48,25 @@ class Engine(object):
             with open(self._SESSION_FILE, "r") as sf:
                 vms = sf.readlines()
             STREAM.debug("vms: %s" % vms)
-            last_vm_name, last_modified_vm_snapshot = vms.pop(-1).split("<--->")
+            last_vm, last_modified_vm_snapshot = vms.pop(-1).split("<--->")
             STREAM.debug("Taken snapshot: %s" % last_modified_vm_snapshot)
-            ready_vms = [vm.split(" - ")[0].strip() for vm in vms]
+            ready_vms = [vm.split("<--->")[0].strip() for vm in vms]
             STREAM.debug("Ready vms: %s" % ready_vms)
-            map(lambda x: self.config_sequence.remove(x), ready_vms)
-            return last_modified_vm_snapshot.strip(), last_vm_name.strip()
-        return None
+            backup_sequence = self.config_sequence
+            try:
+                map(lambda x: self.config_sequence.remove(x), ready_vms)
+            except ValueError:
+                STREAM.warning(" -> The configuration file seems to have changed since the last session!")
+                STREAM.warning(" -> Saved session is no longer valid.")
+                STREAM.warning(" -> Start over.")
+                self.config_sequence = backup_sequence
+                return None, None
+            return last_vm.strip(), last_modified_vm_snapshot.strip()
+        return None, None
 
-    def update_session(self, vm_name, snapshot="None"):
+    def update_session(self, vm, snapshot="None"):
         with open(self._SESSION_FILE, "a") as sf:
-            sf.write("%s <---> %s\n" % (vm_name, snapshot))
+            sf.write("%s <---> %s\n" % (vm, snapshot))
 
     def destroy_session(self):
         os.remove(self._SESSION_FILE)
