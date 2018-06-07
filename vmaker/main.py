@@ -41,13 +41,16 @@ class Core(Engine):
             else:
                 self.update_session(vm)
             self.do_actions(self.current_vm.actions)
-            STREAM.success("==> There are no more Keywords, going next vm.")
-        STREAM.success("==> There are no more virtual machines, exiting")
+            STREAM.notice("==> There are no more Keywords, going next vm.")
+            if self.need_snapshot:
+                self.delete_snapshot(self.current_vm.vm_name)
+        STREAM.notice("==> There are no more virtual machines, exiting")
         self.destroy_session()
 
     # recursion function which unpack aliases
     def do_actions(self, actions_list):
         def _restore(exception, action, debug=None):
+            LoggerOptions.COMPONENT = "Core"
             # This function restore vm to previous state
             STREAM.error(" -> Exception in vm <%s> and action <%s>:" % (self.current_vm.__name__, action))
             STREAM.error(" -> %s" % exception)
@@ -73,6 +76,7 @@ class Core(Engine):
                 if process.is_alive():
                     if timer > timeout:
                         process.terminate()
+                        LoggerOptions.COMPONENT = "Core"
                         STREAM.debug("==> Keyword timeout exceed, Terminated!")
                         raise Exception("==> Keyword timeout exceed, Terminated!")
                 else:
@@ -108,7 +112,7 @@ class Core(Engine):
                     STREAM.error(" -> Unknown action! (%s)" % str(exc))
                     _restore(exc, action, format_exc())
                     return
-            LoggerOptions.COMPONENT = "Engine"
+            LoggerOptions.COMPONENT = "Core"
 
     def take_snapshot(self, vm_name):
         STREAM.info("==> Taking a snapshot")
@@ -122,8 +126,10 @@ class Core(Engine):
               shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
         STREAM.info("==> Restore complete, going next vm...")
 
-    def delete_snapshot(self):
-        pass
+    def delete_snapshot(self, vm_name):
+        STREAM.info("==> Deleting snapshot.")
+        Popen('VBoxManage snapshot %s delete %s' % (vm_name, self.current_vm_snapshot),
+              shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
 
 
 def entry():

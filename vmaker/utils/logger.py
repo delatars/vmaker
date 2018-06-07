@@ -15,7 +15,7 @@ class Component_filter(logging.Filter):
 class LoggerOptions:
     _LOGFILE = "./stdout.log"
     DEBUG = False
-    COMPONENT = "Engine"
+    COMPONENT = "Core"
 
     def __init__(self):
         vars()
