@@ -60,6 +60,7 @@ class Engine(object):
                 STREAM.warning(" -> Saved session is no longer valid.")
                 STREAM.warning(" -> Start over.")
                 self.config_sequence = backup_sequence
+                self.destroy_session()
                 return None, None
             return last_vm.strip(), last_modified_vm_snapshot.strip()
         return None, None
