@@ -31,9 +31,15 @@ class PluginController:
 
     def check_plugin(self, plugin_name):        
         try:
+            STREAM.debug(" -> Check for plugin:")
             plugin = importlib.import_module("vmaker.plugins.%s" % plugin_name)
+            STREAM.debug("    %s" % plugin)
+            STREAM.debug(" -> Check for a class <Keyword>:")
             cls = getattr(plugin, "Keyword")
-            getattr(cls, "main")
+            STREAM.debug("    %s" % cls)
+            STREAM.debug(" -> Check for entrypoint <main>:")
+            entry = getattr(cls, "main")
+            STREAM.debug("    %s" % entry)
             STREAM.success(" -> Checking plugin <%s>.........OK" % plugin_name)
         except ImportError as err:
             STREAM.warning(" -> Checking plugin <%s>.........FAILED" % plugin_name)

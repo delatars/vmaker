@@ -49,7 +49,7 @@ class Engine(object):
                 vms = sf.readlines()
             STREAM.debug("vms: %s" % vms)
             last_vm, last_modified_vm_snapshot = vms.pop(-1).split("<--->")
-            STREAM.debug("Taken snapshot: %s" % last_modified_vm_snapshot)
+            STREAM.debug("Taken snapshot: %s" % last_modified_vm_snapshot.strip())
             ready_vms = [vm.split("<--->")[0].strip() for vm in vms]
             STREAM.debug("Ready vms: %s" % ready_vms)
             backup_sequence = self.config_sequence

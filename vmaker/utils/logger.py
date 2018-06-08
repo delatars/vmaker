@@ -6,16 +6,18 @@ from configparser import ConfigParser
 from vmaker.init.settings import vars
 
 
-class Component_filter(logging.Filter):
+class _Component_filter(logging.Filter):
     def filter(self, record):
-        record.component = LoggerOptions.COMPONENT
+        record.component = LoggerOptions._COMPONENT
+        record.action = LoggerOptions._ACTION
         return True
 
 
 class LoggerOptions:
     _LOGFILE = "./stdout.log"
     DEBUG = False
-    COMPONENT = "Core"
+    _COMPONENT = "Core"
+    _ACTION = ""
 
     def __init__(self):
         vars()
@@ -26,17 +28,28 @@ class LoggerOptions:
             self.DEBUG = True
         self._LOGFILE = config["General"]["log"]
 
+    @staticmethod
+    def set_component(arg):
+        LoggerOptions._COMPONENT = arg
+
+    @staticmethod
+    def set_action(arg=None):
+        if arg is None:
+            LoggerOptions._ACTION = ""
+        else:
+            LoggerOptions._ACTION = "[%s]" % arg
+
     def logger(self):
         logfile = open(self._LOGFILE, "a")
         handler = logging.StreamHandler(stream=logfile)
         handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(message)s', "%Y-%m-%d %H:%M:%S"))
         log = verboselogs.VerboseLogger(__name__)
-        log.addFilter(Component_filter())
+        log.addFilter(_Component_filter())
         log.addHandler(handler)
         if self.DEBUG:
-            coloredlogs.install(fmt='%(asctime)s [%(component)s] [%(levelname)s] %(message)s', logger=log, level="debug")
+            coloredlogs.install(fmt='%(asctime)s [%(component)s] %(action)s [%(levelname)s] %(message)s', logger=log, level="debug")
         else:
-            coloredlogs.install(fmt='%(asctime)s [%(component)s] [%(levelname)s] %(message)s', logger=log)
+            coloredlogs.install(fmt='%(asctime)s [%(component)s] %(action)s [%(levelname)s] %(message)s', logger=log)
         return log
 
 
