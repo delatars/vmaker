@@ -7,6 +7,7 @@ from vmaker.init.settings import vars
 
 
 class _Component_filter(logging.Filter):
+    """Class added additional records to logger formatter"""
     def filter(self, record):
         record.component = LoggerOptions._COMPONENT
         record.action = LoggerOptions._ACTION
@@ -14,6 +15,7 @@ class _Component_filter(logging.Filter):
 
 
 class LoggerOptions:
+    """Class to set up logger options"""
     _LOGFILE = "./stdout.log"
     DEBUG = False
     _COMPONENT = "Core"
@@ -40,6 +42,7 @@ class LoggerOptions:
             LoggerOptions._ACTION = "[%s]" % arg
 
     def logger(self):
+        """Function setting options and return logger object"""
         logfile = open(self._LOGFILE, "a")
         handler = logging.StreamHandler(stream=logfile)
         handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(message)s', "%Y-%m-%d %H:%M:%S"))
@@ -58,6 +61,7 @@ STREAM = LoggerOptions().logger()
 # Some examples.
 # STREAM.debug("this is a debugging message")
 # STREAM.info("this is an informational message")
+# STREAM.notice("this is an informational message")
 # STREAM.success("this is an informational message")
 # STREAM.warning("this is a warning message")
 # STREAM.error("this is an error message")
