@@ -11,6 +11,14 @@ from vmaker.utils.logger import STREAM
 
 
 class Engine(object):
+    """Class controls prerun of the program
+        - Parse command-line arguments
+        - Execute config module
+        - Execute plugins module
+        - Creating PID file
+        - Creating Session file
+        - Control session
+        """
     _SESSION_FILE = vars.SESSION_FILE
     _PID_FILE = vars.PID_FILE
     _GENERAL_CONFIG = vars.GENERAL_CONFIG
@@ -62,6 +70,10 @@ class Engine(object):
                 self.config_sequence = backup_sequence
                 self.destroy_session()
                 return None, None
+            # Recreating session file without last got vm to prevent duplication
+            with open(self._SESSION_FILE, "w") as sf:
+                for vm in vms:
+                    sf.write(vm)
             return last_vm.strip(), last_modified_vm_snapshot.strip()
         return None, None
 

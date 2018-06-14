@@ -2,6 +2,7 @@
 import sys
 from subprocess import PIPE, Popen
 from vmaker.utils.logger import STREAM
+from vmaker.utils.auxilary import exception_interceptor
 
 class Keyword:
     """
@@ -11,6 +12,7 @@ class Keyword:
     forwarding_ports = name:guest:host, ... (example: forwarding_ports = vm_ssh:22:2020, icap:1344:1234)
     """
 
+    @exception_interceptor
     def main(self):
         # - Use Config attributes
         self.vm_name = self.vm_name
@@ -32,14 +34,23 @@ class Keyword:
     def forward(self):
         if self.check_vm_status():
             STREAM.error(" -> Unable to forwarding ports, machine is booted.")
-            return
+            raise Exception("Unable to forwarding ports, machine is booted.")
         self.forwarding_ports = [ports.strip() for ports in self.forwarding_ports.split(",")]
         for item in self.forwarding_ports:
             name, guest, host = item.split(":")
             STREAM.debug("%s, %s, %s" % (name, guest, host))
             STREAM.info("==> Forwarding ports %s(guest) => %s(host)" % (guest, host))
-            Popen("vboxmanage modifyvm %s --natpf1 delete %s" % (self.vm_name, name), shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
-            Popen("vboxmanage modifyvm %s --natpf1 %s,tcp,127.0.0.1,%s,,%s" % (self.vm_name, name, host, guest), shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
+            check = Popen("vboxmanage showvminfo %s |grep -i %s" % (self.vm_name, name),
+                          shell=True, stdout=PIPE, stderr=PIPE).communicate()
+            if check[0] != "":
+                STREAM.warning(" -> Detecting previosly set up rule with the same name.")
+                Popen("vboxmanage modifyvm %s --natpf1 delete %s" % (self.vm_name, name),
+                      shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
+                STREAM.info(" -> Deleted rule: %s" % name)
+                STREAM.info(" -> Set up new rule: %s" % name)
+            Popen("vboxmanage modifyvm %s --natpf1 %s,tcp,127.0.0.1,%s,,%s" % (self.vm_name, name, host, guest),
+                  shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
+            STREAM.success(" -> Forwarded ports %s(guest) => %s(host)" % (guest, host))
 
 
 if __name__ == "__main__":

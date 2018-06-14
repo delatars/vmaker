@@ -9,6 +9,17 @@ from vmaker.utils.logger import LoggerOptions, STREAM
 
 
 class Core(Engine):
+    """Main Class
+        - union plugins with objects
+        - execute plugins in child processes
+        - control child processes execution
+        - taking/restoring/deleting snapshots
+
+        Inheritence:
+        config  ->
+                   --> engine -> Core
+        plugins ->
+        """
 
     # self.general_config - dict with general config section items {key: value}
     # self.config - dict with vm objects {vm_name: object(vm)}
@@ -22,13 +33,18 @@ class Core(Engine):
         self.current_vm_obj = None
         # Current working config section name
         self.current_vm = None
-        self.need_snapshot = False
+        # Flag if snapshot needed for vm
+        self.exists_snapshot = False
+        # Flag if start from restored session
+        self.is_session = False
         vm, self.current_vm_obj_snapshot = self.check_session()
+        if vm is not None:
+             self.is_session = True
         # If job is interrupted, restore to previous state and restore from snapshot if needed
         if self.current_vm_obj_snapshot is not None and self.current_vm_obj_snapshot != "None":
             vm_name = self.current_vm_obj_snapshot.split("__")[0]
+            self.current_vm_obj = self.config[vm]
             self.restore_from_snapshot(vm_name)
-        # Entrypoint
         self.main()
     
     def main(self):
@@ -36,17 +52,27 @@ class Core(Engine):
             self.current_vm = vm
             self.current_vm_obj = self.config[vm]
             # if vm exists "snapshot" attribute, creating snapshot
-            if self.current_vm_obj.snapshot.lower() == "true":
-                self.need_snapshot = True
-                self.take_snapshot(self.current_vm_obj.vm_name)
-                self.update_session(vm, self.current_vm_obj_snapshot)
-            else:
+            try:
+                if self.current_vm_obj.snapshot.lower() == "true" and self.is_session is False:
+                    self.exists_snapshot = True
+                    self.take_snapshot(self.current_vm_obj.vm_name)
+                    self.update_session(vm, self.current_vm_obj_snapshot)
+                elif self.current_vm_obj.snapshot.lower() == "true" and self.is_session is True:
+                    self.exists_snapshot = True
+                    self.update_session(vm, self.current_vm_obj_snapshot)
+                else:
+                    self.update_session(vm)
+            except AttributeError:
                 self.update_session(vm)
             # Set logger filter
             LoggerOptions.set_component(self.current_vm)
-            self.do_actions(self.current_vm_obj.actions)
-            STREAM.notice("==> There are no more Keywords, going next vm.")
-            if self.need_snapshot:
+            result = self.do_actions(self.current_vm_obj.actions)
+            if result:
+                STREAM.notice("==> There are no more Keywords, going next vm.")
+            else:
+                pass
+            # If all actions are ok, delete a snapshot.
+            if self.exists_snapshot:
                 self.delete_snapshot(self.current_vm_obj.vm_name)
         STREAM.notice("==> There are no more virtual machines, exiting")
         self.destroy_session()
@@ -60,16 +86,24 @@ class Core(Engine):
             STREAM.error(" -> Exception in vm <%s> and action <%s>:" % (self.current_vm_obj.__name__, action))
             STREAM.error(" -> %s" % exception)
             STREAM.error(" -> Can't proceed with this vm")
-            if self.need_snapshot:
+            if self.exists_snapshot:
                 self.restore_from_snapshot(self.current_vm_obj.vm_name)
 
         def _get_timeout():
             try:
                 ttk = getattr(self.current_vm_obj, "%s_kill_timeout" % action)
+                LoggerOptions.set_component("Core")
+                LoggerOptions.set_action(None)
                 STREAM.debug(" Assigned 'kill_timeout' for action: %s = %s min" % (action, ttk))
+                LoggerOptions.set_component(self.current_vm)
+                LoggerOptions.set_action(action)
             except AttributeError:
                 ttk = self.general_config["kill_timeout"]
+                LoggerOptions.set_component("Core")
+                LoggerOptions.set_action(None)
                 STREAM.debug(" Parameter 'kill_timeout' not assigned, for action, using global: %s = %s min" % (action, ttk))
+                LoggerOptions.set_component(self.current_vm)
+                LoggerOptions.set_action(action)
             ttk = int(ttk)*60
             return ttk
 
@@ -83,12 +117,12 @@ class Core(Engine):
                         LoggerOptions.set_component("Core")
                         LoggerOptions.set_action(None)
                         STREAM.debug("==> Keyword timeout exceed, Terminated!")
-                        raise Exception("==> Keyword timeout exceed, Terminated!")
+                        raise Exception("Keyword timeout exceed, Terminated!")
                 else:
                     if process.exitcode == 0:
                         break
                     else:
-                        raise Exception("Error in keyword!")
+                        raise Exception("Exception in keyword!")
                 sleep(1)
                 if timer % 60 == 0:
                     LoggerOptions.set_component("Core")
@@ -100,43 +134,52 @@ class Core(Engine):
 
         for action in actions_list:
             try:
-                keyword = self.loaded_plugins[action]
-                # Injecting config attributes to plugin
-                mutual_keyword = type("Keyword", (keyword, self.current_vm_obj), {})
+                invoked_plugin = self.invoke_plugin(action)
                 ttk = _get_timeout()
                 try:
                     LoggerOptions.set_component(self.current_vm)
                     LoggerOptions.set_action(action)
                     # Execute plugin in child process
-                    keyword_process = Process(target=mutual_keyword().main)
+                    keyword_process = Process(target=invoked_plugin().main)
                     keyword_process.start()
                     # Monitoring running proccess
                     _process_guard(ttk, keyword_process)
                 except Exception as exc:
                     _restore(exc, action)
-                    return
+                    return False
             except KeyError:
                 # Going to alias actions list
                 try:
                     self.do_actions(self.current_vm_obj.aliases[action])
-                except AttributeError as exc:
+                except KeyError as exc:
                     STREAM.error(" -> Unknown action! (%s)" % str(exc))
                     _restore(exc, action)
-                    return
+                    return False
             LoggerOptions.set_component("Core")
             LoggerOptions.set_action(None)
+        return True
+
+    def invoke_plugin(self, plugin_name):
+        keyword = self.loaded_plugins[plugin_name]
+        # Injecting config attributes to plugin
+        mutual_keyword = type("Keyword", (keyword, self.current_vm_obj), {})
+        return mutual_keyword
 
     def take_snapshot(self, vm_name):
+        invoked_plugin = self.invoke_plugin("vbox_stop")
+        invoked_plugin().main()
         STREAM.info("==> Taking a snapshot")
         self.current_vm_obj_snapshot = vm_name+"__"+str(datetime.now())[:-7].replace(" ", "_")
         Popen('VBoxManage snapshot %s take %s' % (vm_name, self.current_vm_obj_snapshot),
               shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
 
     def restore_from_snapshot(self, vm_name):
+        invoked_plugin = self.invoke_plugin("vbox_stop")
+        invoked_plugin().main()
         STREAM.info("==> Restoring to previous state...")
         Popen('VBoxManage snapshot %s restore %s' % (vm_name, self.current_vm_obj_snapshot),
               shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
-        STREAM.info("==> Restore complete, going next vm...")
+        STREAM.info("==> Restore complete.")
 
     def delete_snapshot(self, vm_name):
         STREAM.info("==> Deleting snapshot.")
@@ -145,6 +188,7 @@ class Core(Engine):
 
 
 def entry():
+    """Entrypoint"""
     upd = Core()
 
 

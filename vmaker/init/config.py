@@ -8,6 +8,10 @@ from vmaker.utils.logger import STREAM
 
 
 class ConfigController:
+    """Class works with configuration files
+        - Loads general configuration file options
+        - Creates vm/group/alias objects based on user configuration file
+        - Generates default user configuration file"""
 
     def __init__(self, config_file, general_config):
         self.CONFIG_FILE = config_file

@@ -2,6 +2,7 @@
 from time import sleep
 from subprocess import PIPE, Popen
 from vmaker.utils.logger import STREAM
+from vmaker.utils.auxilary import exception_interceptor
 
 class Keyword:
     """
@@ -10,6 +11,7 @@ class Keyword:
     vm_name = name of the virtual machine in VboxManage (example: vm_name = ubuntu1610-amd64_1523264320143_80330)
     """
 
+    @exception_interceptor
     def main(self):
         # - Config attributes
         self.vm_name = self.vm_name

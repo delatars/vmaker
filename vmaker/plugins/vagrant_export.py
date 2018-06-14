@@ -6,6 +6,7 @@ import tarfile
 from datetime import datetime
 from subprocess import Popen, PIPE
 from vmaker.utils.logger import STREAM
+from vmaker.utils.auxilary import exception_interceptor
 
 
 class Keyword:
@@ -16,6 +17,7 @@ class Keyword:
     vagrant_catalog = path to vagrant catalog (example: vagrant_catalog = /var/www/vagrant)
     """
 
+    @exception_interceptor
     def main(self):
         # - Config attributes
         self.vm_name = self.vm_name

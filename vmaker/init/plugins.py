@@ -7,6 +7,9 @@ from vmaker.utils.logger import STREAM
 
 
 class PluginController:
+    """Class controls loading plugins
+        - Check plugins
+        - Load plugins"""
     
     def __init__(self, gen_config):
         self.general_config = gen_config

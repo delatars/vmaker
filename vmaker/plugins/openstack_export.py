@@ -6,10 +6,12 @@ from vmaker.init.settings import vars
 import os
 import sys
 from vmaker.utils.logger import STREAM
+from vmaker.utils.auxilary import exception_interceptor
 
 
 class Keyword(object):
 
+    @exception_interceptor
     def main(self):
         self.openstack_cluster = "./cluster.ini::openstack_cluster1"
 

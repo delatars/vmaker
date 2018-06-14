@@ -3,6 +3,7 @@ import sys
 from time import sleep
 from subprocess import PIPE, Popen
 from vmaker.utils.logger import STREAM
+from vmaker.utils.auxilary import exception_interceptor
 
 class Keyword:
     """
@@ -10,7 +11,8 @@ class Keyword:
     Arguments of actions.ini:
     vm_name = name of the virtual machine in VboxManage (example: vm_name = ubuntu1610-amd64_1523264320143_80330)
     """
-    
+
+    @exception_interceptor
     def main(self):
         # - Config attributes
         self.vm_name = self.vm_name
@@ -40,7 +42,7 @@ class Keyword:
             data = rvms.stdout.read()
             if self.vm_name not in data:
                 break            
-            if tries == 4:
+            if tries > 5:
                 STREAM.info(" -> Forcing shutdown VM")
                 Popen("VBoxManage controlvm %s poweroff soft" % self.vm_name, shell=True,stdout=sys.stdout, stderr=sys.stdout).communicate()
                 break

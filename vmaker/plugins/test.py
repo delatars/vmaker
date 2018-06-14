@@ -8,16 +8,16 @@ class Keyword(object):
 
     @exception_interceptor
     def main(self):
-        self.port = self.port
-        STREAM.info("Config attribute: %s " % str(self.port))
-        # s = 1
-        # while 1:
-        #     if s > 1000:
-        #         break
-        #     s += 1
-        #     sleep(1)
-        #     if s % 10 == 0:
-        #         STREAM.info("s = %s" % s)
+        # self.port = self.port
+        # STREAM.info("Config attribute: %s " % str(self.port))
+        s = 1
+        while 1:
+            if s > 1000:
+                break
+            s += 1
+            sleep(1)
+            if s % 10 == 0:
+                STREAM.info("s = %s" % s)
 
 
 if __name__ == "__main__":
