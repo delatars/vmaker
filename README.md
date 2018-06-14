@@ -36,6 +36,16 @@ kill_timeout = 20
 log = ~/.vmaker/stdout.log
 ; Enable/Disable debug prints
 debug = false
+
+;[openstack_cluster1]
+;auth_url=https://localhost:5000/v3
+;username=root
+;password=toor
+;project_name=project1
+;user_domain_id=default
+;project_domain_id=default
+;ca_cert=/etc/ssl/certs/localhost.pem
+
 ```
 
 #### User configuration file(default.ini)

@@ -28,6 +28,17 @@ log = %s
 ; Enable/Disable debug prints
 debug = false
 
+; You can specify cluster connection settings here to use it in openstack_export plugin
+;  or use separate configuration file
+; Section name must starts with "openstack_cluster" prefix. Ex. <openstack_cluster>1, <openstack_cluster>2
+;[openstack_cluster1]
+;auth_url=https://localhost:5000/v3
+;username=root
+;password=toor
+;project_name=project1
+;user_domain_id=default
+;project_domain_id=default
+;ca_cert=/etc/ssl/certs/localhost.pem
         """ % os.path.join(os.path.dirname(self.GENERAL_CONFIG), "stdout.log")
         with open(self.GENERAL_CONFIG, "w") as config:
             config.write(template)
