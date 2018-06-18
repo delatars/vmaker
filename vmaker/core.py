@@ -29,6 +29,7 @@ class Core(Engine):
     def __init__(self):
         # Invoke Engine
         super(Core, self).__init__()
+        STREAM.notice("==> Begin.")
         # Current working vm object
         self.current_vm_obj = None
         # Current working config section name
@@ -86,8 +87,12 @@ class Core(Engine):
             STREAM.error(" -> Exception in vm <%s> and action <%s>:" % (self.current_vm_obj.__name__, action))
             STREAM.error(" -> %s" % exception)
             STREAM.error(" -> Can't proceed with this vm")
+            STREAM.notice("==> Clearing ourselves")
             if self.exists_snapshot:
                 self.restore_from_snapshot(self.current_vm_obj.vm_name)
+            else:
+                invoked = self.invoke_plugin("vbox_stop")
+                invoked().main()
 
         def _get_timeout():
             try:

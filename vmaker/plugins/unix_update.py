@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import paramiko
-import platform
 from time import sleep
 from vmaker.utils.logger import STREAM
 from vmaker.utils.auxilary import exception_interceptor
@@ -17,31 +16,41 @@ class Keyword:
         # - Config attributes
         self.vm_name = self.vm_name
         #----------------------------------
+        self.uname = None
         ssh = self.connect_to_vm()
-        cmd = self.get_update_cmd(ssh)
-        self.command_exec(ssh, cmd, "2\n")
+        self.detected_os = self.get_update_cmd(ssh)
+        update_method = getattr(self, "update_%s" % self.detected_os)
+        update_method(ssh)
         self.close_ssh_connection(ssh)
 
     def get_update_cmd(self, ssh):
-        update_cmds = {"ubuntu": "dpkg --configure -a && apt-get update && apt-get -y upgrade",
-                       "centos": "yum update -y",
-                       "fedora": "dnf update -y",
-                       "debian": "apt update && apt upgrade -y",
-                       "rhel": "yum update -y",
-                       "sles": "zypper refresh && zypper update -y",
-                       "opensuse": "zypper refresh && zypper update -y"
-                       }
-        update_cmd = None
+        known_oses = [
+            "ubuntu",
+            "centos",
+            "fedora",
+            "debian",
+            "redhat",
+            "suse",
+            "opensuse",
+            "freebsd"
+        ]
+        STREAM.debug("Known_oses: %s" % known_oses)
         STREAM.info("==> Detecting platform")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("python -m platform")
+        if len(ssh_stderr.read()) > 0:
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("python2 -m platform")
+            if len(ssh_stderr.read()) > 0:
+                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("python3 -m platform")
+                if len(ssh_stderr.read()) > 0:
+                    raise KeyError("python not found on remote os!")
         osx = ssh_stdout.read().lower()
-        for key_os in update_cmds.keys():
-            if key_os in osx:
-                STREAM.info(" -> Detected: %s" % key_os)
-                STREAM.debug(" -> Platform: %s" % osx.strip())
-                update_cmd = update_cmds[key_os]
-                return update_cmd
-        raise KeyError("Update cmd for this os not specified")
+        self.uname = osx
+        STREAM.debug(" -> Platform: %s" % osx.strip())
+        for iter_os in known_oses:
+            if iter_os in osx:
+                STREAM.info(" -> Detected: %s" % iter_os)
+                return iter_os
+        raise KeyError("Unknown os! (Not in list of 'known_oses')")
 
     def connect_to_vm(self):
 
@@ -85,6 +94,39 @@ class Keyword:
         for l in line_buffered(ssh_stdout):
             print l
         print "Errors: %s" % ssh_stderr.read()
+
+    def update_centos(self, ssh):
+        self.command_exec(ssh, "yum update -y", "2\n")
+
+    def update_debian(self, ssh):
+        self.command_exec(ssh, "apt update && apt upgrade -y", "2\n")
+
+    def update_fedora(self, ssh):
+        self.command_exec(ssh, "dnf update -y", "2\n")
+
+    def update_freebsd(self, ssh):
+        self.command_exec(ssh, "freebsd-update fetch --not-running-from-cron")
+        self.command_exec(ssh, "freebsd-update install")
+        self.command_exec(ssh, "pkg update && pkg upgrade -y")
+        self.command_exec(ssh, "reboot")
+        sleep(30)
+        ssh = self.connect_to_vm()
+        self.command_exec(ssh, "pkg update && pkg upgrade -y")
+        self.close_ssh_connection(ssh)
+
+    def update_opensuse(self, ssh):
+        self.command_exec(ssh, "zypper refresh && zypper update -y", "2\n")
+
+    def update_redhat(self, ssh):
+        """Rhel"""
+        self.command_exec(ssh, "yum update -y", "2\n")
+
+    def update_suse(self, ssh):
+        """Sles"""
+        self.command_exec(ssh, "zypper refresh && zypper update -y", "2\n")
+
+    def update_ubuntu(self, ssh):
+        self.command_exec(ssh, "dpkg --configure -a && apt-get update && apt-get -y upgrade", "2\n")
 
 
 if __name__ == "__main__":

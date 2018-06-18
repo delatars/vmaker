@@ -61,6 +61,10 @@ type = vm
 actions = vagrant_export
 ;   Key specifies to which group this object belongs.
 group = linux
+; Variable keys
+;  If you need to create snapshot executing doing all actions you can specify a special key.
+;  Snapshot will be created before executing actions, and deleted after all actions are successed.
+;snapshot = true
 ; User keys.
 ;   You can specify your keys and use it in your plugin's classobj attributes. ex: self.vm_name
 vm_name = centos7-amd64
