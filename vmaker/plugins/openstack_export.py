@@ -10,6 +10,7 @@ from vmaker.utils.auxilary import exception_interceptor
 
 
 class Keyword(object):
+    REQUIRED_CONFIG_ATTRS = []
 
     @exception_interceptor
     def main(self):

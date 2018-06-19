@@ -6,22 +6,47 @@ from vmaker.utils.auxilary import exception_interceptor
 
 
 class Keyword:
-    ssh_user = "root"
-    ssh_password = "root"
+    """
+    This plugin allows to automatically update your virtual machines.
+    """
+    REQUIRED_CONFIG_ATTRS = ['vm_name', 'forwarding_ports', 'credentials']
+
     ssh_server = "localhost"
-    ssh_port = 2030
+    ssh_port = None
+    ssh_user = None
+    ssh_password = None
+    ssh_rule_name = "vm_ssh"
 
     @exception_interceptor
     def main(self):
         # - Config attributes
         self.vm_name = self.vm_name
-        #----------------------------------
+        self.forwarding_ports = self.forwarding_ports
+        self.credentials = self.credentials
+        # ----------------------------------
         self.uname = None
+        self.get_connection_settings()
         ssh = self.connect_to_vm()
         self.detected_os = self.get_update_cmd(ssh)
         update_method = getattr(self, "update_%s" % self.detected_os)
         update_method(ssh)
         self.close_ssh_connection(ssh)
+
+    def get_connection_settings(self):
+        self.forwarding_ports = [ports.strip() for ports in self.forwarding_ports.split(",")]
+        for item in self.forwarding_ports:
+            name, guest, host = item.split(":")
+            if name == self.ssh_rule_name:
+                self.ssh_port = host
+        if self.ssh_port is None:
+            raise Exception("Rulename '%s' not found in forwarding_ports attribute. Check your user configuration file."
+                            % self.ssh_rule_name)
+        try:
+            user, password = self.credentials.split(":")
+        except ValueError:
+            raise Exception("credentials must be in user:pass format!")
+        self.ssh_user = user.strip()
+        self.ssh_password = password.strip()
 
     def get_update_cmd(self, ssh):
         known_oses = [
@@ -34,8 +59,8 @@ class Keyword:
             "opensuse",
             "freebsd"
         ]
-        STREAM.debug("Known_oses: %s" % known_oses)
         STREAM.info("==> Detecting platform")
+        STREAM.debug("Known_oses: %s" % known_oses)
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("python -m platform")
         if len(ssh_stderr.read()) > 0:
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("python2 -m platform")
@@ -115,7 +140,8 @@ class Keyword:
         self.close_ssh_connection(ssh)
 
     def update_opensuse(self, ssh):
-        self.command_exec(ssh, "zypper refresh && zypper update -y", "2\n")
+        self.command_exec(ssh, "zypper refresh", "a\n")
+        self.command_exec(ssh, "zypper update -y", "2\n")
 
     def update_redhat(self, ssh):
         """Rhel"""
@@ -123,7 +149,8 @@ class Keyword:
 
     def update_suse(self, ssh):
         """Sles"""
-        self.command_exec(ssh, "zypper refresh && zypper update -y", "2\n")
+        self.command_exec(ssh, "zypper refresh", "a\n")
+        self.command_exec(ssh, "zypper update -y", "2\n")
 
     def update_ubuntu(self, ssh):
         self.command_exec(ssh, "dpkg --configure -a && apt-get update && apt-get -y upgrade", "2\n")

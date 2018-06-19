@@ -25,13 +25,36 @@ class Engine(object):
     _CONFIG_FILE = vars.CONFIG_FILE
 
     def __init__(self):
+        # Check if one instance of the program is already running.
         self.check_running_state()
+        # Parse command-line arguments.
         self.args()
         config = ConfigController(self._CONFIG_FILE, self._GENERAL_CONFIG)
+        # Load general configuration file.
         self.general_config = config.load_general_config()
+        # Load user configuration file and sequence to move on.
         self.config, self.config_sequence = config.load_config()
+        # Check and load plugins.
         plugins = PluginController(self.general_config)
         self.loaded_plugins = plugins.load_plugins()
+        self.check_attributes_dependencies()
+
+    def check_attributes_dependencies(self):
+        STREAM.info("==> Checking for plugins required attributes.")
+        for vm in self.config_sequence:
+            req_args = []
+            for action in self.config[vm].actions:
+                for attr in self.loaded_plugins[action].REQUIRED_CONFIG_ATTRS:
+                    req_args.append(attr)
+            vm_attrs = [name for name in dir(self.config[vm]) if not name.startswith('__')]
+            req_args = set(req_args)
+            vm_attrs = set(vm_attrs)
+            result = req_args - vm_attrs
+            if len(result) > 0:
+                STREAM.error(" -> Section <%s> missed required attributes %s." % (vm, list(result)))
+                STREAM.error(" -> This causes problems in the operation of some plugins. Check your user configuration file.")
+                sys.exit()
+        STREAM.success(" -> All attributes are present.")
 
     def check_running_state(self):
         if os.path.exists(self._PID_FILE):
@@ -46,7 +69,6 @@ class Engine(object):
             self.create_pid()
 
     def create_pid(self):
-        STREAM.debug("==> Creating pid file: %s" % self._PID_FILE)
         with open(self._PID_FILE, "w") as pf:
             pf.write(str(os.getpid()))
 

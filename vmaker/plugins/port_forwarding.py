@@ -7,10 +7,11 @@ from vmaker.utils.auxilary import exception_interceptor
 class Keyword:
     """
     This plugin allows to forwarding ports beetwen guest and host machines.
-    Arguments of actions.ini:
+    Arguments of user configuration file:
     vm_name = name of the virtual machine in VboxManage (example: vm_name = ubuntu1610-amd64_1523264320143_80330)
     forwarding_ports = name:guest:host, ... (example: forwarding_ports = vm_ssh:22:2020, icap:1344:1234)
     """
+    REQUIRED_CONFIG_ATTRS = ['vm_name', 'forwarding_ports']
 
     @exception_interceptor
     def main(self):

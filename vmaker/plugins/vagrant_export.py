@@ -12,10 +12,11 @@ from vmaker.utils.auxilary import exception_interceptor
 class Keyword:
     """
     This plugin allows to export your virtual machine, to vagrant catalog.
-    Arguments of actions.ini:
+    Arguments of user configuration file:
     vm_name = name of the virtual machine in VboxManage (example: vm_name = ubuntu1610-amd64_1523264320143_80330)
     vagrant_catalog = path to vagrant catalog (example: vagrant_catalog = /var/www/vagrant)
     """
+    REQUIRED_CONFIG_ATTRS = ['vm_name', 'vagrant_catalog']
 
     @exception_interceptor
     def main(self):

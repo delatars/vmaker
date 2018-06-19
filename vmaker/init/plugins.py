@@ -43,6 +43,9 @@ class PluginController:
             STREAM.debug(" -> Check for entrypoint <main>:")
             entry = getattr(cls, "main")
             STREAM.debug("    %s" % entry)
+            STREAM.debug(" -> Check for REQUIRED_CONFIG_ATTRS:")
+            entry = getattr(cls, "REQUIRED_CONFIG_ATTRS")
+            STREAM.debug("    %s" % entry)
             STREAM.success(" -> Checking plugin <%s>.........OK" % plugin_name)
         except ImportError as err:
             STREAM.warning(" -> Checking plugin <%s>.........FAILED" % plugin_name)
@@ -54,7 +57,6 @@ class PluginController:
             sys.exit()
         finally:
             sleep(0.3)
-
 
 if __name__ == "__main__":
     pass

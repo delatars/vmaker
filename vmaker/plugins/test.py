@@ -6,6 +6,7 @@ from time import sleep
 
 
 class Keyword(object):
+    REQUIRED_CONFIG_ATTRS = []
 
     @exception_interceptor
     def main(self):
