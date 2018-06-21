@@ -117,17 +117,21 @@ class Keyword:
                 yield f.readline().strip()
 
         for l in line_buffered(ssh_stdout):
-            print l
-        print "Errors: %s" % ssh_stderr.read()
+            STREAM.notice(l)
+            # print l
+        if len(ssh_stderr.read()) > 0:
+            STREAM.error("Command <%s> errors: %s" % (command, ssh_stderr.read()))
 
     def update_centos(self, ssh):
         self.command_exec(ssh, "yum update -y", "2\n")
+        # remove old kernels package-cleanup --oldkernels
 
     def update_debian(self, ssh):
         self.command_exec(ssh, "apt update && apt upgrade -y", "2\n")
 
     def update_fedora(self, ssh):
         self.command_exec(ssh, "dnf update -y", "2\n")
+        # remove old kernels package-cleanup --oldkernels
 
     def update_freebsd(self, ssh):
         self.command_exec(ssh, "freebsd-update fetch --not-running-from-cron")

@@ -29,7 +29,7 @@ class Core(Engine):
     def __init__(self):
         # Invoke Engine
         super(Core, self).__init__()
-        STREAM.notice("==> Begin.")
+        STREAM.notice("==> BEGIN.")
         # Current working vm object
         self.current_vm_obj = None
         # Current working config section name
@@ -76,6 +76,7 @@ class Core(Engine):
             if self.exists_snapshot:
                 self.delete_snapshot(self.current_vm_obj.vm_name)
         STREAM.notice("==> There are no more virtual machines, exiting")
+        STREAM.notice("==> END.")
         self.destroy_session()
 
     # recursion function which unpack aliases
