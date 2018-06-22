@@ -45,10 +45,11 @@ class Keyword:
                 break            
             if tries > 5:
                 STREAM.info(" -> Forcing shutdown VM")
-                Popen("VBoxManage controlvm %s poweroff soft" % self.vm_name, shell=True,stdout=sys.stdout, stderr=sys.stdout).communicate()
+                Popen("VBoxManage controlvm %s poweroff soft" % self.vm_name, shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
                 break
             tries += 1
             sleep(5)
+
 
 if __name__ == "__main__":
     pass

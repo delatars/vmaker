@@ -10,7 +10,7 @@ from vmaker.utils.auxilary import exception_interceptor
 
 
 class Keyword(object):
-    REQUIRED_CONFIG_ATTRS = []
+    REQUIRED_CONFIG_ATTRS = ["openstack_cluster"]
 
     @exception_interceptor
     def main(self):
