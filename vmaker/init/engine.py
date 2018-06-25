@@ -44,7 +44,13 @@ class Engine(object):
         for vm in self.config_sequence:
             req_args = []
             for action in self.config[vm].actions:
-                for attr in self.loaded_plugins[action].REQUIRED_CONFIG_ATTRS:
+                try:
+                    req_attr = self.loaded_plugins[action].REQUIRED_CONFIG_ATTRS
+                except KeyError as key:
+                    STREAM.critical("Plugin %s not enabled." % key)
+                    STREAM.error("You can't use this plugin until you turn it on in .vmaker.ini")
+                    sys.exit()
+                for attr in req_attr:
                     req_args.append(attr)
             vm_attrs = [name for name in dir(self.config[vm]) if not name.startswith('__')]
             req_args = set(req_args)
