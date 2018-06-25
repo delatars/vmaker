@@ -47,8 +47,8 @@ class Engine(object):
                 try:
                     req_attr = self.loaded_plugins[action].REQUIRED_CONFIG_ATTRS
                 except KeyError as key:
-                    STREAM.critical("Plugin %s not enabled." % key)
-                    STREAM.error("You can't use this plugin until you turn it on in .vmaker.ini")
+                    STREAM.error("Plugin %s not enabled." % key)
+                    STREAM.warning("You can't use this plugin until you turn it on in .vmaker.ini")
                     sys.exit()
                 for attr in req_attr:
                     req_args.append(attr)
