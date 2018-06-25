@@ -58,14 +58,17 @@ class Keyword:
 
     def get_update_cmd(self, ssh):
         known_oses = [
-            "ubuntu",
+            "arch",
+            "altlinux",
             "centos",
-            "fedora",
             "debian",
+            "fedora",
+            "freebsd",
+            "linuxmint",
+            "opensuse",
             "redhat",
             "suse",
-            "opensuse",
-            "freebsd"
+            "ubuntu"
         ]
         STREAM.info("==> Detecting platform")
         STREAM.debug("Known_oses: %s" % known_oses)
@@ -88,21 +91,25 @@ class Keyword:
     def connect_to_vm(self):
 
         def try_connect(ssh):
-            STREAM.info("==> Connecting to VM...")
             sleep(10)
             try:
                 ssh.connect(self.ssh_server, port=int(self.ssh_port), username=self.ssh_user, password=self.ssh_password)
                 STREAM.success(" -> Connection established")
-            except paramiko.ssh_exception.SSHException as err:
-                if self.connect_tries > 10:
-                    STREAM.error(" -> Connection retries limit exceed!")
-                    raise paramiko.ssh_exception.SSHException("Connection retries limit exceed!")
-                self.connect_tries += 1
+            except Exception as err:
                 STREAM.warning(" -> Fail")
                 STREAM.debug(" -> %s" % err)
-                STREAM.info(" -> Retry %s: Connecting to VM..." % self.connect_tries)
+                if "ecdsakey" in str(err):
+                    STREAM.warning("ECDSAKey error, try to fix.")
+                    Popen('ssh-keygen -f %s -R "[%s]:%s"' %
+                          (os.path.join(os.path.expanduser("~"), ".ssh/known_hosts"), self.ssh_server, self.ssh_port),
+                          shell=True, stdout=PIPE, stderr=PIPE).communicate()
+                if self.connect_tries > 9:
+                    raise paramiko.ssh_exception.SSHException("Connection retries limit exceed!")
+                self.connect_tries += 1
+                STREAM.info(" -> Connection retry %s:" % self.connect_tries)
                 try_connect(ssh)
 
+        STREAM.info("==> Connecting to VM...")
         ssh = paramiko.SSHClient()
         ssh.load_system_host_keys()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -127,9 +134,27 @@ class Keyword:
         for l in line_buffered(ssh_stdout):
             STREAM.notice(l)
         err = ssh_stderr.read()
-        print len(err)
         if len(err) > 0:
-            STREAM.error("Command <%s> errors: <%s>" % (command, ssh_stderr.read()))
+            try:
+                STREAM.error("Command <%s> errors: <%s>" % (command, unicode(err)))
+            except:
+                STREAM.error("Command <%s> errors: <%s> " %
+                             (command, "Errors do not seem to be due to an incorrect locale in VM(ru_RU)"))
+
+    def vbox_guestadditions_update(self, ssh):
+        def line_buffered(f, f2):
+            while not f.channel.exit_status_ready():
+                yield f.readline().strip(), f2.readline().strip()
+
+        if not self.mount_vbox_guestadditions(ssh):
+            return
+        STREAM.info(" -> Execute update GuestAdditions.")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("/mnt/dvd/VBoxLinuxAdditions.run")
+        ssh_stdin.write("y\n")
+        ssh_stdin.flush()
+        for l, l2 in line_buffered(ssh_stdout, ssh_stderr):
+            STREAM.notice(l)
+            STREAM.notice(l2)
 
     def mount_vbox_guestadditions(self, ssh):
         STREAM.info("==> Updating VboxGuestAdditions.")
@@ -139,24 +164,26 @@ class Keyword:
         last_realese = self.get_vboxga_latest_realese()
         iso = self.get_vbox_guestadditions_iso(last_realese)
         if self.check_vbox_guestadditions_version(ssh) == last_realese:
-            STREAM.info("VboxGuestAdditions have a latest version.")
-            return
-
+            STREAM.success("VboxGuestAdditions have a latest version (%s)." % last_realese)
+            return False
         Popen('vboxmanage storageattach %s --storagectl "IDE"'
                         ' --port 1 --device 0 --type dvddrive --medium %s' % (self.vm_name, iso),
                         shell=True, stdout=PIPE, stderr=PIPE).communicate()
         sleep(1)
         ssh.exec_command("mkdir /mnt/dvd")
         ssh.exec_command("mount -t iso9660 -o ro /dev/cdrom /mnt/dvd")
+        sleep(1)
+        return True
 
     def check_vbox_guestadditions_version(self, ssh):
         STREAM.info(" -> Checking vbox")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("modinfo vboxguest |grep -iw version| awk '{print $2}'")
         version = ssh_stdout.read()
-        STREAM.debug("Guest VboxGAs version: %s" % version)
         if len(version) > 0:
-            return version
+            STREAM.debug("Guest VboxGAs version: %s" % version.strip())
+            return version.strip()
         else:
+            STREAM.debug("Guest VboxGAs version: undefined")
             return None
 
     def get_vboxga_latest_realese(self):
@@ -173,6 +200,7 @@ class Keyword:
         download_path = os.path.join(vars.WORK_DIR, filename)
         if os.path.exists(download_path):
             return download_path
+        Popen('rm -rf *.iso', shell=True, stdout=PIPE, stderr=PIPE).communicate()
         download_link = self.vbox_url+version+"/"+filename
         STREAM.debug("download link: %s" % download_link)
         iso = requests.get(download_link).content
@@ -184,65 +212,75 @@ class Keyword:
 
 # Update methods.
 # -----------------------------------------------------------------------------------
+    def update_arch(self, ssh):
+        self.command_exec(ssh, "dpkg --configure -a")
+        self.command_exec(ssh, "apt-get update && apt-get upgrade -y", "2\n")
+        self.command_exec(ssh, "apt-get dist-upgrade -y", "2\n")
+        self.vbox_guestadditions_update(ssh)
+
+    def update_altlinux(self, ssh):
+        self.command_exec(ssh, "apt-get update && apt-get upgrade -y", "2\n")
+        self.command_exec(ssh, "apt-get dist-upgrade -y", "2\n")
+        self.vbox_guestadditions_update(ssh)
+
     def update_centos(self, ssh):
         self.command_exec(ssh, "yum clean all")
         self.command_exec(ssh, "yum update -y", "2\n")
-        self.mount_vbox_guestadditions(ssh)
-        self.command_exec(ssh, "/mnt/dvd/VBoxLinuxAdditions.run")
+        self.vbox_guestadditions_update(ssh)
         # remove old kernels $ package-cleanup --oldkernels
 
     def update_debian(self, ssh):
         self.command_exec(ssh, "dpkg --configure -a")
-        self.command_exec(ssh, "apt-get update && apt-get -y upgrade", "2\n")
-        self.mount_vbox_guestadditions(ssh)
-        self.command_exec(ssh, "/mnt/dvd/VBoxLinuxAdditions.run")
+        self.command_exec(ssh, "apt-get update && apt-get upgrade -y", "2\n")
+        self.command_exec(ssh, "apt-get dist-upgrade -y", "2\n")
+        self.vbox_guestadditions_update(ssh)
 
     def update_fedora(self, ssh):
         self.command_exec(ssh, "dnf update -y", "2\n")
-        self.mount_vbox_guestadditions(ssh)
-        self.command_exec(ssh, "/mnt/dvd/VBoxLinuxAdditions.run")
+        self.vbox_guestadditions_update(ssh)
         # remove old kernels $ package-cleanup --oldkernels
 
     def update_freebsd(self, ssh):
         self.command_exec(ssh, "freebsd-update fetch --not-running-from-cron")
         self.command_exec(ssh, "freebsd-update install")
         self.command_exec(ssh, "pkg update && pkg upgrade -y")
-        self.mount_vbox_guestadditions(ssh)
-        self.command_exec(ssh, "/mnt/dvd/VBoxLinuxAdditions.run")
+        self.vbox_guestadditions_update(ssh)
         self.command_exec(ssh, "reboot")
         sleep(30)
         ssh = self.connect_to_vm()
         self.command_exec(ssh, "pkg update && pkg upgrade -y")
         self.close_ssh_connection(ssh)
 
+    def update_linuxmint(self, ssh):
+        self.command_exec(ssh, "dpkg --configure -a")
+        self.command_exec(ssh, "apt-get update && apt-get -y upgrade", "2\n")
+        self.command_exec(ssh, "apt-get dist-upgrade -y", "2\n")
+        self.vbox_guestadditions_update(ssh)
+
     def update_opensuse(self, ssh):
         self.command_exec(ssh, "zypper clean", "a\n")
         self.command_exec(ssh, "zypper refresh", "a\n")
         self.command_exec(ssh, "zypper update -y", "2\n")
-        self.mount_vbox_guestadditions(ssh)
-        self.command_exec(ssh, "/mnt/dvd/VBoxLinuxAdditions.run")
+        self.vbox_guestadditions_update(ssh)
 
     def update_redhat(self, ssh):
         """Rhel"""
         self.command_exec(ssh, "yum clean all")
         self.command_exec(ssh, "yum update -y", "2\n")
-        self.mount_vbox_guestadditions(ssh)
-        self.command_exec(ssh, "/mnt/dvd/VBoxLinuxAdditions.run")
+        self.vbox_guestadditions_update(ssh)
 
     def update_suse(self, ssh):
         """Sles"""
         self.command_exec(ssh, "zypper clean", "a\n")
         self.command_exec(ssh, "zypper refresh", "a\n")
         self.command_exec(ssh, "zypper update -y", "2\n")
-        self.mount_vbox_guestadditions(ssh)
-        self.command_exec(ssh, "ls -l /mnt/dvd/")
-        self.command_exec(ssh, "/mnt/dvd/VBoxLinuxAdditions.run")
+        self.vbox_guestadditions_update(ssh)
 
     def update_ubuntu(self, ssh):
         self.command_exec(ssh, "dpkg --configure -a")
-        self.command_exec(ssh, "apt-get update && apt-get -y upgrade", "2\n")
-        self.mount_vbox_guestadditions(ssh)
-        self.command_exec(ssh, "/mnt/dvd/VBoxLinuxAdditions.run")
+        self.command_exec(ssh, "apt-get update && apt-get upgrade -y", "2\n")
+        self.command_exec(ssh, "apt-get dist-upgrade -y", "2\n")
+        self.vbox_guestadditions_update(ssh)
 
 
 if __name__ == "__main__":
