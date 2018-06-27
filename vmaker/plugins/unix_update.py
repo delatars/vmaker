@@ -123,7 +123,8 @@ class Keyword:
 
     def command_exec(self, ssh, command, stdin=""):
         STREAM.info(" -> Executing command: %s" % command)
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
+        # Temporarily change locale of vm to en_US to prevent UnicodeDecode errors
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("export LANG=en_US.UTF-8 && %s" % command)
         ssh_stdin.write(stdin)
         ssh_stdin.flush()
 
@@ -135,11 +136,8 @@ class Keyword:
             STREAM.notice(l)
         err = ssh_stderr.read()
         if len(err) > 0:
-            try:
-                STREAM.error("Command <%s> errors: <%s>" % (command, unicode(err)))
-            except:
-                STREAM.error("Command <%s> errors: <%s> " %
-                             (command, "Errors do not seem to be due to an incorrect locale in VM(ru_RU)"))
+            STREAM.error(err)
+
 
     def vbox_guestadditions_update(self, ssh):
         def line_buffered(f, f2):
@@ -176,7 +174,7 @@ class Keyword:
         return True
 
     def check_vbox_guestadditions_version(self, ssh):
-        STREAM.info(" -> Checking vbox")
+        STREAM.info(" -> Checking vboxGAs version")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("modinfo vboxguest |grep -iw version| awk '{print $2}'")
         version = ssh_stdout.read()
         if len(version) > 0:
