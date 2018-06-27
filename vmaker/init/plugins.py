@@ -11,11 +11,11 @@ class PluginController:
         - Check plugins
         - Load plugins"""
     
-    def __init__(self, gen_config):
-        self.general_config = gen_config
+    def __init__(self, plugins):
+        self.enabled_plugins = plugins
 
     def load_plugins(self):
-        lst_of_plugins = [plug.strip() for plug in self.general_config["enabled_plugins"].split(",")]
+        lst_of_plugins = self.enabled_plugins
         STREAM.info("==> Checking plugins...")
         for plugin in lst_of_plugins:
             self.check_plugin(plugin)

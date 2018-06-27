@@ -2,8 +2,8 @@
 
 import os
 import sys
-from configparser import ConfigParser, NoSectionError
-from vmaker.init.settings import vars
+from configparser import ConfigParser
+from vmaker.init.settings import LoadSettings
 from vmaker.utils.logger import STREAM
 
 
@@ -13,9 +13,8 @@ class ConfigController:
         - Creates vm/group/alias objects based on user configuration file
         - Generates default user configuration file"""
 
-    def __init__(self, config_file, general_config):
+    def __init__(self, config_file):
         self.CONFIG_FILE = config_file
-        self.GENERAL_CONFIG_FILE = general_config
         if not os.path.exists(self.CONFIG_FILE):
             STREAM.critical("Config Error: Configuration file not found!\nSolutions:\n\t - Specify your configuration file by adding '-c <path>' key\n\t - Generate default configuration file by adding '-g' key\nExitting...")
             sys.exit()
@@ -141,24 +140,11 @@ class ConfigController:
         STREAM.success(" -> User configuration file loaded")
         return vms, vms_work_sequence
 
-    def load_general_config(self):
-        STREAM.info("==> Loading General configuration file...")
-        config = ConfigParser()
-        config.read(self.GENERAL_CONFIG_FILE)
-        try:
-            general_config = {key: value for key, value in config.items("General")}
-        except NoSectionError:
-            STREAM.critical("Config Error: Section <General> does not exist!\nExitting...")
-            sys.exit()
-        STREAM.debug("Loaded values: %s" % general_config)
-        STREAM.success(" -> General configuration file loaded")
-        return general_config
-
     @staticmethod
     def generate_from_path(path):
         """Generating config based on path to Virtual box"""
 
-        cfg = os.path.join(vars.WORK_DIR, "generated.ini")
+        cfg = os.path.join(LoadSettings.WORK_DIR, "generated.ini")
         config = ConfigParser()
         config.read(cfg)
         for vm in os.listdir(path):

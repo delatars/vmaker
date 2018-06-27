@@ -2,8 +2,7 @@
 import coloredlogs
 import logging
 import verboselogs
-from configparser import ConfigParser
-from vmaker.init.settings import vars
+from vmaker.init.settings import LoadSettings
 
 
 class _Component_filter(logging.Filter):
@@ -16,19 +15,10 @@ class _Component_filter(logging.Filter):
 
 class LoggerOptions:
     """Class to set up logger options"""
-    _LOGFILE = "./stdout.log"
-    DEBUG = False
+    _LOGFILE = LoadSettings.LOG
+    DEBUG = LoadSettings.DEBUG
     _COMPONENT = "Core"
     _ACTION = ""
-
-    def __init__(self):
-        vars()
-        config = ConfigParser()
-        config.read(vars.GENERAL_CONFIG)
-        debug = config["General"]["debug"]
-        if debug.lower() == "true":
-            self.DEBUG = True
-        self._LOGFILE = config["General"]["log"]
 
     @staticmethod
     def set_component(arg):
@@ -41,22 +31,23 @@ class LoggerOptions:
         else:
             LoggerOptions._ACTION = "[%s]" % arg
 
-    def logger(self):
+    @staticmethod
+    def logger():
         """Function setting options and return logger object"""
-        logfile = open(self._LOGFILE, "a")
+        logfile = open(LoggerOptions._LOGFILE, "a")
         handler = logging.StreamHandler(stream=logfile)
         handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(message)s', "%Y-%m-%d %H:%M:%S"))
         log = verboselogs.VerboseLogger(__name__)
         log.addFilter(_Component_filter())
         log.addHandler(handler)
-        if self.DEBUG:
+        if LoggerOptions.DEBUG:
             coloredlogs.install(fmt='%(asctime)s [%(component)s] %(action)s [%(levelname)s] %(message)s', logger=log, level="debug")
         else:
             coloredlogs.install(fmt='%(asctime)s [%(component)s] %(action)s [%(levelname)s] %(message)s', logger=log)
         return log
 
 
-STREAM = LoggerOptions().logger()
+STREAM = LoggerOptions.logger()
 
 # Some examples.
 # STREAM.debug("this is a debugging message")

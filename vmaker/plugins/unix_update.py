@@ -6,7 +6,7 @@ import os
 from bs4 import BeautifulSoup
 from time import sleep
 from subprocess import PIPE, Popen
-from vmaker.init.settings import vars
+from vmaker.init.settings import LoadSettings
 from vmaker.utils.logger import STREAM
 from vmaker.utils.auxilary import exception_interceptor
 
@@ -197,7 +197,7 @@ class Keyword:
 
     def get_vbox_guestadditions_iso(self, version):
         filename = "VBoxGuestAdditions_%s.iso" % version
-        download_path = os.path.join(vars.WORK_DIR, filename)
+        download_path = os.path.join(LoadSettings.WORK_DIR, filename)
         if os.path.exists(download_path):
             return download_path
         Popen('rm -rf *.iso', shell=True, stdout=PIPE, stderr=PIPE).communicate()

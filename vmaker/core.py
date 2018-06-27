@@ -4,6 +4,7 @@ from subprocess import Popen
 from datetime import datetime
 from time import sleep
 from multiprocessing import Process
+from vmaker.init.settings import LoadSettings
 from vmaker.init.engine import Engine
 from vmaker.utils.logger import LoggerOptions, STREAM
 
@@ -39,13 +40,15 @@ class Core(Engine):
         # Flag if start from restored session
         self.is_session = False
         vm, self.current_vm_obj_snapshot = self.check_session()
-        if vm is not None:
-             self.is_session = True
-        # If job is interrupted, restore to previous state and restore from snapshot if needed
-        if self.current_vm_obj_snapshot is not None and self.current_vm_obj_snapshot != "None":
-            vm_name = self.current_vm_obj_snapshot.split("__")[0]
-            self.current_vm_obj = self.config[vm]
-            self.restore_from_snapshot(vm_name)
+        if vm is None:
+            self.create_session()
+        else:
+            # If job is interrupted, restore to previous state and restore from snapshot if needed
+            self.is_session = True
+            if self.current_vm_obj_snapshot is not None:
+                vm_name = self.current_vm_obj_snapshot.split("__")[0]
+                self.current_vm_obj = self.config[vm]
+                self.restore_from_snapshot(vm_name)
         self.main()
     
     def main(self):
@@ -104,7 +107,7 @@ class Core(Engine):
                 LoggerOptions.set_component(self.current_vm)
                 LoggerOptions.set_action(action)
             except AttributeError:
-                ttk = self.general_config["kill_timeout"]
+                ttk = LoadSettings.KILL_TIMEOUT
                 LoggerOptions.set_component("Core")
                 LoggerOptions.set_action(None)
                 STREAM.debug(" Parameter 'kill_timeout' not assigned, for action, using global: %s = %s min" % (action, ttk))
@@ -195,7 +198,8 @@ class Core(Engine):
 
 def entry():
     """Entrypoint"""
-    upd = Core()
+    LoadSettings()
+    Core()
 
 
 if __name__ == "__main__":
