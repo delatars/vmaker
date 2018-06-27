@@ -18,7 +18,7 @@ class PluginController:
         lst_of_plugins = self.enabled_plugins
         STREAM.info("==> Checking plugins...")
         for plugin in lst_of_plugins:
-            self.check_plugin(plugin)
+            PluginController.check_plugin(plugin)
         loaded_plugins = {}
         STREAM.info("==> Loading plugins...")
         for plugin in lst_of_plugins:
@@ -32,7 +32,8 @@ class PluginController:
         sleep(0.3)
         return cls        
 
-    def check_plugin(self, plugin_name):        
+    @staticmethod
+    def check_plugin(plugin_name):
         try:
             STREAM.debug(" -> Check for plugin:")
             plugin = importlib.import_module("vmaker.plugins.%s" % plugin_name)

@@ -126,20 +126,25 @@ class Engine(object):
         return config_hash.hexdigest()
 
     def args(self):
-        parser = optparse.OptionParser('vmaker [options]\n\nOptions:\n  -c <path>  - Specify configuration file\n  -g         - Generate default configuration file\n\n  --gfp <path>  - Generate configuration file, based on specified path')
+        parser = optparse.OptionParser('vmaker [options]\n\nOptions:\n  -c <path>  - Specify configuration file.\n'
+                                       '  -g         - Generate default configuration file.\n\n'
+                                       '  --gfp <path>                  - Generate configuration file, based on specified path.\n'
+                                       '  --check-plugin <plugin name>  - Check target plugin.')
         parser.add_option("-c", dest="config_path", type="string", help="Specify config file location")
         parser.add_option("-g", dest="generate_default", action="store_true", help="Generate default config")
         parser.add_option("--gfp", dest="generate_from_path", type="string", help="Generate config from path")
+        parser.add_option("--check-plugin", dest="check_plugin", type="string", help="Check target plugin")
         options, args = parser.parse_args()
-        # defaults
-
         if options.config_path:
             self._CONFIG_FILE = options.config_path
         if options.generate_default:
             ConfigController.generate_default_config(self._CONFIG_FILE)
             exit(0)
         if options.generate_from_path:
-            ConfigController.generate_from_path(options.super_generate)
+            ConfigController.generate_from_path(options.generate_from_path)
+            exit(0)
+        if options.check_plugin:
+            PluginController.check_plugin(options.check_plugin)
             exit(0)
 
 

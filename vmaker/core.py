@@ -22,14 +22,12 @@ class Core(Engine):
         plugins ->
         """
 
-    # self.general_config - dict with general config section items {key: value}
-    # self.config - dict with vm objects {vm_name: object(vm)}
-    # self.config_sequence - sequence to work with vms list[vm_name, ...]
-    # self.loaded_plugins - dict with loaded plugins {plugin_name: object(plugin)}
-
     def __init__(self):
         # Invoke Engine
         super(Core, self).__init__()
+        # self.config - dict with vm objects {vm_name: object(vm)}
+        # self.config_sequence - sequence to work with vms list[vm_name, ...]
+        # self.loaded_plugins - dict with loaded plugins {plugin_name: object(plugin)}
         STREAM.notice("==> BEGIN.")
         # Current working vm object
         self.current_vm_obj = None
