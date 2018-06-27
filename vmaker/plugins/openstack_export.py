@@ -2,7 +2,7 @@
 from keystoneauth1 import loading, session
 from glanceclient import Client
 from ConfigParser import ConfigParser
-from vmaker.init.settings import vars
+from vmaker.init.settings import LoadSettings
 import os
 import sys
 from vmaker.utils.logger import STREAM
@@ -10,12 +10,16 @@ from vmaker.utils.auxilary import exception_interceptor
 
 
 class Keyword(object):
-    REQUIRED_CONFIG_ATTRS = ["openstack_cluster"]
+    REQUIRED_CONFIG_ATTRS = ["vm_name", "openstack_cluster"]
+    VIRTUAL_BOX_DIR = os.path.join(os.path.expanduser("~"), "VirtualBox VMs")
 
     @exception_interceptor
     def main(self):
-        self.openstack_cluster = "./cluster.ini::openstack_cluster1"
-
+        self.openstack_cluster = self.openstack_cluster
+        self.openstack_image_properties = self.openstack_image_properties
+        self.openstack_image_custom_properties = self.openstack_image_custom_properties
+        self.vm_name = self.vm_name
+        # List of available clusters
         self.clusters = {}
         target_cluster = self.openstack_credentials_harvester()
         glance = self.cluster_connect(target_cluster)
@@ -29,7 +33,7 @@ class Keyword(object):
             configfile, section = self.openstack_cluster.split("::")
             STREAM.debug(" -> Using user configuration file %s" % configfile)
         except ValueError:
-            configfile = vars.GENERAL_CONFIG
+            configfile = LoadSettings.GENERAL_CONFIG
             STREAM.debug(" -> Using general configuration file %s" % configfile)
             section = self.openstack_cluster
         config = ConfigParser()
@@ -44,7 +48,8 @@ class Keyword(object):
             sys.exit(0)
         STREAM.info(" -> Found settings for %s Openstack clusters" % len(self.clusters))
         STREAM.info(" -> Target Openstack cluster set to: %s" % section)
-        return section
+        target_cluster_name = section
+        return target_cluster_name
 
     def cluster_connect(self, target_cluster):
         cluster = self.clusters[target_cluster]
@@ -61,14 +66,24 @@ class Keyword(object):
         glance = Client('2', session=sess)
         return glance
 
+    def get_image_properties(self):
+        base_properties = [prop.strip() for prop in self.openstack_image_properties.split(",")]
+        base_properties = {key.strip(): value.strip() for key, value in base_properties.split(":")}
+        custom_properties = [prop.strip() for prop in self.openstack_image_custom_properties.split(",")]
+        custom_properties = {key.strip(): value.strip() for key, value in custom_properties.split(":")}
+        args = dict(base_properties, **custom_properties)
+        return args
+
     def delete_image(self, connection, id):
         connection.images.delete(id)
 
     def upload_image(self, connection):
+        args = self.get_image_properties()
+        args["name"] = self.vm_name
         STREAM.info("==> Uploading image.")
-        image = connection.images.create(name="TestImage", disk_format="vdi", container_format="bare",
-                                          is_public="True", visibility="public")
-        connection.images.upload(image.id, open('./centos6-amd64.vdi', 'rb'))
+        # disk_format="vdi", container_format="bare", is_public="True", visibility="public"
+        image = connection.images.create(**args)
+        connection.images.upload(image.id, open(os.path.join(self.VIRTUAL_BOX_DIR, self.vm_name), 'rb'))
         STREAM.success(" -> Uploading complete.")
 
     def get_images(self, connection):
