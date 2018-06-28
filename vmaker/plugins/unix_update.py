@@ -14,14 +14,18 @@ from vmaker.utils.auxilary import exception_interceptor
 class Keyword:
     """
     This plugin allows to automatically update your virtual machines.
+    Arguments of user configuration file:
+    vm_name = name of the virtual machine in Virtual Box (example: vm_name = ubuntu1610-amd64)
+    forwarding_ports = attribute of the 'port_forwarding' plugin (name:guest:host, ...)
+    ssh_rule_name = name of the port_forwarding rulename to connect via ssh (example: ssh_rule_name = vm_ssh)
+    credentials = credentials to connect to virtual machine via ssh (example: credentials = root:toor)
     """
-    REQUIRED_CONFIG_ATTRS = ['vm_name', 'forwarding_ports', 'credentials']
+    REQUIRED_CONFIG_ATTRS = ['vm_name', 'forwarding_ports', 'credentials', 'ssh_rule_name']
 
     ssh_server = "localhost"
     ssh_port = None
     ssh_user = None
     ssh_password = None
-    ssh_rule_name = "vm_ssh"
     vbox_url = "https://download.virtualbox.org/virtualbox/"
 
     @exception_interceptor
@@ -29,18 +33,21 @@ class Keyword:
         # - Config attributes
         self.vm_name = self.vm_name
         self.forwarding_ports = self.forwarding_ports
+        self.ssh_rule_name = self.ssh_rule_name
         self.credentials = self.credentials
         # -------------------------------------------
         self.uname = None
         self.get_connection_settings()
         ssh = self.connect_to_vm()
-        self.detected_os = self.get_update_cmd(ssh)
+        self.detected_os = self.get_vm_platform(ssh)
         STREAM.info("==> Updating VM.")
+        # Invoke update method
         update_method = getattr(self, "update_%s" % self.detected_os)
         update_method(ssh)
         self.close_ssh_connection(ssh)
 
     def get_connection_settings(self):
+        """Method get connection settings from configuration file attributes"""
         self.forwarding_ports = [ports.strip() for ports in self.forwarding_ports.split(",")]
         for item in self.forwarding_ports:
             name, guest, host = item.split(":")
@@ -56,7 +63,8 @@ class Keyword:
         self.ssh_user = user.strip()
         self.ssh_password = password.strip()
 
-    def get_update_cmd(self, ssh):
+    def get_vm_platform(self, ssh):
+        """Method detects platform in virtual machine"""
         known_oses = [
             "arch",
             "altlinux",
@@ -89,8 +97,9 @@ class Keyword:
         raise KeyError("Unknown os! (Not in list of 'known_oses')")
 
     def connect_to_vm(self):
-
+        """Method connects to virtual machine via ssh"""
         def try_connect(ssh):
+            """Recursive function to enable multiple connection attempts"""
             sleep(10)
             try:
                 ssh.connect(self.ssh_server, port=int(self.ssh_port), username=self.ssh_user, password=self.ssh_password)
@@ -118,20 +127,22 @@ class Keyword:
         del self.connect_tries
         return ssh
 
-    def close_ssh_connection(self, connection):
-        connection.close()
+    def close_ssh_connection(self, ssh):
+        """Method to close connection"""
+        ssh.close()
 
     def command_exec(self, ssh, command, stdin=""):
-        STREAM.info(" -> Executing command: %s" % command)
-        # Temporarily change locale of vm to en_US to prevent UnicodeDecode errors
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("export LANG=en_US.UTF-8 && %s" % command)
-        ssh_stdin.write(stdin)
-        ssh_stdin.flush()
-
+        """Method to execute remote command via ssh connection"""
         def line_buffered(f):
+            """Iterator object to get output in realtime from stdout buffer"""
             while not f.channel.exit_status_ready():
                 yield f.readline().strip()
 
+        STREAM.info(" -> Executing command: %s" % command)
+        # Temporarily change locale of virtual machine to en_US to prevent UnicodeDecode errors
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("export LANG=en_US.UTF-8 && %s" % command)
+        ssh_stdin.write(stdin)
+        ssh_stdin.flush()
         for l in line_buffered(ssh_stdout):
             STREAM.notice(l)
         err = ssh_stderr.read()
@@ -140,6 +151,7 @@ class Keyword:
 
 
     def vbox_guestadditions_update(self, ssh):
+        """Method to update Virtual Box Guest Additions in virtual machine"""
         def line_buffered(f, f2):
             while not f.channel.exit_status_ready():
                 yield f.readline().strip(), f2.readline().strip()
@@ -155,6 +167,7 @@ class Keyword:
             STREAM.notice(l2)
 
     def mount_vbox_guestadditions(self, ssh):
+        """Method to mount VirtualBoxGuestAdditions.iso to virtual machine"""
         STREAM.info("==> Updating VboxGuestAdditions.")
         Popen('vboxmanage storageattach %s --storagectl "IDE" --port 1 --device 0'
                         ' --type dvddrive --medium %s --forceunmount' % (self.vm_name, "emptydrive"),
@@ -174,6 +187,7 @@ class Keyword:
         return True
 
     def check_vbox_guestadditions_version(self, ssh):
+        """Method to check version of Virtual Box Guest Additions in virtual machine"""
         STREAM.info(" -> Checking vboxGAs version")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("modinfo vboxguest |grep -iw version| awk '{print $2}'")
         version = ssh_stdout.read()
@@ -185,6 +199,7 @@ class Keyword:
             return None
 
     def get_vboxga_latest_realese(self):
+        """Method to get the last release of Virtual Box Guest Additions from Virtual Box server"""
         versions = requests.get(self.vbox_url)
         soup = BeautifulSoup(versions.content, 'html.parser')
         data = soup.find_all('a')
@@ -194,6 +209,7 @@ class Keyword:
         return last_release
 
     def get_vbox_guestadditions_iso(self, version):
+        """Method to download VirtualBoxGuestAdditions.iso from Virtual Box server"""
         filename = "VBoxGuestAdditions_%s.iso" % version
         download_path = os.path.join(LoadSettings.WORK_DIR, filename)
         if os.path.exists(download_path):

@@ -10,6 +10,22 @@ from vmaker.utils.auxilary import exception_interceptor
 
 
 class Keyword(object):
+    """
+    This plugin allows to export your virtual machine, to openstack cluster.
+    Arguments of user configuration file:
+    vm_name = name of the virtual machine in Virtual Box (example: vm_name = ubuntu1610-amd64)
+    openstack_cluster = <path to configuration file which contains cluster connection settings>::<target_section>
+        if path not specified connection settings will be searched in the .vmaker.ini
+        (example:
+            openstack_cluster = /home/user/clusters.ini::openstack_cluster_1
+            openstack_cluster = openstack_cluster_1 (target section will be searched in .vmaker.ini)
+    openstack_image_properties = base openstack image properties
+        (example: openstack_image_properties = disk_format:vdi, container_format:bare, ...)
+    openstack_image_custom_properties = custom openstack image properties (can contain an empty value)
+        (example:
+            openstack_image_custom_properties =
+            openstack_image_custom_properties = hw_video_model:vga, hw_vif_model:e1000, ...)
+    """
     REQUIRED_CONFIG_ATTRS = ["vm_name", "openstack_cluster",
                              "openstack_image_properties", "openstack_image_custom_properties"]
     VIRTUAL_BOX_DIR = os.path.join(os.path.expanduser("~"), "VirtualBox VMs")
@@ -27,6 +43,7 @@ class Keyword(object):
         self.upload_image(glance)
 
     def openstack_credentials_harvester(self):
+        """Method to get cluster's connection settings from the configuration file"""
         STREAM.info("==> Get Openstack cluster connection settings")
         try:
             configfile, section = self.openstack_cluster.split("::")
@@ -37,20 +54,19 @@ class Keyword(object):
             section = self.openstack_cluster
         config = ConfigParser()
         config.read(configfile)
-        for sec in config.sections():
-            if "openstack_cluster" in sec:
-                args = {key: value.strip() for key, value in config.items(sec)}
-                self.clusters[sec] = args
+        args = {key: value.strip() for key, value in config.items(section)}
+        self.clusters[section] = args
         if self.clusters == {}:
             STREAM.error(" -> There are no connection settings for the Openstack clusters found!")
             STREAM.error(" -> Export passed.")
             sys.exit(0)
-        STREAM.info(" -> Found connection settings for %s Openstack cluster's" % len(self.clusters))
+        STREAM.info(" -> Found connection settings for the Openstack cluster")
         STREAM.info(" -> Target Openstack cluster set to: %s" % section)
         target_cluster_name = section
         return target_cluster_name
 
     def cluster_connect(self, target_cluster):
+        """Method to connect to the openstack cluster"""
         cluster = self.clusters[target_cluster]
         os.environ["REQUESTS_CA_BUNDLE"] = cluster["ca_cert"]
         loader = loading.get_plugin_loader('password')
@@ -66,6 +82,7 @@ class Keyword(object):
         return glance
 
     def get_image_properties(self):
+        """Method to get image properties from configuration attributes"""
         base_properties = {key: value for key, value in
                            [prop.split(":") for prop in
                             [prop.strip() for prop in self.openstack_image_properties.split(",")]]}
@@ -79,9 +96,11 @@ class Keyword(object):
         return args
 
     def delete_image(self, connection, id):
+        """Method to delete image from the openstack cluster"""
         connection.images.delete(id)
 
     def find_vm_files(self):
+        """Method to find virtual machine files location"""
         try:
             vbox_path = getattr(self, "openstack_vbox_catalog")
         except AttributeError:
@@ -103,8 +122,8 @@ class Keyword(object):
             STREAM.error("Vm directory (%s) not found in the Vbox catalog directory(%s)" % (self.vm_name, vbox_path))
             return None
 
-
     def upload_image(self, connection):
+        """Method to upload image to the openstack cluster"""
         args = self.get_image_properties()
         args["name"] = self.vm_name
         STREAM.info("==> Uploading image.")
@@ -131,6 +150,7 @@ class Keyword(object):
         STREAM.success(" -> Uploading complete.")
 
     def get_images(self, connection):
+        """Method to get images from the openstack cluster"""
         images = connection.images.list()
         for im in images:
             print im

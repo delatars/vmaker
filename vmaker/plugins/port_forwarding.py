@@ -8,7 +8,7 @@ class Keyword:
     """
     This plugin allows to forwarding ports beetwen guest and host machines.
     Arguments of user configuration file:
-    vm_name = name of the virtual machine in VboxManage (example: vm_name = ubuntu1610-amd64_1523264320143_80330)
+    vm_name = name of the virtual machine in Virtual Box (example: vm_name = ubuntu1610-amd64)
     forwarding_ports = name:guest:host, ... (example: forwarding_ports = vm_ssh:22:2020, icap:1344:1234)
     """
     REQUIRED_CONFIG_ATTRS = ['vm_name', 'forwarding_ports']

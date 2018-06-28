@@ -9,7 +9,7 @@ class Keyword:
     """
     This plugin allows to stop your virtual machine.
     Arguments of user configuration file:
-    vm_name = name of the virtual machine in VboxManage (example: vm_name = ubuntu1610-amd64_1523264320143_80330)
+    vm_name = name of the virtual machine in Virtual Box (example: vm_name = ubuntu1610-amd64)
     """
     REQUIRED_CONFIG_ATTRS = ['vm_name']
 
