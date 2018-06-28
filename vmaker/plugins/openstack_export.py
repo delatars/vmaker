@@ -10,15 +10,15 @@ from vmaker.utils.auxilary import exception_interceptor
 
 
 class Keyword(object):
-    REQUIRED_CONFIG_ATTRS = ["vm_name", "openstack_cluster"]
+    REQUIRED_CONFIG_ATTRS = ["vm_name", "openstack_cluster, openstack_image_properties, openstack_image_custom_properties"]
     VIRTUAL_BOX_DIR = os.path.join(os.path.expanduser("~"), "VirtualBox VMs")
 
     @exception_interceptor
     def main(self):
+        self.vm_name = self.vm_name
         self.openstack_cluster = self.openstack_cluster
         self.openstack_image_properties = self.openstack_image_properties
         self.openstack_image_custom_properties = self.openstack_image_custom_properties
-        self.vm_name = self.vm_name
         # List of available clusters
         self.clusters = {}
         target_cluster = self.openstack_credentials_harvester()
