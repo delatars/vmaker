@@ -109,8 +109,6 @@ class Keyword(object):
         args["name"] = self.vm_name
         STREAM.info("==> Uploading image.")
         STREAM.debug("Image properties: %s" % args)
-        # Create image object with specified properties.
-        image = connection.images.create(**args)
         # Find where vm files are located
         vm_dir = self.find_vm_files()
         STREAM.debug("Vm directory: %s" % vm_dir)
@@ -126,6 +124,8 @@ class Keyword(object):
             STREAM.error("Export in openstack passed.")
             return
         STREAM.debug("Vm virtual hard drive location: %s" % disk)
+        # Create image object with specified properties.
+        image = connection.images.create(**args)
         # Uploading image.
         connection.images.upload(image.id, open(disk, 'rb'))
         STREAM.success(" -> Uploading complete.")
