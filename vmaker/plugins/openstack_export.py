@@ -22,10 +22,8 @@ class Keyword(object):
         # List of available clusters
         self.clusters = {}
         target_cluster = self.openstack_credentials_harvester()
-        # glance = self.cluster_connect(target_cluster)
-        # self.get_images(glance)
-        self.upload_image(None)
-        # self.delete_image("6737641a-f35d-4fe6-acdf-f2e2569c30cc")
+        glance = self.cluster_connect(target_cluster)
+        self.upload_image(glance)
 
     def openstack_credentials_harvester(self):
         STREAM.info("==> Get Openstack cluster connection settings")
@@ -46,7 +44,7 @@ class Keyword(object):
             STREAM.error(" -> There are no connection settings for the Openstack clusters found!")
             STREAM.error(" -> Export passed.")
             sys.exit(0)
-        STREAM.info(" -> Found connection settings for %s Openstack clusters" % len(self.clusters))
+        STREAM.info(" -> Found connection settings for %s Openstack cluster's" % len(self.clusters))
         STREAM.info(" -> Target Openstack cluster set to: %s" % section)
         target_cluster_name = section
         return target_cluster_name
