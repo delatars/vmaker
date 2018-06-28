@@ -10,7 +10,8 @@ from vmaker.utils.auxilary import exception_interceptor
 
 
 class Keyword(object):
-    REQUIRED_CONFIG_ATTRS = ["vm_name", "openstack_cluster, openstack_image_properties, openstack_image_custom_properties"]
+    REQUIRED_CONFIG_ATTRS = ["vm_name", "openstack_cluster",
+                             "openstack_image_properties", "openstack_image_custom_properties"]
     VIRTUAL_BOX_DIR = os.path.join(os.path.expanduser("~"), "VirtualBox VMs")
 
     @exception_interceptor
