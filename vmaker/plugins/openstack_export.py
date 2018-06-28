@@ -142,17 +142,33 @@ class Keyword(object):
             STREAM.error("Export in openstack passed.")
             return
         STREAM.debug("Vm virtual hard drive location: %s" % disk)
+        # Get image id, if image with specified name already exists
+        old_image_id = self.image_exists(connection)
         # Create image object with specified properties.
         image = connection.images.create(**args)
         # Uploading image.
         connection.images.upload(image.id, open(disk, 'rb'))
         STREAM.success(" -> Uploading complete.")
+        if old_image_id is not None:
+            STREAM.info(" -> Remove old image.")
+            self.delete_image(connection, old_image_id)
+            STREAM.debug(" -> Removed image with id: %s" % old_image_id)
+            STREAM.success(" -> Removed.")
+
+    def image_exists(self, connection):
+        """Method to check if image already exists"""
+        images = self.get_images(connection)
+        for image in images:
+            if image["name"] == self.vm_name:
+                exists_image = image["id"]
+                return exists_image
+        return None
+
 
     def get_images(self, connection):
         """Method to get images from the openstack cluster"""
         images = connection.images.list()
-        for im in images:
-            print im
+        return images
 
 
 if __name__ == "__main__":
