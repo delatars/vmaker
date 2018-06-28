@@ -33,6 +33,8 @@ class LoggerOptions:
 
     @staticmethod
     def logger():
+        DEBUG = LoadSettings.DEBUG
+
         """Function setting options and return logger object"""
         logfile = open(LoggerOptions._LOGFILE, "a")
         handler = logging.StreamHandler(stream=logfile)

@@ -81,13 +81,18 @@ debug = false
                     setattr(LoadSettings, key.upper(), values)
                 elif isinstance(attr, str):
                     setattr(LoadSettings, key.upper(), value)
-                elif isinstance(attr, bool) and int(attr) not in [1, 0]:                    
-                    if value.lower() == "true":
-                        value = True
-                    elif value.lower() == "false":
-                        value = False
+                elif isinstance(attr, bool):
+                    try:
+                        int(value)
+                    except ValueError:
+                        if value.lower() == "true":
+                            value = True
+                        elif value.lower() == "false":
+                            value = False
+                        else:
+                            value = False
+                        setattr(LoadSettings, key.upper(), value)
                     else:
-                        value = False
-                    setattr(LoadSettings, key.upper(), value)
+                        setattr(LoadSettings, key.upper(), int(value))
                 elif isinstance(attr, int):
                     setattr(LoadSettings, key.upper(), int(value))

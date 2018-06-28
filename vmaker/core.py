@@ -194,11 +194,5 @@ class Core(Engine):
               shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
 
 
-def entry():
-    """Entrypoint"""
-    LoadSettings()
-    Core()
-
-
 if __name__ == "__main__":
-    entry()
+    pass
