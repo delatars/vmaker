@@ -172,6 +172,8 @@ group = linux
 ;  If you need to create snapshot executing doing all actions you can specify a special key.
 ;  Snapshot will be created before executing actions, and deleted after all actions are successed.
 ;snapshot = true
+; You may specify email to receive notifications about plugin's errors.
+;alert = user@mail.ru
 ; User keys.
 ;   You can specify your keys and use it in your plugin's classobj attributes. ex: self.vm_name
 vm_name = centos7-amd64

@@ -18,6 +18,10 @@ class LoadSettings:
     KILL_TIMEOUT = 20
     LOG = os.path.join(WORK_DIR, "stdout.log")
     DEBUG = False
+    SMTP_SERVER = ""
+    SMTP_PORT = 25
+    SMTP_USER = ""
+    SMTP_PASS = ""
 
     def __init__(self):
         self.log = verboselogs.VerboseLogger(__name__)
@@ -46,6 +50,13 @@ kill_timeout = 20
 log = %s
 ; Enable/Disable debug prints
 debug = false
+
+; Email notifications connection settings
+;smtp_server = 
+;smtp_port = 
+; Authentication
+;smtp_user = 
+;smtp_pass = 
 
 ; You can specify cluster connection settings here to use it in openstack_export plugin
 ;  or use separate configuration file
@@ -76,23 +87,26 @@ debug = false
             except AttributeError:
                 pass
             else:
-                if isinstance(attr, list):
-                    values = [val.strip() for val in value.split(",")]
-                    setattr(LoadSettings, key.upper(), values)
-                elif isinstance(attr, str):
-                    setattr(LoadSettings, key.upper(), value)
-                elif isinstance(attr, bool):
-                    try:
-                        int(value)
-                    except ValueError:
-                        if value.lower() == "true":
-                            value = True
-                        elif value.lower() == "false":
-                            value = False
-                        else:
-                            value = False
+                if value == "":
+                    pass
+                else:
+                    if isinstance(attr, list):
+                        values = [val.strip() for val in value.split(",")]
+                        setattr(LoadSettings, key.upper(), values)
+                    elif isinstance(attr, str):
                         setattr(LoadSettings, key.upper(), value)
-                    else:
+                    elif isinstance(attr, bool):
+                        try:
+                            int(value)
+                        except ValueError:
+                            if value.lower() == "true":
+                                value = True
+                            elif value.lower() == "false":
+                                value = False
+                            else:
+                                value = False
+                            setattr(LoadSettings, key.upper(), value)
+                        else:
+                            setattr(LoadSettings, key.upper(), int(value))
+                    elif isinstance(attr, int):
                         setattr(LoadSettings, key.upper(), int(value))
-                elif isinstance(attr, int):
-                    setattr(LoadSettings, key.upper(), int(value))

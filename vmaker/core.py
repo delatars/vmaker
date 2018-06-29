@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
+import re
 from subprocess import Popen
 from datetime import datetime
 from time import sleep
@@ -7,6 +8,7 @@ from multiprocessing import Process
 from vmaker.init.settings import LoadSettings
 from vmaker.init.engine import Engine
 from vmaker.utils.logger import LoggerOptions, STREAM
+from vmaker.utils.reporter import Reporter
 
 
 class Core(Engine):
@@ -29,6 +31,8 @@ class Core(Engine):
         # self.config_sequence - sequence to work with vms list[vm_name, ...]
         # self.loaded_plugins - dict with loaded plugins {plugin_name: object(plugin)}
         STREAM.notice("==> BEGIN.")
+        # Connect notification module
+        self.reports = Reporter(self.config)
         # Current working vm object
         self.current_vm_obj = None
         # Current working config section name
@@ -76,6 +80,7 @@ class Core(Engine):
             # If all actions are ok, delete a snapshot.
             if self.exists_snapshot:
                 self.delete_snapshot(self.current_vm_obj.vm_name)
+        self.reports.send_reports()
         STREAM.notice("==> There are no more virtual machines, exiting")
         STREAM.notice("==> END.")
         self.destroy_session()
@@ -83,9 +88,16 @@ class Core(Engine):
     # recursion function which unpack aliases
     def do_actions(self, actions_list):
         def _restore(exception, action):
+            # This function restore vm to previous state
             LoggerOptions.set_component("Core")
             LoggerOptions.set_action(None)
-            # This function restore vm to previous state
+            with open(LoadSettings.LOG, "r") as log:
+                log.seek(-3000, 2)
+                data = log.read()
+                index = data.rfind("Traceback")
+                report_exc = data[index:]
+                report_exc = re.sub(r"\d\d\d\d-\d\d-\d\d.*", r"", report_exc).strip()
+                self.reports.add_report(self.current_vm_obj.__name__, action, report_exc)
             STREAM.error(" -> Exception in vm <%s> and action <%s>:" % (self.current_vm_obj.__name__, action))
             STREAM.error(" -> %s" % exception)
             STREAM.error(" -> Can't proceed with this vm")
@@ -94,7 +106,11 @@ class Core(Engine):
                 self.restore_from_snapshot(self.current_vm_obj.vm_name)
             else:
                 invoked = self.invoke_plugin("vbox_stop")
-                invoked().main()
+                try:
+                    getattr(invoked, "vm_name")
+                    invoked().main()
+                except AttributeError:
+                    pass
 
         def _get_timeout():
             try:
