@@ -6,7 +6,7 @@ The program is intended for automatic updating of virtual machines, their upload
 
 Install from Githib
 
-    pip install git+https://github.com/delatars/vmaker
+    pip install git+https://gitlab.i.drweb.ru/testlab-unix/vmaker.git
     
 ### Usage
 
@@ -15,8 +15,8 @@ $ vmaker -h
 Usage: vmaker [options]
 
 Options:
-  -c <path>  - Specify configuration file.
-  -g         - Generate default configuration file.
+  -c <path>  - Specify config file
+  -g         - Generate default config
 
   --gfp <path>                  - Generate configuration file, based on specified path.
   --check-plugin <plugin name>  - Check target plugin.
