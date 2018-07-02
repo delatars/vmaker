@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import sys
 from time import sleep
 from subprocess import PIPE, Popen
 from vmaker.utils.logger import STREAM
@@ -21,22 +20,22 @@ class Keyword:
         self.stop()
 
     def check_vm_status(self):
-        STREAM.info("==> Check Vm status...")
+        STREAM.debug("==> Check Vm status...")
         rvms = Popen("VBoxManage list runningvms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)
         data = rvms.stdout.read()
         if self.vm_name in data:
-            STREAM.info("VM is ON")
+            STREAM.debug(" -> Virtual machine is already booted")
             return True
-        STREAM.info(" -> VM is turned off")
+        STREAM.debug(" -> Virtual machine is turned off")
         return False
 
     def stop(self):
+        STREAM.info("==> Attempting to gracefull shutdown Virtual machine")
         if not self.check_vm_status():
-            STREAM.info(" -> VM already stoped!")
+            STREAM.info(" -> Virtual machine is already stoped")
             return
-        STREAM.info("==> Attempting to gracefull shutdown VM")
         Popen("VBoxManage controlvm %s acpipowerbutton" % self.vm_name, shell=True,
-                stdout=sys.stdout, stderr=sys.stdout)
+                stdout=PIPE, stderr=PIPE)
         tries = 0
         while 1:
             rvms = Popen("VBoxManage list runningvms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)
@@ -44,8 +43,9 @@ class Keyword:
             if self.vm_name not in data:
                 break            
             if tries > 5:
-                STREAM.info(" -> Forcing shutdown VM")
-                Popen("VBoxManage controlvm %s poweroff soft" % self.vm_name, shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
+                STREAM.info(" -> Forcing shutdown Virtual machine")
+                Popen("VBoxManage controlvm %s poweroff soft" % self.vm_name, shell=True,
+                      stdout=PIPE, stderr=PIPE).communicate()
                 break
             tries += 1
             sleep(5)

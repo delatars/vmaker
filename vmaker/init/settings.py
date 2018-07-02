@@ -15,7 +15,7 @@ class LoadSettings:
     CONFIG_FILE_PATH = os.path.join(WORK_DIR, 'default.ini')
 
     ENABLED_PLUGINS = []
-    KILL_TIMEOUT = 20
+    TIMEOUT = 20
     LOG = os.path.join(WORK_DIR, "stdout.log")
     DEBUG = False
     SMTP_SERVER = ""
@@ -60,7 +60,6 @@ debug = false
 
 ; You can specify cluster connection settings here to use it in openstack_export plugin
 ;  or use separate configuration file
-; Section name must starts with "openstack_cluster" prefix. Ex. <openstack_cluster>1, <openstack_cluster>2
 ;[openstack_cluster1]
 ;auth_url=https://localhost:5000/v3
 ;username=root

@@ -59,11 +59,11 @@ class Core(Engine):
             self.current_vm_obj = self.config[vm]
             # if vm exists "snapshot" attribute, creating snapshot
             try:
-                if self.current_vm_obj.snapshot.lower() == "true" and self.is_session is False:
+                if self.current_vm_obj.backup_snapshot.lower() == "true" and self.is_session is False:
                     self.exists_snapshot = True
                     self.take_snapshot(self.current_vm_obj.vm_name)
                     self.update_session(vm, self.current_vm_obj_snapshot)
-                elif self.current_vm_obj.snapshot.lower() == "true" and self.is_session is True:
+                elif self.current_vm_obj.backup_snapshot.lower() == "true" and self.is_session is True:
                     self.exists_snapshot = True
                     self.update_session(vm, self.current_vm_obj_snapshot)
                 else:
@@ -114,17 +114,17 @@ class Core(Engine):
 
         def _get_timeout():
             try:
-                ttk = getattr(self.current_vm_obj, "%s_kill_timeout" % action)
+                ttk = getattr(self.current_vm_obj, "%s_timeout" % action)
                 LoggerOptions.set_component("Core")
                 LoggerOptions.set_action(None)
-                STREAM.debug(" Assigned 'kill_timeout' for action: %s = %s min" % (action, ttk))
+                STREAM.debug(" Assigned 'timeout' for action: %s = %s min" % (action, ttk))
                 LoggerOptions.set_component(self.current_vm)
                 LoggerOptions.set_action(action)
             except AttributeError:
-                ttk = LoadSettings.KILL_TIMEOUT
+                ttk = LoadSettings.TIMEOUT
                 LoggerOptions.set_component("Core")
                 LoggerOptions.set_action(None)
-                STREAM.debug(" Parameter 'kill_timeout' not assigned, for action, using global: %s = %s min" % (action, ttk))
+                STREAM.debug(" Parameter 'timeout' not assigned, for action, using global: %s = %s min" % (action, ttk))
                 LoggerOptions.set_component(self.current_vm)
                 LoggerOptions.set_action(action)
             ttk = int(ttk)*60
@@ -202,7 +202,7 @@ class Core(Engine):
         STREAM.info("==> Restoring to previous state...")
         Popen('VBoxManage snapshot %s restore %s' % (vm_name, self.current_vm_obj_snapshot),
               shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
-        STREAM.info("==> Restore complete.")
+        STREAM.info(" -> Restore complete.")
 
     def delete_snapshot(self, vm_name):
         STREAM.info("==> Deleting snapshot.")

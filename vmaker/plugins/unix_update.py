@@ -3,6 +3,7 @@ import paramiko
 import requests
 import re
 import os
+import sys
 from bs4 import BeautifulSoup
 from time import sleep
 from subprocess import PIPE, Popen
@@ -40,7 +41,7 @@ class Keyword:
         self.get_connection_settings()
         ssh = self.connect_to_vm()
         self.detected_os = self.get_vm_platform(ssh)
-        STREAM.info("==> Updating VM.")
+        STREAM.info("==> Updating Virtual machine.")
         # Invoke update method
         update_method = getattr(self, "update_%s" % self.detected_os)
         update_method(ssh)
@@ -78,7 +79,7 @@ class Keyword:
             "suse",
             "ubuntu"
         ]
-        STREAM.info("==> Detecting platform")
+        STREAM.debug("==> Detecting platform")
         STREAM.debug("Known_oses: %s" % known_oses)
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("python -m platform")
         if len(ssh_stderr.read()) > 0:
@@ -92,7 +93,7 @@ class Keyword:
         STREAM.debug(" -> Platform: %s" % osx.strip())
         for iter_os in known_oses:
             if iter_os in osx:
-                STREAM.info(" -> Detected: %s" % iter_os)
+                STREAM.debug(" -> Detected: %s" % iter_os)
                 return iter_os
         raise KeyError("Unknown os! (Not in list of 'known_oses')")
 
@@ -105,8 +106,7 @@ class Keyword:
                 ssh.connect(self.ssh_server, port=int(self.ssh_port), username=self.ssh_user, password=self.ssh_password)
                 STREAM.success(" -> Connection established")
             except Exception as err:
-                STREAM.warning(" -> Fail")
-                STREAM.debug(" -> %s" % err)
+                STREAM.warning(" -> Fail (%s)" % err)
                 if "ecdsakey" in str(err):
                     STREAM.warning("ECDSAKey error, try to fix.")
                     Popen('ssh-keygen -f %s -R "[%s]:%s"' %
@@ -118,7 +118,7 @@ class Keyword:
                 STREAM.info(" -> Connection retry %s:" % self.connect_tries)
                 try_connect(ssh)
 
-        STREAM.info("==> Connecting to VM...")
+        STREAM.info("==> Connecting to Virtual machine (port = %s)." % self.ssh_port)
         ssh = paramiko.SSHClient()
         ssh.load_system_host_keys()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -144,11 +144,10 @@ class Keyword:
         ssh_stdin.write(stdin)
         ssh_stdin.flush()
         for l in line_buffered(ssh_stdout):
-            STREAM.notice(l)
+            STREAM.debug(l)
         err = ssh_stderr.read()
         if len(err) > 0:
             STREAM.error(err)
-
 
     def vbox_guestadditions_update(self, ssh):
         """Method to update Virtual Box Guest Additions in virtual machine"""
@@ -156,19 +155,20 @@ class Keyword:
             while not f.channel.exit_status_ready():
                 yield f.readline().strip(), f2.readline().strip()
 
+        STREAM.info("==> Updating VboxGuestAdditions.")
         if not self.mount_vbox_guestadditions(ssh):
             return
-        STREAM.info(" -> Execute update GuestAdditions.")
+        STREAM.debug(" -> Execute update GuestAdditions.")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("/mnt/dvd/VBoxLinuxAdditions.run")
         ssh_stdin.write("y\n")
         ssh_stdin.flush()
         for l, l2 in line_buffered(ssh_stdout, ssh_stderr):
-            STREAM.notice(l)
-            STREAM.notice(l2)
+            STREAM.debug(l)
+            STREAM.debug(l2)
+        STREAM.success(" -> VboxGuestAdditions updated")
 
     def mount_vbox_guestadditions(self, ssh):
         """Method to mount VirtualBoxGuestAdditions.iso to virtual machine"""
-        STREAM.info("==> Updating VboxGuestAdditions.")
         Popen('vboxmanage storageattach %s --storagectl "IDE" --port 1 --device 0'
                         ' --type dvddrive --medium %s --forceunmount' % (self.vm_name, "emptydrive"),
                         shell=True, stdout=PIPE, stderr=PIPE).communicate()
@@ -188,15 +188,32 @@ class Keyword:
 
     def check_vbox_guestadditions_version(self, ssh):
         """Method to check version of Virtual Box Guest Additions in virtual machine"""
-        STREAM.info(" -> Checking vboxGAs version")
+        STREAM.debug(" -> Checking VboxGuestAdditions version")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("modinfo vboxguest |grep -iw version| awk '{print $2}'")
         version = ssh_stdout.read()
         if len(version) > 0:
-            STREAM.debug("Guest VboxGAs version: %s" % version.strip())
+            STREAM.debug("Guest VboxGuestAdditions version: %s" % version.strip())
             return version.strip()
         else:
-            STREAM.debug("Guest VboxGAs version: undefined")
+            STREAM.debug("Guest VboxGuestAdditions version: undefined")
             return None
+
+    def create_base_snapshot(self):
+        STREAM.info("==> Create a base snapshot")
+        Popen('VBoxManage snapshot %s take %s' % (self.vm_name, "base"),
+              shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
+
+
+    def restore_from_base_snapshot(self):
+        STREAM.info("==> Restore to base state")
+        Popen('VBoxManage snapshot %s restore %s' % (self.vm_name, "base"),
+              shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
+        STREAM.info(" -> Restore complete.")
+
+    def delete_base_snapshot(self, vm_name):
+        STREAM.info("==> Delete base snapshot.")
+        Popen('VBoxManage snapshot %s delete %s' % (vm_name, "base"),
+              shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
 
     def get_vboxga_latest_realese(self):
         """Method to get the last release of Virtual Box Guest Additions from Virtual Box server"""

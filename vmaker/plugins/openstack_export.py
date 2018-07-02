@@ -164,7 +164,6 @@ class Keyword(object):
                 return exists_image
         return None
 
-
     def get_images(self, connection):
         """Method to get images from the openstack cluster"""
         images = connection.images.list()

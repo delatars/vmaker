@@ -29,7 +29,7 @@ class PluginController:
         plugin = importlib.import_module("vmaker.plugins.%s" % plugin_name)
         cls = getattr(plugin, "Keyword")
         STREAM.success(" -> Loading plugin <%s>..........OK" % plugin_name)
-        sleep(0.3)
+        sleep(0.1)
         return cls        
 
     @staticmethod
@@ -57,7 +57,7 @@ class PluginController:
             STREAM.critical("  -> %s" % err)
             sys.exit()
         finally:
-            sleep(0.3)
+            sleep(0.1)
 
 if __name__ == "__main__":
     pass

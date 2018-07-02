@@ -20,20 +20,20 @@ class Keyword:
         self.start()
 
     def check_vm_status(self):
-        STREAM.info("==> Check Vm status.")
+        STREAM.debug("==> Check Vm status.")
         rvms = Popen("VBoxManage list runningvms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)
         data = rvms.stdout.read()
         if self.vm_name in data:
-            STREAM.info(" -> VM is ON")
+            STREAM.debug(" -> Virtual machine is already booted")
             return True
-        STREAM.info(" -> VM is turned off")
+        STREAM.debug(" -> Virtual machine is turned off")
         return False
 
     def start(self):
+        STREAM.info("==> Starting Virtual machine...")
         if self.check_vm_status():
-            STREAM.info(" -> VM already booted!")
+            STREAM.info(" -> Virtual machine is already booted")
             return
-        STREAM.info("==> Starting VM...")
         Popen("VBoxManage startvm %s --type headless" % self.vm_name, shell=True, stdout=PIPE, stderr=PIPE)
         while 1:
             sleep(10)
@@ -41,7 +41,7 @@ class Keyword:
             data = rvms.stdout.read()
             if self.vm_name in data:
                 break
-        STREAM.info(" -> VM successfully booted.")
+        STREAM.info(" -> Virtual machine successfully booted.")
     
 
 if __name__ == "__main__":

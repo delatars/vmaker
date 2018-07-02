@@ -170,15 +170,16 @@ actions = vagrant_export
 group = linux
 ; Variable keys
 ;  If you need to create snapshot executing doing all actions you can specify a special key.
-;  Snapshot will be created before executing actions, and deleted after all actions are successed.
-;snapshot = true
+;  Snapshot will be created before executing actions, and will be deleted if all actions are completed successfully.
+;backup_snapshot = true
 ; You may specify email to receive notifications about plugin's errors.
 ;alert = user@mail.ru
+; You can specify a timeout for each plugin after which the process will be terminated (ex: <plugin_name>_timeout)
+;vagrant_export_timeout = 15
 ; User keys.
 ;   You can specify your keys and use it in your plugin's classobj attributes. ex: self.vm_name
 vm_name = centos7-amd64
 vagrant_catalog = /vagrant/boxes
-vagrant_export_kill_timeout = 15
 
 ; You can create groups and combine it with other objects.
 ;   Groups support attribute inheritance (groups attributes have a lower priority than vm attributes).
