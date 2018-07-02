@@ -23,16 +23,17 @@ class Keyword:
         self.forward()
 
     def check_vm_status(self):
-        STREAM.info("==> Check Vm status.")
+        STREAM.debug("==> Check Vm status.")
         rvms = Popen("VBoxManage list runningvms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)
         data = rvms.stdout.read()
         if self.vm_name in data:
-            STREAM.info(" -> Virtual machine is already booted")
+            STREAM.debug(" -> Virtual machine is already booted")
             return True
-        STREAM.info(" -> Virtual machine is turned off")
+        STREAM.debug(" -> Virtual machine is turned off")
         return False
 
     def forward(self):
+        STREAM.info("==> Forwarding ports.")
         if self.check_vm_status():
             STREAM.error(" -> Unable to forwarding ports, machine is booted.")
             raise Exception("Unable to forwarding ports, machine is booted.")
@@ -40,7 +41,6 @@ class Keyword:
         for item in self.forwarding_ports:
             name, guest, host = item.split(":")
             STREAM.debug("%s, %s, %s" % (name, guest, host))
-            STREAM.info("==> Forwarding ports %s(guest) => %s(host)" % (guest, host))
             check = Popen("vboxmanage showvminfo %s |grep -i %s" % (self.vm_name, name),
                           shell=True, stdout=PIPE, stderr=PIPE).communicate()
             if check[0] != "":
