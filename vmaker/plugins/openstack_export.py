@@ -124,7 +124,6 @@ class Keyword(object):
     def upload_image(self, connection):
         """Method to upload image to the openstack cluster"""
         args = self.get_image_properties()
-        args["name"] = self.vm_name
         STREAM.info("==> Uploading image...")
         STREAM.debug("Image properties: %s" % args)
         # Find where vm files are located

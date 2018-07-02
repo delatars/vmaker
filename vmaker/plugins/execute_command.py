@@ -78,18 +78,12 @@ class Keyword(object):
 
     def command_exec(self, ssh, command, stdin=""):
         """Method to execute remote command via ssh connection"""
-        def line_buffered(f):
-            """Iterator object to get output in realtime from stdout buffer"""
-            while not f.channel.exit_status_ready():
-                yield f.readline().strip()
-
         STREAM.info(" -> Executing command: %s" % command)
         # Temporarily change locale of virtual machine to en_US to prevent UnicodeDecode errors
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("export LANG=en_US.UTF-8 && %s" % command)
         ssh_stdin.write(stdin)
         ssh_stdin.flush()
-        for l in line_buffered(ssh_stdout):
-            STREAM.notice(l)
+        STREAM.notice(ssh_stdout.read())
         err = ssh_stderr.read()
         if len(err) > 0:
             STREAM.error(err)

@@ -10,6 +10,8 @@ from subprocess import PIPE, Popen
 from vmaker.init.settings import LoadSettings
 from vmaker.utils.logger import STREAM
 from vmaker.utils.auxilary import exception_interceptor
+from vmaker.plugins.vbox_stop import Keyword as vbox_stop
+from vmaker.plugins.vbox_start import Keyword as vbox_start
 
 
 class Keyword:
@@ -38,10 +40,15 @@ class Keyword:
         self.credentials = self.credentials
         # -------------------------------------------
         self.uname = None
+        vbox_stop.vm_name = self.vm_name
+        vbox_start.vm_name = self.vm_name
+        STREAM.info("==> Updating Virtual machine.")
+        vbox_stop().main()
+        self.restore_from_base_snapshot()
+        vbox_start().main()
         self.get_connection_settings()
         ssh = self.connect_to_vm()
         self.detected_os = self.get_vm_platform(ssh)
-        STREAM.info("==> Updating Virtual machine.")
         # Invoke update method
         update_method = getattr(self, "update_%s" % self.detected_os)
         update_method(ssh)
@@ -199,20 +206,21 @@ class Keyword:
             return None
 
     def create_base_snapshot(self):
-        STREAM.info("==> Create a base snapshot")
+        STREAM.debug("==> Create a base snapshot")
         Popen('VBoxManage snapshot %s take %s' % (self.vm_name, "base"),
               shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
 
-
     def restore_from_base_snapshot(self):
-        STREAM.info("==> Restore to base state")
-        Popen('VBoxManage snapshot %s restore %s' % (self.vm_name, "base"),
-              shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
-        STREAM.info(" -> Restore complete.")
+        STREAM.debug("==> Restore to base state")
+        result = Popen('VBoxManage snapshot %s restore %s' % (self.vm_name, "base"),
+              shell=True, stdout=PIPE, stderr=PIPE).communicate()
+        if "VBOX_E_OBJECT_NOT_FOUND" in result[1]:
+            raise Exception("base snapshot not found")
+        STREAM.debug(" -> Restore complete.")
 
-    def delete_base_snapshot(self, vm_name):
-        STREAM.info("==> Delete base snapshot.")
-        Popen('VBoxManage snapshot %s delete %s' % (vm_name, "base"),
+    def delete_base_snapshot(self):
+        STREAM.debug("==> Delete base snapshot.")
+        Popen('VBoxManage snapshot %s delete %s' % (self.vm_name, "base"),
               shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
 
     def get_vboxga_latest_realese(self):
@@ -241,6 +249,15 @@ class Keyword:
         STREAM.success(" -> Downloaded: %s" % download_path)
         return download_path
 
+    def check_for_success_update(self):
+        vbox_stop().main()
+        vbox_start().main()
+        ssh = self.connect_to_vm()
+        self.close_ssh_connection(ssh)
+        vbox_stop().main()
+        self.delete_base_snapshot()
+        self.create_base_snapshot()
+
 # Update methods.
 # -----------------------------------------------------------------------------------
     def update_arch(self, ssh):
@@ -248,16 +265,19 @@ class Keyword:
         self.command_exec(ssh, "apt-get update && apt-get upgrade -y", "2\n")
         self.command_exec(ssh, "apt-get dist-upgrade -y", "2\n")
         self.vbox_guestadditions_update(ssh)
+        self.check_for_success_update()
 
     def update_altlinux(self, ssh):
         self.command_exec(ssh, "apt-get update && apt-get upgrade -y", "2\n")
         self.command_exec(ssh, "apt-get dist-upgrade -y", "2\n")
         self.vbox_guestadditions_update(ssh)
+        self.check_for_success_update()
 
     def update_centos(self, ssh):
         self.command_exec(ssh, "yum clean all")
         self.command_exec(ssh, "yum update -y", "2\n")
         self.vbox_guestadditions_update(ssh)
+        self.check_for_success_update()
         # remove old kernels $ package-cleanup --oldkernels
 
     def update_debian(self, ssh):
@@ -265,10 +285,12 @@ class Keyword:
         self.command_exec(ssh, "apt-get update && apt-get upgrade -y", "2\n")
         self.command_exec(ssh, "apt-get dist-upgrade -y", "2\n")
         self.vbox_guestadditions_update(ssh)
+        self.check_for_success_update()
 
     def update_fedora(self, ssh):
         self.command_exec(ssh, "dnf update -y", "2\n")
         self.vbox_guestadditions_update(ssh)
+        self.check_for_success_update()
         # remove old kernels $ package-cleanup --oldkernels
 
     def update_freebsd(self, ssh):
@@ -276,29 +298,33 @@ class Keyword:
         self.command_exec(ssh, "freebsd-update install")
         self.command_exec(ssh, "pkg update && pkg upgrade -y")
         self.vbox_guestadditions_update(ssh)
-        self.command_exec(ssh, "reboot")
-        sleep(30)
+        vbox_stop().main()
+        vbox_start().main()
         ssh = self.connect_to_vm()
         self.command_exec(ssh, "pkg update && pkg upgrade -y")
         self.close_ssh_connection(ssh)
+        self.check_for_success_update()
 
     def update_linuxmint(self, ssh):
         self.command_exec(ssh, "dpkg --configure -a")
         self.command_exec(ssh, "apt-get update && apt-get -y upgrade", "2\n")
         self.command_exec(ssh, "apt-get dist-upgrade -y", "2\n")
         self.vbox_guestadditions_update(ssh)
+        self.check_for_success_update()
 
     def update_opensuse(self, ssh):
         self.command_exec(ssh, "zypper clean", "a\n")
         self.command_exec(ssh, "zypper refresh", "a\n")
         self.command_exec(ssh, "zypper update -y", "2\n")
         self.vbox_guestadditions_update(ssh)
+        self.check_for_success_update()
 
     def update_redhat(self, ssh):
         """Rhel"""
         self.command_exec(ssh, "yum clean all")
         self.command_exec(ssh, "yum update -y", "2\n")
         self.vbox_guestadditions_update(ssh)
+        self.check_for_success_update()
 
     def update_suse(self, ssh):
         """Sles"""
@@ -306,12 +332,14 @@ class Keyword:
         self.command_exec(ssh, "zypper refresh", "a\n")
         self.command_exec(ssh, "zypper update -y", "2\n")
         self.vbox_guestadditions_update(ssh)
+        self.check_for_success_update()
 
     def update_ubuntu(self, ssh):
         self.command_exec(ssh, "dpkg --configure -a")
         self.command_exec(ssh, "apt-get update && apt-get upgrade -y", "2\n")
         self.command_exec(ssh, "apt-get dist-upgrade -y", "2\n")
         self.vbox_guestadditions_update(ssh)
+        self.check_for_success_update()
 
 
 if __name__ == "__main__":
