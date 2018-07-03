@@ -106,7 +106,7 @@ class ConfigController:
                     # firstly check if vm section exists action attr
                     # then below check maybe it inherit from group
                     try:
-                        act = [action.strip() for action in config[sec]["actions"].split(",")]
+                        act = config[sec]["actions"]
                         args["actions"] = act
                     except KeyError:
                         pass

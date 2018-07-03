@@ -98,7 +98,6 @@ class Core(Engine):
                 report_exc = data[index:]
                 report_exc = re.sub(r"\d\d\d\d-\d\d-\d\d.*", r"", report_exc).strip()
                 self.reports.add_report(self.current_vm_obj.__name__, action, report_exc)
-            STREAM.error(" -> Exception in vm <%s> and action <%s>:" % (self.current_vm_obj.__name__, action))
             STREAM.error(" -> %s" % exception)
             STREAM.error(" -> Can't proceed with this vm")
             STREAM.notice("==> Clearing ourselves")
