@@ -103,6 +103,8 @@ class ConfigController:
                     args = {key: value for key, value in config.items(sec)
                             if key != "type" and key != "group" and key != "actions"}
                     STREAM.debug("    [%s] -> Section attributes: %s" % (sec, args))
+                    # firstly check if vm section exists action attr
+                    # then below check maybe it inherit from group
                     try:
                         act = [action.strip() for action in config[sec]["actions"].split(",")]
                         args["actions"] = act
@@ -124,8 +126,10 @@ class ConfigController:
                             STREAM.debug("    [%s] Aliases assigned: global" % sec)
                             # => alias global
                             vms[sec] = type(str(sec), (aliases.get("global"), ), args)
+                    # Check if 'action' attr was inherited from group
                     try:
-                        getattr(vms[sec], "actions")
+                        acts = getattr(vms[sec], "actions")
+                        setattr(vms[sec], "actions", [action.strip() for action in acts.split(",")])
                         retro = "    [%s] Section inheritance retrospective:"
                         final_attrs = {attr for attr in dir(vms[sec]) if not attr.startswith('__')}
                         for attr in final_attrs:
