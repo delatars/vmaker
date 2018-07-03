@@ -27,7 +27,7 @@ class ConfigController:
         # - Generating aliases objects
         STREAM.debug("==> Generating alias objects...")
         for sec in config.sections():
-            STREAM.debug(" -> Loading section <%s>" % sec)
+            STREAM.debug(" -> Loading section '%s'" % sec)
             try:
                 if config[sec]["type"] == "aliases":
                     STREAM.debug("    [%s] Section seems like alias object" % sec)
@@ -46,13 +46,13 @@ class ConfigController:
                 else:
                     STREAM.debug("    [%s] Section doesn't seem like alias object. Passed..." % sec)
             except KeyError as wrong_key:
-                STREAM.error(" -> Config Error: Wrong section <%s>! Key <%s> not specified" % (sec, wrong_key))
-                STREAM.warning(" -> Section <%s> will be passed..." % sec)
+                STREAM.error(" -> Config Error: Wrong section '%s' Key '%s' not specified" % (sec, wrong_key))
+                sys.exit()
         STREAM.debug("==> Generated alias objects: %s\n" % aliases)
         # - Generating group objects
         STREAM.debug("==> Generating group objects...")
         for sec in config.sections():
-            STREAM.debug(" -> Loading section <%s>" % sec)
+            STREAM.debug(" -> Loading section '%s'" % sec)
             try:
                 if config[sec]["type"] == "group":
                     STREAM.debug("    [%s] Section seems like group object" % sec)
@@ -88,24 +88,30 @@ class ConfigController:
                         groups[sec] = type(str(sec), (object, ), args)
                 else:
                     STREAM.debug("    [%s] Section doesn't seem like group object. Passed..." % sec)
-            except KeyError:
-                pass
+            except KeyError as wrong_key:
+                STREAM.error(" -> Config Error: Wrong section '%s' Key '%s' not specified" % (sec, wrong_key))
+                sys.exit()
         STREAM.debug("==> Generated group objects: %s\n" % groups)
         # - Generating VM objects
         STREAM.debug("==> Generating vm objects...")
+        vms_work_sequence = []
         for sec in config.sections():
-            STREAM.debug(" -> Loading section <%s>" % sec)
+            STREAM.debug(" -> Loading section '%s'" % sec)
             try:
                 if config[sec]["type"] == "vm":
                     STREAM.debug("    [%s] Section seems like vm object" % sec)
                     args = {key: value for key, value in config.items(sec)
                             if key != "type" and key != "group" and key != "actions"}
                     STREAM.debug("    [%s] -> Section attributes: %s" % (sec, args))
-                    act = [action.strip() for action in config[sec]["actions"].split(",")]
-                    args["actions"] = act
+                    try:
+                        act = [action.strip() for action in config[sec]["actions"].split(",")]
+                        args["actions"] = act
+                    except KeyError:
+                        pass
                     # alias inheritance added in group generation step
                     if config.has_option(sec, "group") and groups.get(config[sec]["group"]) is not None:
-                        STREAM.debug("    [%s] Assigned group detected: inherit attributes from group <%s>" % (sec, config[sec]["group"]))
+                        STREAM.debug("    [%s] Assigned group detected: inherit attributes "
+                                     "from group '%s'" % (sec, config[sec]["group"]))
                         vms[sec] = type(str(sec), (groups.get(config[sec]["group"]), ), args)
                     else:
                         # if group doesn't exist or no group, adding alias inheritance
@@ -118,23 +124,25 @@ class ConfigController:
                             STREAM.debug("    [%s] Aliases assigned: global" % sec)
                             # => alias global
                             vms[sec] = type(str(sec), (aliases.get("global"), ), args)
-                    retro = "    [%s] Section inheritance retrospective:"
-                    final_attrs = {attr for attr in dir(vms[sec]) if not attr.startswith('__')}
-                    for attr in final_attrs:
-                        val = getattr(vms[sec], attr)
-                        retro += "\n\t\t\t\t\t\t%s = %s" % (attr, val)
-                    STREAM.debug(retro % sec)
+                    try:
+                        getattr(vms[sec], "actions")
+                        retro = "    [%s] Section inheritance retrospective:"
+                        final_attrs = {attr for attr in dir(vms[sec]) if not attr.startswith('__')}
+                        for attr in final_attrs:
+                            val = getattr(vms[sec], attr)
+                            retro += "\n\t\t\t\t\t\t%s = %s" % (attr, val)
+                        STREAM.debug(retro % sec)
+                        vms_work_sequence.append(sec)
+                    except AttributeError as wrong_key:
+                        STREAM.error(" -> Config Error: Wrong section '%s'"
+                                     " Key %s not specified" % (sec, str(wrong_key).split(" ")[-1]))
+                        del vms[sec]
+                        sys.exit()
                 else:
                     STREAM.debug("    [%s] Section doesn't seem like vm object. Passed..." % sec)
-            except KeyError:
-                pass
-        vms_work_sequence = []
-        for sec in config.sections():
-            try:
-                if config[sec]["type"] == "vm":
-                    vms_work_sequence.append(sec)
-            except KeyError:
-                pass
+            except KeyError as wrong_key:
+                STREAM.error(" -> Config Error: Wrong section '%s' Key '%s' not specified" % (sec, wrong_key))
+                sys.exit()
         STREAM.debug("==> Generated vm objects: %s" % vms)
         STREAM.debug("==> Generated vm objects work sequence: %s" % vms_work_sequence)
         STREAM.success(" -> User configuration file loaded")
