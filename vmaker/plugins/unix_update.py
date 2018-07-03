@@ -155,6 +155,7 @@ class Keyword:
         err = ssh_stderr.read()
         if len(err) > 0:
             STREAM.error(err)
+            raise Exception(err)
 
     def vbox_guestadditions_update(self, ssh):
         """Method to update Virtual Box Guest Additions in virtual machine"""

@@ -66,13 +66,14 @@ class Reporter:
         STREAM.debug("There are %s error reports found" % len(self.reports))
         for email, report in self.reports.items():
             msg = "You received this message because you are subscribed to" \
-                  " vmaker notifications about VM errors.\nErrors:\n"
+                  " vmaker notifications about VM errors.\nErrors:\n" \
+                  "-------------------------------"
             for rep in report:
                 msg += """
-    <bold>Virtual machine</bold>: %s
-    Action: %s
-    Error: %s
-    -----------------------------------------------------\n""" % (rep.vm_name, rep.failed_action, rep.msg)
+    Virtual machine:  %s
+    Action:  %s\n
+    Error: \n%s
+-------------------------------------------------------------------\n""" % (rep.vm_name, rep.failed_action, rep.msg)
             STREAM.debug("==> Sending a report to: %s" % email)
             try:
                 self._send_report(email, "Report", msg)
