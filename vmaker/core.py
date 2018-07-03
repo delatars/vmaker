@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import sys
 import re
 from subprocess import Popen, PIPE
 from datetime import datetime

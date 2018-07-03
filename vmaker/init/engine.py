@@ -101,6 +101,7 @@ class Engine(object):
             map(lambda x: self.config_sequence.remove(x), ready_vms)
             # Recreating session file without last got vm to prevent duplication
             with open(self._SESSION_FILE, "w") as sf:
+                sf.write("%s\n" % checksum)
                 for vm in vms:
                     sf.write(vm)
             return last_vm.strip(), last_modified_vm_snapshot
