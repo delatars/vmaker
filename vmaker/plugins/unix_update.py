@@ -207,21 +207,24 @@ class Keyword:
 
     def create_base_snapshot(self):
         STREAM.debug("==> Create a base snapshot")
-        Popen('VBoxManage snapshot %s take %s' % (self.vm_name, "base"),
-              shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
+        result = Popen('VBoxManage snapshot %s take %s' % (self.vm_name, "base"),
+                       shell=True, stdout=PIPE, stderr=PIPE).communicate()
+        STREAM.debug(result[0])
 
     def restore_from_base_snapshot(self):
         STREAM.debug("==> Restore to base state")
         result = Popen('VBoxManage snapshot %s restore %s' % (self.vm_name, "base"),
-              shell=True, stdout=PIPE, stderr=PIPE).communicate()
+                       shell=True, stdout=PIPE, stderr=PIPE).communicate()
         if "VBOX_E_OBJECT_NOT_FOUND" in result[1]:
             raise Exception("base snapshot not found")
+        STREAM.debug(result[0])
         STREAM.debug(" -> Restore complete.")
 
     def delete_base_snapshot(self):
         STREAM.debug("==> Delete base snapshot.")
-        Popen('VBoxManage snapshot %s delete %s' % (self.vm_name, "base"),
-              shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
+        result = Popen('VBoxManage snapshot %s delete %s' % (self.vm_name, "base"),
+                       shell=True, stdout=PIPE, stderr=PIPE).communicate()
+        STREAM.debug(result[0])
 
     def get_vboxga_latest_realese(self):
         """Method to get the last release of Virtual Box Guest Additions from Virtual Box server"""

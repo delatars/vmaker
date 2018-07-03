@@ -125,7 +125,7 @@ load include_vagrantfile if File.exist?(include_vagrantfile)
                 STREAM.error(errno)
                 return False
         Popen('VBoxManage export %s --output %s' % (self.vm_name, os.path.join(self.tmp_dir, self.vm_name + ".ovf")),
-              shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
+              shell=True, stdout=PIPE, stderr=PIPE).communicate()
         diskname = ""
         for fil in os.listdir(self.tmp_dir):
             if fil.endswith(".vmdk"):

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import re
-from subprocess import Popen
+from subprocess import Popen, PIPE
 from datetime import datetime
 from time import sleep
 from multiprocessing import Process
@@ -158,7 +158,7 @@ class Core(Engine):
         for action in actions_list:
             try:
                 invoked_plugin = self.invoke_plugin(action)
-                ttk = _get_timeout()
+                timeout = _get_timeout()
                 try:
                     LoggerOptions.set_component(self.current_vm)
                     LoggerOptions.set_action(action)
@@ -166,7 +166,7 @@ class Core(Engine):
                     keyword_process = Process(target=invoked_plugin().main)
                     keyword_process.start()
                     # Monitoring running proccess
-                    _process_guard(ttk, keyword_process)
+                    _process_guard(timeout, keyword_process)
                 except Exception as exc:
                     _restore(exc, action)
                     return False
@@ -191,23 +191,23 @@ class Core(Engine):
     def take_snapshot(self, vm_name):
         invoked_plugin = self.invoke_plugin("vbox_stop")
         invoked_plugin().main()
-        STREAM.info("==> Taking a snapshot")
+        STREAM.info("==> Taking a backup snapshot")
         self.current_vm_obj_snapshot = vm_name+"__"+str(datetime.now())[:-7].replace(" ", "_")
         Popen('VBoxManage snapshot %s take %s' % (vm_name, self.current_vm_obj_snapshot),
-              shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
+              shell=True, stdout=PIPE, stderr=PIPE).communicate()
 
     def restore_from_snapshot(self, vm_name):
         invoked_plugin = self.invoke_plugin("vbox_stop")
         invoked_plugin().main()
         STREAM.info("==> Restoring to previous state...")
         Popen('VBoxManage snapshot %s restore %s' % (vm_name, self.current_vm_obj_snapshot),
-              shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
+              shell=True, stdout=PIPE, stderr=PIPE).communicate()
         STREAM.info(" -> Restore complete.")
 
     def delete_snapshot(self, vm_name):
-        STREAM.info("==> Deleting snapshot.")
+        STREAM.info("==> Deleting backup snapshot.")
         Popen('VBoxManage snapshot %s delete %s' % (vm_name, self.current_vm_obj_snapshot),
-              shell=True, stdout=sys.stdout, stderr=sys.stdout).communicate()
+              shell=True, stdout=PIPE, stderr=PIPE).communicate()
 
 
 if __name__ == "__main__":
