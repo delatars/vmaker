@@ -8,8 +8,8 @@ import verboselogs
 
 class LoadSettings:
     WORK_DIR = os.path.join(os.path.expanduser("~"), ".vmaker")
-    SESSION_FILE = os.path.join(WORK_DIR, 'vms.session')
-    PID_FILE = os.path.join(WORK_DIR, 'vms.pid')
+    SESSION_FILE = os.path.join(WORK_DIR, '.vms.session')
+    PID_FILE = os.path.join(WORK_DIR, '.vms.pid')
     GENERAL_CONFIG_FILENAME = '.vmaker.ini'
     GENERAL_CONFIG = os.path.join(WORK_DIR, GENERAL_CONFIG_FILENAME)
     CONFIG_FILE_PATH = os.path.join(WORK_DIR, 'default.ini')
