@@ -76,7 +76,7 @@ class Reporter:
 -------------------------------------------------------------------\n""" % (rep.vm_name, rep.failed_action, rep.msg)
             STREAM.debug("==> Sending a report to: %s" % email)
             try:
-                self._send_report(email, "Report", msg)
+                self._send_report(email, "vmaker:notifications:VirtualMachines:errors", msg)
                 STREAM.debug(" -> OK")
             except Exception as exc:
                 STREAM.debug(" -> Failed (%s)" % exc)

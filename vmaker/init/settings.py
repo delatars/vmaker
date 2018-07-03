@@ -59,7 +59,7 @@ debug = false
 ;smtp_pass = 
 
 ; You can specify cluster connection settings here to use it in openstack_export plugin
-;  or use separate configuration file
+;  Or you may use separate configuration file to keep cluster settings
 ;[openstack_cluster1]
 ;auth_url=https://localhost:5000/v3
 ;username=root
