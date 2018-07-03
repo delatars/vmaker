@@ -49,8 +49,9 @@ class Keyword:
                       shell=True, stdout=PIPE, stderr=PIPE).communicate()
                 STREAM.info(" -> Deleted rule: %s" % name)
                 STREAM.info(" -> Set up new rule: %s" % name)
-            Popen("vboxmanage modifyvm %s --natpf1 %s,tcp,127.0.0.1,%s,,%s" % (self.vm_name, name, host, guest),
+            result = Popen("vboxmanage modifyvm %s --natpf1 %s,tcp,127.0.0.1,%s,,%s" % (self.vm_name, name, host, guest),
                   shell=True, stdout=PIPE, stderr=PIPE).communicate()
+            STREAM.debug(result)
             STREAM.success(" -> Forwarded ports %s(guest) => %s(host)" % (guest, host))
 
 
