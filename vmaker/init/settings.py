@@ -79,16 +79,14 @@ debug = false
             plugins = [plugin[:-3] for plugin in os.listdir(os.path.dirname(vmaker.plugins.__file__))
                        if not plugin.startswith("_") and plugin.endswith("py")]
         elif re.match(r"all!\(.*\)$", values.strip()):
-            except_plugins = [plugin.strip() for plugin in values.replace("(", "").replace(")", "").split("!")[1].split(",")]
-            print except_plugins
-            if not "unix_update" in except_plugins:
-                print "da"
+            except_plugins = [plugin.strip() for plugin in
+                              values.replace("(", "").replace(")", "").split("!")[1].split(",")]
             import vmaker.plugins
             plugins = [plugin[:-3] for plugin in os.listdir(os.path.dirname(vmaker.plugins.__file__))
-                       if not plugin.startswith("_") and plugin.endswith("py") and plugin not in except_plugins]
+                       if not plugin.startswith("_") and plugin.endswith("py")]
+            plugins = list(set(plugins) - set(except_plugins))
         else:
             plugins = [val.strip() for val in values.split(",")]
-        print plugins
         return plugins
 
     def load_general_config(self):
