@@ -5,11 +5,12 @@ from time import sleep
 from subprocess import Popen, PIPE
 from vmaker.utils.logger import STREAM
 from vmaker.utils.auxilary import exception_interceptor
+from vmaker.plugins.port_forwarding import get_manage_port
 
 
 class Keyword(object):
 
-    REQUIRED_CONFIG_ATTRS = ['forwarding_ports', 'credentials', 'ssh_rule_name']
+    REQUIRED_CONFIG_ATTRS = ['vm_name', 'credentials', 'execute_command']
     ssh_server = "localhost"
     ssh_port = None
     ssh_user = None
@@ -20,33 +21,17 @@ class Keyword(object):
         # - Config attributes
         self.vm_name = self.vm_name
         self.execute_command = self.execute_command
-        self.forwarding_ports = self.forwarding_ports
-        self.ssh_rule_name = self.ssh_rule_name
         self.credentials = self.credentials
         # -------------------------------------------
-        if not self.check_vm_status():
-            STREAM.error("==> Unable to execute command, virtual machine is turned off!")
-            return
         self.get_connection_settings()
         ssh = self.connect_to_vm()
         self.command_exec(ssh, self.execute_command.strip())
         self.close_ssh_connection(ssh)
 
-    def check_vm_status(self):
-        STREAM.debug("==> Check Vm status.")
-        rvms = Popen("VBoxManage list runningvms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)
-        data = rvms.stdout.read()
-        if self.vm_name in data:
-            STREAM.debug(" -> Virtual machine is already booted")
-            return True
-        STREAM.debug(" -> Virtual machine is turned off")
-        return False
-
     def connect_to_vm(self):
         """Method connects to virtual machine via ssh"""
         def try_connect(ssh):
             """Recursive function to enable multiple connection attempts"""
-            sleep(10)
             try:
                 ssh.connect(self.ssh_server, port=int(self.ssh_port), username=self.ssh_user, password=self.ssh_password)
                 STREAM.success(" -> Connection established")
@@ -61,6 +46,7 @@ class Keyword(object):
                     raise paramiko.ssh_exception.SSHException("Connection retries limit exceed!")
                 self.connect_tries += 1
                 STREAM.info(" -> Connection retry %s:" % self.connect_tries)
+                sleep(10)
                 try_connect(ssh)
 
         STREAM.info("==> Connecting to Virtual machine (port = %s)." % self.ssh_port)
@@ -84,20 +70,17 @@ class Keyword(object):
         ssh_stdin.write(stdin)
         ssh_stdin.flush()
         STREAM.notice(ssh_stdout.read())
+        # print ssh_stdout.read()
         err = ssh_stderr.read()
         if len(err) > 0:
             STREAM.error(err)
+            # print err
 
     def get_connection_settings(self):
         """Method get connection settings from configuration file attributes"""
-        self.forwarding_ports = [ports.strip() for ports in self.forwarding_ports.split(",")]
-        for item in self.forwarding_ports:
-            name, guest, host = item.split(":")
-            if name == self.ssh_rule_name:
-                self.ssh_port = host
+        self.ssh_port = get_manage_port(self.vm_name)
         if self.ssh_port is None:
-            raise Exception("Rulename '%s' not found in forwarding_ports attribute. Check your user configuration file."
-                            % self.ssh_rule_name)
+            raise Exception("Manage port not specified!")
         try:
             user, password = self.credentials.split(":")
         except ValueError:

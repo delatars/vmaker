@@ -53,9 +53,11 @@ class Engine(object):
                             STREAM.warning("You can't use this plugin until you turn it on in .vmaker.ini")
                             sys.exit()
                         else:
-                            req_args += req_attr
+                            for req in req_attr:
+                                req_args.append(req)
                 else:
-                    req_args += req_attr
+                    for req in req_attr:
+                        req_args.append(req)
             vm_attrs = [name for name in dir(self.config[vm]) if not name.startswith('__')]
             req_args = set(req_args)
             vm_attrs = set(vm_attrs)

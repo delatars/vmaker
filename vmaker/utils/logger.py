@@ -36,8 +36,8 @@ class LoggerOptions:
         DEBUG = LoadSettings.DEBUG
 
         """Function setting options and return logger object"""
-        logfile = open(LoggerOptions._LOGFILE, "a")
-        handler = logging.StreamHandler(stream=logfile)
+        # logfile = open(LoggerOptions._LOGFILE, "a")
+        handler = logging.FileHandler(LoggerOptions._LOGFILE)
         handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(message)s', "%Y-%m-%d %H:%M:%S"))
         log = verboselogs.VerboseLogger(__name__)
         log.addFilter(_Component_filter())
