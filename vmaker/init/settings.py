@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
+import re
 from configparser import ConfigParser, NoSectionError
 import coloredlogs
 import verboselogs
@@ -41,11 +42,11 @@ class LoadSettings:
         template = """;Mandatory section.      
 [General]
 ; List of enabled plugins, you can create your plugin, put it to the plugins dir and enabling it here.
-enabled_plugins = vbox_start, unix_update, vbox_stop, port_forwarding, test, vagrant_export
+enabled_plugins = vbox_start, vbox_stop, unix_update, port_forwarding, vagrant_export, openstack_export, install_vbox_guest_additions
 ; Global parameter (in minutes) to the end of which plugin process will be terminated.
-;   You can specify your own "kill_timeout" parameter for each action in vm, like <action>_kill_timeout = 10
-;   Example: vbox_start_kill_timeout = 5
-kill_timeout = 20
+;   You can specify your own "timeout" parameter for each action in vm, like <action>_timeout = 10
+;   Example: vbox_start_timeout = 5
+timeout = 20
 ; Specify path to output log
 log = %s
 ; Enable/Disable debug prints
@@ -72,6 +73,24 @@ debug = false
         with open(self.GENERAL_CONFIG, "w") as config:
             config.write(template)
 
+    def enabled_plugins_parser(self, values):
+        if values.lower().strip() == "all":
+            import vmaker.plugins
+            plugins = [plugin[:-3] for plugin in os.listdir(os.path.dirname(vmaker.plugins.__file__))
+                       if not plugin.startswith("_") and plugin.endswith("py")]
+        elif re.match(r"all!\(.*\)$", values.strip()):
+            except_plugins = [plugin.strip() for plugin in values.replace("(", "").replace(")", "").split("!")[1].split(",")]
+            print except_plugins
+            if not "unix_update" in except_plugins:
+                print "da"
+            import vmaker.plugins
+            plugins = [plugin[:-3] for plugin in os.listdir(os.path.dirname(vmaker.plugins.__file__))
+                       if not plugin.startswith("_") and plugin.endswith("py") and plugin not in except_plugins]
+        else:
+            plugins = [val.strip() for val in values.split(",")]
+        print plugins
+        return plugins
+
     def load_general_config(self):
         config = ConfigParser()
         config.read(self.GENERAL_CONFIG)
@@ -90,7 +109,10 @@ debug = false
                     pass
                 else:
                     if isinstance(attr, list):
-                        values = [val.strip() for val in value.split(",")]
+                        if key == "enabled_plugins":
+                            values = self.enabled_plugins_parser(value)
+                        else:
+                            values = [val.strip() for val in value.split(",")]
                         setattr(LoadSettings, key.upper(), values)
                     elif isinstance(attr, str):
                         setattr(LoadSettings, key.upper(), value)

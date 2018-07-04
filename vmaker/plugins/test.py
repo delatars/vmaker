@@ -4,13 +4,12 @@ from vmaker.utils.auxilary import exception_interceptor
 from time import sleep
 
 
-
 class Keyword(object):
     REQUIRED_CONFIG_ATTRS = []
 
     @exception_interceptor
     def main(self):
-        STREAM.info("This is a test plugin", self.port)
+        STREAM.info("This is a test plugin")
         # s = 1
         # while 1:
         #     if s > 1000:
