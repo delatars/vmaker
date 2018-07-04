@@ -109,7 +109,6 @@ debug = false
                     if isinstance(attr, list):
                         if key == "enabled_plugins":
                             values = self.enabled_plugins_parser(value)
-                            print "type: %s" % type(values)
                         else:
                             values = [val.strip() for val in value.split(",")]
                         setattr(LoadSettings, key.upper(), values)
