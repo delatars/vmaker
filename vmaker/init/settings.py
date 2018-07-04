@@ -42,7 +42,11 @@ class LoadSettings:
         template = """;Mandatory section.      
 [General]
 ; List of enabled plugins, you can create your plugin, put it to the plugins dir and enabling it here.
-enabled_plugins = vbox_start, vbox_stop, unix_update, port_forwarding, vagrant_export, openstack_export, install_vbox_guest_additions
+; Examles:
+;   enabled_plugins = plugin1, plugin2 - enable only 'plugin1' and 'plugin2'
+;   enabled_plugins = all - enable all plugins in plugins dir
+;   enabled_plugins = all!(plugin1, plugin2) - enable all plugins in plugins dir except 'plugin1' and 'plugin2'
+enabled_plugins = all!(test)
 ; Global parameter (in minutes) to the end of which plugin process will be terminated.
 ;   You can specify your own "timeout" parameter for each action in vm, like <action>_timeout = 10
 ;   Example: vbox_start_timeout = 5

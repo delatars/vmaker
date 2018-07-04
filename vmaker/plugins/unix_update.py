@@ -150,7 +150,7 @@ class Keyword:
     def check_for_success_update(self):
         vbox_stop().main()
         vbox_start().main()
-        ssh = self.connect_to_vm()
+        ssh = self.ssh_connect_to_vm()
         self.close_ssh_connection(ssh)
         vbox_stop().main()
 
@@ -190,7 +190,7 @@ class Keyword:
         self.command_exec(ssh, "pkg update && pkg upgrade -y")
         vbox_stop().main()
         vbox_start().main()
-        ssh = self.connect_to_vm()
+        ssh = self.ssh_connect_to_vm()
         self.command_exec(ssh, "pkg update && pkg upgrade -y")
         self.close_ssh_connection(ssh)
         self.check_for_success_update()
