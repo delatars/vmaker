@@ -39,7 +39,7 @@ class Engine(object):
 
     def check_attributes_dependencies(self):
         STREAM.info("==> Checking for plugins required attributes.")
-        req_args = []
+        req_args = set()
         for vm in self.config_sequence:
             for action in self.config[vm].actions:
                 try:
@@ -53,11 +53,9 @@ class Engine(object):
                             STREAM.warning("You can't use this plugin until you turn it on in .vmaker.ini")
                             sys.exit()
                         else:
-                            for req in req_attr:
-                                req_args.append(req)
+                            set(req_args) ^ set(req_attr)
                 else:
-                    for req in req_attr:
-                        req_args.append(req)
+                    set(req_args) ^ set(req_attr)
             vm_attrs = [name for name in dir(self.config[vm]) if not name.startswith('__')]
             req_args = set(req_args)
             vm_attrs = set(vm_attrs)
