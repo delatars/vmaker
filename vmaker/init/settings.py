@@ -84,10 +84,10 @@ debug = false
             import vmaker.plugins
             plugins = [plugin[:-3] for plugin in os.listdir(os.path.dirname(vmaker.plugins.__file__))
                        if not plugin.startswith("_") and plugin.endswith("py")]
-            plugins = list(set(plugins) - set(except_plugins))
+            plugins = set(plugins) - set(except_plugins)
         else:
             plugins = [val.strip() for val in values.split(",")]
-        return plugins
+        return list(plugins)
 
     def load_general_config(self):
         config = ConfigParser()
