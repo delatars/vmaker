@@ -85,11 +85,12 @@ class Keyword:
                 ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("python3 -m platform")
                 if len(ssh_stderr.read()) > 0:
                     raise KeyError("python not found on remote os!")
-        osx = ssh_stdout.read().lower()
+        osx_full = ssh_stdout.read().lower()
+        osx = osx_full.split("-")[-3]
         self.uname = osx
-        STREAM.debug(" -> Platform: %s" % osx.strip())
+        STREAM.debug(" -> Platform: %s" % osx_full.strip())
         for iter_os in known_oses:
-            if iter_os in osx:
+            if iter_os == osx:
                 STREAM.debug(" -> Detected: %s" % iter_os)
                 return iter_os
         raise KeyError("Unknown os! (Not in list of 'known_oses')")
@@ -137,14 +138,13 @@ class Keyword:
 
         STREAM.info(" -> Executing command: %s" % command)
         # Temporarily change locale of virtual machine to en_US to prevent UnicodeDecode errors
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("export LANG=en_US.UTF-8 && %s" % command)
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("bash -c %s" % command)
         ssh_stdin.write(stdin)
         ssh_stdin.flush()
         for l in line_buffered(ssh_stdout):
             STREAM.debug(l)
         err = ssh_stderr.read()
         if len(err) > 0:
-            STREAM.error(err)
             raise Exception(err)
 
     def check_for_success_update(self):
@@ -179,7 +179,8 @@ class Keyword:
         # remove old kernels $ package-cleanup --oldkernels
 
     def update_freebsd(self, ssh):
-        self.command_exec(ssh, "pkg update && pkg upgrade -y")
+        self.command_exec(ssh, "pkg update")
+        self.command_exec(ssh, "pkg upgrade -y")
         self.command_exec(ssh, "freebsd-update fetch --not-running-from-cron")
         self.command_exec(ssh, "freebsd-update install")
         self.check_for_success_update()
