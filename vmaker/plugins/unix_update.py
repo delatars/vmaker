@@ -173,7 +173,7 @@ class Keyword:
     def update_debian(self, ssh):
         self.command_exec(ssh, "fuser -k /var/lib/dpkg/lock")
         self.command_exec(ssh, "dpkg --configure -a")
-        self.command_exec(ssh, "apt-get update && apt-get upgrade -y", "2\n")
+        self.command_exec(ssh, "apt-get update && apt-get upgrade -y", "")
         self.check_for_success_update()
 
     def update_fedora(self, ssh):
