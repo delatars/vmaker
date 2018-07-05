@@ -168,7 +168,7 @@ class Keyword:
         self.check_for_success_update()
 
     def update_centos(self, ssh):
-        self.command_exec(ssh, "yum clean all")
+        # self.command_exec(ssh, "yum clean all")
         self.command_exec(ssh, "yum update -y", "2\n")
         self.check_for_success_update()
         # remove old kernels $ package-cleanup --oldkernels
