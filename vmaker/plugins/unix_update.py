@@ -171,6 +171,7 @@ class Keyword:
         # remove old kernels $ package-cleanup --oldkernels
 
     def update_debian(self, ssh):
+        self.command_exec(ssh, "fuser -vk /usr/bin/dpkg")
         self.command_exec(ssh, "dpkg --configure -a")
         self.command_exec(ssh, "apt-get update && apt-get upgrade -y", "2\n")
         self.check_for_success_update()
@@ -188,6 +189,7 @@ class Keyword:
         self.check_for_success_update()
 
     def update_linuxmint(self, ssh):
+        self.command_exec(ssh, "fuser -vk /usr/bin/dpkg")
         self.command_exec(ssh, "dpkg --configure -a")
         self.command_exec(ssh, "apt-get update && apt-get -y upgrade", "2\n")
         self.check_for_success_update()
@@ -211,6 +213,7 @@ class Keyword:
         self.check_for_success_update()
 
     def update_ubuntu(self, ssh):
+        self.command_exec(ssh, "fuser -vk /usr/bin/dpkg")
         self.command_exec(ssh, "dpkg --configure -a")
         self.command_exec(ssh, "apt-get update && apt-get upgrade -y", "2\n")
         self.check_for_success_update()
