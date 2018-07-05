@@ -157,18 +157,14 @@ class Keyword:
 # Update methods.
 # -----------------------------------------------------------------------------------
     def update_arch(self, ssh):
-        self.command_exec(ssh, "dpkg --configure -a")
-        self.command_exec(ssh, "apt-get update && apt-get upgrade -y", "2\n")
-        self.command_exec(ssh, "apt-get dist-upgrade -y", "2\n")
+        self.command_exec(ssh, "pacman -Syu -y", "2\n")
         self.check_for_success_update()
 
     def update_altlinux(self, ssh):
         self.command_exec(ssh, "apt-get update && apt-get upgrade -y", "2\n")
-        self.command_exec(ssh, "apt-get dist-upgrade -y", "2\n")
         self.check_for_success_update()
 
     def update_centos(self, ssh):
-        # self.command_exec(ssh, "yum clean all")
         self.command_exec(ssh, "yum update -y", "2\n")
         self.check_for_success_update()
         # remove old kernels $ package-cleanup --oldkernels
@@ -176,7 +172,6 @@ class Keyword:
     def update_debian(self, ssh):
         self.command_exec(ssh, "dpkg --configure -a")
         self.command_exec(ssh, "apt-get update && apt-get upgrade -y", "2\n")
-        self.command_exec(ssh, "apt-get dist-upgrade -y", "2\n")
         self.check_for_success_update()
 
     def update_fedora(self, ssh):
@@ -185,20 +180,14 @@ class Keyword:
         # remove old kernels $ package-cleanup --oldkernels
 
     def update_freebsd(self, ssh):
+        self.command_exec(ssh, "pkg update && pkg upgrade -y")
         self.command_exec(ssh, "freebsd-update fetch --not-running-from-cron")
         self.command_exec(ssh, "freebsd-update install")
-        self.command_exec(ssh, "pkg update && pkg upgrade -y")
-        vbox_stop().main()
-        vbox_start().main()
-        ssh = self.ssh_connect_to_vm()
-        self.command_exec(ssh, "pkg update && pkg upgrade -y")
-        self.close_ssh_connection(ssh)
         self.check_for_success_update()
 
     def update_linuxmint(self, ssh):
         self.command_exec(ssh, "dpkg --configure -a")
         self.command_exec(ssh, "apt-get update && apt-get -y upgrade", "2\n")
-        self.command_exec(ssh, "apt-get dist-upgrade -y", "2\n")
         self.check_for_success_update()
 
     def update_opensuse(self, ssh):
@@ -209,7 +198,6 @@ class Keyword:
 
     def update_redhat(self, ssh):
         """Rhel"""
-        self.command_exec(ssh, "yum clean all")
         self.command_exec(ssh, "yum update -y", "2\n")
         self.check_for_success_update()
 
@@ -223,7 +211,6 @@ class Keyword:
     def update_ubuntu(self, ssh):
         self.command_exec(ssh, "dpkg --configure -a")
         self.command_exec(ssh, "apt-get update && apt-get upgrade -y", "2\n")
-        self.command_exec(ssh, "apt-get dist-upgrade -y", "2\n")
         self.check_for_success_update()
 
 
