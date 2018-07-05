@@ -66,14 +66,14 @@ class Keyword(object):
         """Method to execute remote command via ssh connection"""
         STREAM.info(" -> Executing command: %s" % command)
         # Temporarily change locale of virtual machine to en_US to prevent UnicodeDecode errors
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("export LANG=en_US.UTF-8 && %s" % command)
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('bash -c "%s"' % command)
         ssh_stdin.write(stdin)
         ssh_stdin.flush()
-        STREAM.notice(ssh_stdout.read())
+        STREAM.debug(ssh_stdout.read().decode("cp1251"))
         # print ssh_stdout.read()
         err = ssh_stderr.read()
         if len(err) > 0:
-            STREAM.error(err)
+            STREAM.debug(err.decode("cp1251"))
             # print err
 
     def get_connection_settings(self):

@@ -33,8 +33,6 @@ class LoggerOptions:
 
     @staticmethod
     def logger():
-        DEBUG = LoadSettings.DEBUG
-
         """Function setting options and return logger object"""
         logfile = open(LoggerOptions._LOGFILE, "a")
         handler = logging.StreamHandler(stream=logfile)
@@ -43,7 +41,8 @@ class LoggerOptions:
         log.addFilter(_Component_filter())
         log.addHandler(handler)
         if LoggerOptions.DEBUG:
-            coloredlogs.install(fmt='%(asctime)s [%(component)s] %(action)s [%(levelname)s] %(message)s', logger=log, level="debug")
+            coloredlogs.install(fmt='%(asctime)s [%(component)s] %(action)s [%(levelname)s] %(message)s', logger=log,
+                                level="debug")
         else:
             coloredlogs.install(fmt='%(asctime)s [%(component)s] %(action)s [%(levelname)s] %(message)s', logger=log)
         return log
