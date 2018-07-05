@@ -34,7 +34,6 @@ class Keyword:
         self.credentials = self.credentials
         self.management_type = self.management_type
         # -------------------------------------------
-        self.uname = None
         vbox_stop.vm_name = self.vm_name
         vbox_start.vm_name = self.vm_name
         STREAM.info("==> Updating Virtual machine.")
@@ -86,11 +85,14 @@ class Keyword:
                 if len(ssh_stderr.read()) > 0:
                     raise KeyError("python not found on remote os!")
         osx_full = ssh_stdout.read().lower()
-        osx = osx_full.split("-")[-3]
-        self.uname = osx
+        _osx = osx_full.split("-")
+        del _osx[-1]
+        osx = ""
+        for _os in _osx:
+            osx += _os
         STREAM.debug(" -> Platform: %s" % osx_full.strip())
         for iter_os in known_oses:
-            if iter_os == osx:
+            if iter_os in osx:
                 STREAM.debug(" -> Detected: %s" % iter_os)
                 return iter_os
         raise KeyError("Unknown os! (Not in list of 'known_oses')")
@@ -138,7 +140,7 @@ class Keyword:
 
         STREAM.info(" -> Executing command: %s" % command)
         # Temporarily change locale of virtual machine to en_US to prevent UnicodeDecode errors
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("bash -c %s" % command)
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('bash -c "%s"' % command)
         ssh_stdin.write(stdin)
         ssh_stdin.flush()
         for l in line_buffered(ssh_stdout):
