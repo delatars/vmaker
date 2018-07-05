@@ -171,7 +171,9 @@ class Core(Engine):
             except KeyError:
                 # Going to alias actions list
                 try:
-                    self.do_actions(self.current_vm_obj.aliases[action])
+                    result = self.do_actions(self.current_vm_obj.aliases[action])
+                    if result is False:
+                        return False
                 except KeyError as exc:
                     STREAM.error(" -> Unknown action! (%s)" % str(exc))
                     _restore(exc, action)
