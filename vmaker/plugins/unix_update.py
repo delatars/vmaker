@@ -98,7 +98,6 @@ class Keyword:
         """Method connects to virtual machine via ssh"""
         def try_connect(ssh):
             """Recursive function to enable multiple connection attempts"""
-            sleep(10)
             try:
                 ssh.connect(self.ssh_server, port=int(self.ssh_port), username=self.ssh_user, password=self.ssh_password)
                 STREAM.success(" -> Connection established")
@@ -113,6 +112,7 @@ class Keyword:
                     raise paramiko.ssh_exception.SSHException("Connection retries limit exceed!")
                 self.connect_tries += 1
                 STREAM.info(" -> Connection retry %s:" % self.connect_tries)
+                sleep(10)
                 try_connect(ssh)
 
         STREAM.info("==> Connecting to Virtual machine (port = %s)." % self.ssh_port)
@@ -152,7 +152,6 @@ class Keyword:
         vbox_start().main()
         ssh = self.ssh_connect_to_vm()
         self.close_ssh_connection(ssh)
-        vbox_stop().main()
 
 # Update methods.
 # -----------------------------------------------------------------------------------
