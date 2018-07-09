@@ -52,11 +52,11 @@ class Keyword:
         """Method get connection settings from configuration file attributes"""
         self.ssh_port = get_manage_port(self.vm_name)
         if self.ssh_port is None:
-            raise Exception("Manage port not specified!")
+            raise Exception("Manage port not specified! You need to use plugin 'port_forwarding' first.")
         try:
             user, password = self.credentials.split(":")
         except ValueError:
-            raise Exception("credentials must be in user:pass format!")
+            raise Exception("Credentials must be in user:pass format!")
         self.ssh_user = user.strip()
         self.ssh_password = password.strip()
 
@@ -111,11 +111,11 @@ class Keyword:
                     Popen('ssh-keygen -f %s -R "[%s]:%s"' %
                           (os.path.join(os.path.expanduser("~"), ".ssh/known_hosts"), self.ssh_server, self.ssh_port),
                           shell=True, stdout=PIPE, stderr=PIPE).communicate()
-                if self.connect_tries > 9:
+                if self.connect_tries > 20:
                     raise paramiko.ssh_exception.SSHException("Connection retries limit exceed!")
                 self.connect_tries += 1
                 STREAM.info(" -> Connection retry %s:" % self.connect_tries)
-                sleep(10)
+                sleep(15)
                 try_connect(ssh)
 
         STREAM.info("==> Connecting to Virtual machine (port = %s)." % self.ssh_port)
@@ -192,7 +192,8 @@ class Keyword:
     def update_linuxmint(self, ssh):
         self.command_exec(ssh, "fuser -k /var/lib/dpkg/lock")
         self.command_exec(ssh, "dpkg --configure -a")
-        self.command_exec(ssh, "apt-get update && apt-get -y upgrade", "2\n")
+        self.command_exec(ssh, "apt-get update")
+        self.command_exec(ssh, "apt-get upgrade -y")
         self.check_for_success_update()
 
     def update_opensuse(self, ssh):
@@ -203,21 +204,20 @@ class Keyword:
 
     def update_redhat(self, ssh):
         """Rhel"""
-        self.command_exec(ssh, "yum update -y", "2\n")
+        self.command_exec(ssh, "yum update -y")
         self.check_for_success_update()
 
     def update_suse(self, ssh):
         """Sles"""
         self.command_exec(ssh, "zypper clean", "a\n")
         self.command_exec(ssh, "zypper refresh", "a\n")
-        self.command_exec(ssh, "zypper update -y", "2\n")
+        self.command_exec(ssh, "zypper update -y")
         self.check_for_success_update()
 
     def update_ubuntu(self, ssh):
         self.command_exec(ssh, "fuser -k /var/lib/dpkg/lock")
         self.command_exec(ssh, "dpkg --configure -a")
-        self.command_exec(ssh, "apt-get update", "")
-        self.command_exec(ssh, "apt-get upgrade -y", "2\n")
+        self.command_exec(ssh, "apt-get update && apt-get upgrade -y")
         self.check_for_success_update()
 
 

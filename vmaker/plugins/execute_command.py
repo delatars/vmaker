@@ -42,11 +42,11 @@ class Keyword(object):
                     Popen('ssh-keygen -f %s -R "[%s]:%s"' %
                           (os.path.join(os.path.expanduser("~"), ".ssh/known_hosts"), self.ssh_server, self.ssh_port),
                           shell=True, stdout=PIPE, stderr=PIPE).communicate()
-                if self.connect_tries > 9:
+                if self.connect_tries > 20:
                     raise paramiko.ssh_exception.SSHException("Connection retries limit exceed!")
                 self.connect_tries += 1
                 STREAM.info(" -> Connection retry %s:" % self.connect_tries)
-                sleep(10)
+                sleep(15)
                 try_connect(ssh)
 
         STREAM.info("==> Connecting to Virtual machine (port = %s)." % self.ssh_port)
@@ -80,11 +80,11 @@ class Keyword(object):
         """Method get connection settings from configuration file attributes"""
         self.ssh_port = get_manage_port(self.vm_name)
         if self.ssh_port is None:
-            raise Exception("Manage port not specified!")
+            raise Exception("Manage port not specified! You need to use plugin 'port_forwarding' first.")
         try:
             user, password = self.credentials.split(":")
         except ValueError:
-            raise Exception("credentials must be in user:pass format!")
+            raise Exception("Credentials must be in user:pass format!")
         self.ssh_user = user.strip()
         self.ssh_password = password.strip()
 
