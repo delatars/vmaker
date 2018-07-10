@@ -22,7 +22,7 @@ def timer(f):
         res = time() - t
         print "Function spent: %s" % res
         return True
-    if inspect.ismethod(function):
+    if inspect.ismethod(f):
         return method
     return func
 
