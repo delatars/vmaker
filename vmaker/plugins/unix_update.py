@@ -163,7 +163,12 @@ class Keyword:
         self.check_for_success_update()
 
     def update_altlinux(self, ssh):
-        self.command_exec(ssh, "apt-get update && apt-get upgrade -y", get_pty=True)
+        self.command_exec(ssh, "fuser -k /var/lib/dpkg/lock")
+        self.command_exec(ssh, "dpkg --configure -a")
+        self.command_exec(ssh, "apt-get update")
+        self.command_exec(ssh, "apt-get upgrade -y", get_pty=True)
+        self.command_exec(ssh, "apt-get autoremove -y")
+        self.command_exec(ssh, "apt-get clean")
         self.check_for_success_update()
 
     def update_centos(self, ssh):
@@ -176,6 +181,8 @@ class Keyword:
         self.command_exec(ssh, "dpkg --configure -a")
         self.command_exec(ssh, "apt-get update")
         self.command_exec(ssh, "apt-get upgrade -y", get_pty=True)
+        self.command_exec(ssh, "apt-get autoremove -y")
+        self.command_exec(ssh, "apt-get clean")
         # self.command_exec(ssh, "apt-get update && apt-get upgrade -y > /dev/null 2>&1", get_pty=True)
         self.check_for_success_update()
 
@@ -196,6 +203,8 @@ class Keyword:
         self.command_exec(ssh, "dpkg --configure -a")
         self.command_exec(ssh, "apt-get update")
         self.command_exec(ssh, "apt-get upgrade -y", get_pty=True)
+        self.command_exec(ssh, "apt-get autoremove -y")
+        self.command_exec(ssh, "apt-get clean")
         self.check_for_success_update()
 
     def update_opensuse(self, ssh):
@@ -221,6 +230,8 @@ class Keyword:
         self.command_exec(ssh, "dpkg --configure -a")
         self.command_exec(ssh, "apt-get update")
         self.command_exec(ssh, "apt-get upgrade -y", get_pty=True)
+        self.command_exec(ssh, "apt-get autoremove -y")
+        self.command_exec(ssh, "apt-get clean")
         self.check_for_success_update()
 
 
