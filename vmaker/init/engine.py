@@ -107,7 +107,7 @@ class Engine(object):
                 last_modified_vm_snapshot = last_modified_vm_snapshot.strip()
             ready_vms = [vm.split("<--->")[0].strip() for vm in vms]
             STREAM.debug("Ready vms: %s" % ready_vms)
-            # remove already worked vms from working queue
+            # remove already worked virtual machines from working queue
             map(lambda x: self.config_sequence.remove(x), ready_vms)
             # Recreating session file without last got vm to prevent duplication
             with open(self._SESSION_FILE, "w") as sf:

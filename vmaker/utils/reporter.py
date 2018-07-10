@@ -10,6 +10,7 @@ from vmaker.utils.logger import STREAM
 
 
 class _Report:
+    """Object report"""
     vm_name = None
     failed_action = None
     email = None
@@ -23,6 +24,7 @@ class _Report:
 
 
 class Reporter:
+    """Class to harvest error reports and sending notifications via email"""
     CONFIG_OPTION = "alert"
     VMS = {}
     ENABLE_HARVESTER = False
@@ -33,25 +35,19 @@ class Reporter:
     CHILD_ERR = None
 
     def __init__(self, vms_objects):
+        """gets dict with virtual machines objects"""
         self.VMS = vms_objects
-        self.get_connection_settings()
+        self._get_connection_settings()
         self.reports = {}
 
     def _get_email(self, vm):
+        """get email from virtual machine object"""
         try:
             return getattr(self.VMS[vm], self.CONFIG_OPTION)
         except AttributeError:
             return None
 
-    def add_report(self, vm, action, report):
-        email = self._get_email(vm)
-        if self.ENABLE_HARVESTER and email is not None:
-            try:
-                self.reports[email] += [_Report(vm, action, report, email)]
-            except KeyError:
-                self.reports[email] = [_Report(vm, action, report, email)]
-
-    def get_connection_settings(self):
+    def _get_connection_settings(self):
         self.SMTP_SERVER = LoadSettings.SMTP_SERVER
         self.SMTP_PORT = LoadSettings.SMTP_PORT
         self.SMTP_USER = LoadSettings.SMTP_USER
@@ -61,25 +57,6 @@ class Reporter:
             STREAM.notice("Email notifications: ON")
         else:
             STREAM.notice("Email notifications: OFF")
-
-    def send_reports(self):
-        STREAM.debug("There are %s error reports found" % len(self.reports))
-        for email, report in self.reports.items():
-            msg = "You received this message because you are subscribed to" \
-                  " vmaker notifications about VM errors.\nErrors:\n" \
-                  "-------------------------------"
-            for rep in report:
-                msg += """
-    Virtual machine:  %s
-    Action:  %s\n
-    Error: \n%s
--------------------------------------------------------------------\n""" % (rep.vm_name, rep.failed_action, rep.msg)
-            STREAM.debug("==> Sending a report to: %s" % email)
-            try:
-                self._send_report(email, "vmaker:notifications:VirtualMachines:errors", msg)
-                STREAM.debug(" -> OK")
-            except Exception as exc:
-                STREAM.debug(" -> Failed (%s)" % exc)
 
     def _send_report(self, emailto, subject, body, filepath=None):
         if not self.ENABLE_HARVESTER:
@@ -105,3 +82,32 @@ class Reporter:
             smtp.login(self.SMTP_USER, self.SMTP_PASS)
         smtp.sendmail(fromaddr, emailto, text)
         smtp.quit()
+
+    def add_report(self, vm, action, report):
+        """add report to harvester"""
+        email = self._get_email(vm)
+        if self.ENABLE_HARVESTER and email is not None:
+            try:
+                self.reports[email] += [_Report(vm, action, report, email)]
+            except KeyError:
+                self.reports[email] = [_Report(vm, action, report, email)]
+
+    def send_reports(self):
+        """Sending all harvested reports"""
+        STREAM.debug("There are %s error reports found" % len(self.reports))
+        for email, report in self.reports.items():
+            msg = "You received this message because you are subscribed to" \
+                  " vmaker notifications about VM errors.\nErrors:\n" \
+                  "-------------------------------"
+            for rep in report:
+                msg += """
+    Virtual machine:  %s
+    Action:  %s\n
+    Error: \n%s
+-------------------------------------------------------------------\n""" % (rep.vm_name, rep.failed_action, rep.msg)
+            STREAM.debug("==> Sending a report to: %s" % email)
+            try:
+                self._send_report(email, "vmaker:notifications:VirtualMachines:errors", msg)
+                STREAM.debug(" -> OK")
+            except Exception as exc:
+                STREAM.debug(" -> Failed (%s)" % exc)

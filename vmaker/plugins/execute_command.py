@@ -9,6 +9,14 @@ from vmaker.plugins.port_forwarding import get_manage_port
 
 
 class Keyword(object):
+    """
+    This plugin allows to execute arbitrary command in virtual machine.
+        Command must return exitcode 0 if success, otherwise Exception raised.
+    Arguments of user configuration file:
+    vm_name = name of the virtual machine in Virtual Box (example: vm_name = ubuntu1610-amd64)
+    credentials = credentials to connect to virtual machine via management_type (example: credentials = root:toor)
+    management_type = method to connect to vm (example: management_type = ssh)
+    """
 
     REQUIRED_CONFIG_ATTRS = ['vm_name', 'credentials', 'execute_command']
     ssh_server = "localhost"
@@ -77,8 +85,10 @@ class Keyword(object):
         STREAM.debug(stdout)
         if len(stderr) > 0:
             STREAM.debug(stderr)
-        if ssh_stdout.channel.recv_exit_status() == 0:
-            STREAM.success(" -> Command executed")
+        exit_code = ssh_stdout.channel.recv_exit_status()
+        STREAM.debug("Command exitcode: %s" % exit_code)
+        if exit_code == 0:
+            STREAM.success(" -> Command executed successfully")
         else:
             raise Exception("Executed command exit status not 0")
 

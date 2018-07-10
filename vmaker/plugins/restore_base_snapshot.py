@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
-from time import sleep
 from subprocess import PIPE, Popen
 from vmaker.utils.logger import STREAM
 from vmaker.utils.auxilary import exception_interceptor
 
 class Keyword:
     """
-    template
+    This plugin allows to restore your virtual machine to previous state (using snapshot name: 'base').
+    Arguments of user configuration file:
+    vm_name = name of the virtual machine in Virtual Box (example: vm_name = ubuntu1610-amd64)
     """
     REQUIRED_CONFIG_ATTRS = ['vm_name']
 

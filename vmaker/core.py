@@ -19,7 +19,7 @@ class Core(Engine):
 
         Inheritence:
         config  ->
-                   --> engine -> Core
+                   --> engine -> core
         plugins ->
         """
 
@@ -27,7 +27,7 @@ class Core(Engine):
         # Invoke Engine
         super(Core, self).__init__()
         # self.config - dict with vm objects {vm_name: object(vm)}
-        # self.config_sequence - sequence to work with vms list[vm_name, ...]
+        # self.config_sequence - sequence to work with virtual machines list[vm_name, ...]
         # self.loaded_plugins - dict with loaded plugins {plugin_name: object(plugin)}
         STREAM.notice("==> BEGIN.")
         # Connect notification module

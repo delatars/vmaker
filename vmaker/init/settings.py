@@ -8,6 +8,10 @@ import verboselogs
 
 
 class LoadSettings:
+    """Class loads and stores base settings of vmaker
+        - Load settings
+        - store settings
+        - generate base configuration file"""
     WORK_DIR = os.path.join(os.path.expanduser("~"), ".vmaker")
     SESSION_FILE = os.path.join(WORK_DIR, '.vms.session')
     PID_FILE = os.path.join(WORK_DIR, '.vms.pid')

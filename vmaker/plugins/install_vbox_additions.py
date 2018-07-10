@@ -14,12 +14,11 @@ from vmaker.plugins.port_forwarding import get_manage_port
 
 class Keyword:
     """
-    This plugin allows to automatically update your virtual machines.
+    This plugin allows to install VirtualBox Guest Additions in your virtual machines.
     Arguments of user configuration file:
     vm_name = name of the virtual machine in Virtual Box (example: vm_name = ubuntu1610-amd64)
-    forwarding_ports = attribute of the 'port_forwarding' plugin (name:guest:host, ...)
-    ssh_rule_name = name of the port_forwarding rulename to connect via ssh (example: ssh_rule_name = vm_ssh)
-    credentials = credentials to connect to virtual machine via ssh (example: credentials = root:toor)
+    credentials = credentials to connect to virtual machine via management_type (example: credentials = root:toor)
+    management_type = method to connect to vm (example: management_type = ssh)
     """
     REQUIRED_CONFIG_ATTRS = ['vm_name', 'credentials', 'management_type']
 

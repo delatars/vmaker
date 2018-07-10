@@ -28,7 +28,7 @@ class PluginController:
     def load_plugin(self, plugin_name):        
         plugin = importlib.import_module("vmaker.plugins.%s" % plugin_name)
         cls = getattr(plugin, "Keyword")
-        STREAM.success(aligner(" -> Loading plugin <%s>" % plugin_name, "OK"))
+        STREAM.success(_aligner(" -> Loading plugin <%s>" % plugin_name, "OK"))
         sleep(0.1)
         return cls        
 
@@ -47,20 +47,20 @@ class PluginController:
             STREAM.debug(" -> Check for REQUIRED_CONFIG_ATTRS:")
             entry = getattr(cls, "REQUIRED_CONFIG_ATTRS")
             STREAM.debug("    %s" % entry)
-            STREAM.success(aligner(" -> Checking plugin <%s>" % plugin_name, "OK"))
+            STREAM.success(_aligner(" -> Checking plugin <%s>" % plugin_name, "OK"))
         except ImportError as err:
-            STREAM.warning(aligner(" -> Checking plugin <%s>" % plugin_name, "FAILED"))
+            STREAM.warning(_aligner(" -> Checking plugin <%s>" % plugin_name, "FAILED"))
             STREAM.critical("  -> %s" % err)
             sys.exit()
         except AttributeError as err:
-            STREAM.warning(aligner(" -> Checking plugin <%s>" % plugin_name, "FAILED"))
+            STREAM.warning(_aligner(" -> Checking plugin <%s>" % plugin_name, "FAILED"))
             STREAM.critical("  -> %s" % err)
             sys.exit()
         finally:
             sleep(0.1)
 
 
-def aligner(line, status):
+def _aligner(line, status):
     line_width = 60
     length = len(line)
     if length > line_width:
