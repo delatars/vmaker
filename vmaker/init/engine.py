@@ -93,7 +93,13 @@ class Engine(object):
                 self.destroy_session()
                 return None, None
             STREAM.debug("vms: %s" % vms)
-            last_vm, last_modified_vm_snapshot = vms.pop(-1).split("<--->")
+            try:
+                last_vm, last_modified_vm_snapshot = vms.pop(-1).split("<--->")
+            except IndexError:
+                STREAM.warning(" -> Session is broken.")
+                STREAM.warning(" -> Start over.")
+                self.destroy_session()
+                return None, None
             STREAM.debug("Taken snapshot: %s" % last_modified_vm_snapshot.strip())
             if last_modified_vm_snapshot.strip() == "None":
                 last_modified_vm_snapshot = None

@@ -41,5 +41,14 @@ def exception_interceptor(f):
     return wrapper
 
 
+def aligner(line):
+    line_width = 40
+    length = len(line)
+    if length > line_width:
+        return
+    add = line_width - length
+    return line + "."*add
+
+
 if __name__ == "__main__":
     pass
