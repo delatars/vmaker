@@ -65,9 +65,14 @@ class Keyword:
             else:
                 continue
             STREAM.debug("%s, %s, %s" % (name, guest, host))
-            check = Popen("vboxmanage showvminfo %s |grep -i %s" % (self.vm_name, name),
+            check1 = Popen("vboxmanage showvminfo %s |grep -i 'host port = %s'" % (self.vm_name, host),
                           shell=True, stdout=PIPE, stderr=PIPE).communicate()
-            if check[0] != "":
+            if check1[0] != "":
+                raise Exception(" -> Host port(%s) already in use! Check your virtual machine settings." % host)
+            check2 = Popen("vboxmanage showvminfo %s |grep -i %s" % (self.vm_name, name),
+                          shell=True, stdout=PIPE, stderr=PIPE).communicate()
+            if check2[0] != "":
+                print(name)
                 STREAM.debug(" -> Detecting previosly set up rule with the same name.")
                 Popen("vboxmanage modifyvm %s --natpf1 delete %s" % (self.vm_name, name),
                       shell=True, stdout=PIPE, stderr=PIPE).communicate()
