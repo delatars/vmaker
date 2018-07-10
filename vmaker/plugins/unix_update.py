@@ -131,7 +131,7 @@ class Keyword:
         """Method to close connection"""
         ssh.close()
 
-    def command_exec(self, ssh, command, stdin=""):
+    def command_exec(self, ssh, command, stdin="", get_pty=False):
         """Method to execute remote command via ssh connection"""
         def line_buffered(f):
             """Iterator object to get output in realtime from stdout buffer"""
@@ -140,7 +140,7 @@ class Keyword:
 
         STREAM.info(" -> Executing command: %s" % command)
         # Temporarily change locale of virtual machine to en_US to prevent UnicodeDecode errors
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command, get_pty=True)
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command, get_pty=get_pty)
         ssh_stdin.write(stdin)
         ssh_stdin.flush()
         for l in line_buffered(ssh_stdout):
@@ -163,7 +163,7 @@ class Keyword:
         self.check_for_success_update()
 
     def update_altlinux(self, ssh):
-        self.command_exec(ssh, "apt-get update && apt-get upgrade -y", "2\n")
+        self.command_exec(ssh, "apt-get update && apt-get upgrade -y", get_pty=True)
         self.check_for_success_update()
 
     def update_centos(self, ssh):
@@ -174,7 +174,9 @@ class Keyword:
     def update_debian(self, ssh):
         self.command_exec(ssh, "fuser -k /var/lib/dpkg/lock")
         self.command_exec(ssh, "dpkg --configure -a")
-        self.command_exec(ssh, "apt-get update && apt-get upgrade -y > /dev/null 2>&1", "")
+        self.command_exec(ssh, "apt-get update")
+        self.command_exec(ssh, "apt-get upgrade -y", get_pty=True)
+        # self.command_exec(ssh, "apt-get update && apt-get upgrade -y > /dev/null 2>&1", get_pty=True)
         self.check_for_success_update()
 
     def update_fedora(self, ssh):
@@ -193,7 +195,7 @@ class Keyword:
         self.command_exec(ssh, "fuser -k /var/lib/dpkg/lock")
         self.command_exec(ssh, "dpkg --configure -a")
         self.command_exec(ssh, "apt-get update")
-        self.command_exec(ssh, "apt-get upgrade -y")
+        self.command_exec(ssh, "apt-get upgrade -y", get_pty=True)
         self.check_for_success_update()
 
     def update_opensuse(self, ssh):
@@ -217,7 +219,8 @@ class Keyword:
     def update_ubuntu(self, ssh):
         self.command_exec(ssh, "fuser -k /var/lib/dpkg/lock")
         self.command_exec(ssh, "dpkg --configure -a")
-        self.command_exec(ssh, "apt-get update && apt-get upgrade -y")
+        self.command_exec(ssh, "apt-get update")
+        self.command_exec(ssh, "apt-get upgrade -y", get_pty=True)
         self.check_for_success_update()
 
 
