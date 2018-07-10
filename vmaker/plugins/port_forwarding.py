@@ -65,22 +65,26 @@ class Keyword:
             else:
                 continue
             STREAM.debug("%s, %s, %s" % (name, guest, host))
-            check1 = Popen("vboxmanage showvminfo %s |grep -i 'host port = %s'" % (self.vm_name, host),
-                          shell=True, stdout=PIPE, stderr=PIPE).communicate()
-            if check1[0] != "":
-                raise Exception(" -> Host port(%s) already in use! Check your virtual machine settings." % host)
-            check2 = Popen("vboxmanage showvminfo %s |grep -i %s" % (self.vm_name, name),
-                          shell=True, stdout=PIPE, stderr=PIPE).communicate()
-            if check2[0] != "":
+            check_name = Popen("vboxmanage showvminfo %s |grep -i %s" % (self.vm_name, name),
+                               shell=True, stdout=PIPE, stderr=PIPE).communicate()
+            if check_name[0] != "":
                 print(name)
                 STREAM.debug(" -> Detecting previosly set up rule with the same name.")
                 Popen("vboxmanage modifyvm %s --natpf1 delete %s" % (self.vm_name, name),
                       shell=True, stdout=PIPE, stderr=PIPE).communicate()
                 STREAM.debug(" -> Deleted rule: %s" % name)
                 STREAM.debug(" -> Set up new rule: %s" % name)
-            result = Popen("vboxmanage modifyvm %s --natpf1 %s,tcp,127.0.0.1,%s,,%s" %
-                           (self.vm_name, name, host, guest), shell=True, stdout=PIPE, stderr=PIPE).communicate()
-            STREAM.debug(result)
+                result = Popen("vboxmanage modifyvm %s --natpf1 %s,tcp,127.0.0.1,%s,,%s" %
+                               (self.vm_name, name, host, guest), shell=True, stdout=PIPE, stderr=PIPE).communicate()
+                STREAM.debug(result)
+            else:
+                check_port = Popen("vboxmanage showvminfo %s |grep -i 'host port = %s'" % (self.vm_name, host),
+                                   shell=True, stdout=PIPE, stderr=PIPE).communicate()
+                if check_port[0] != "":
+                    raise Exception(" -> Host port(%s) already in use! Check your virtual machine settings." % host)
+                result = Popen("vboxmanage modifyvm %s --natpf1 %s,tcp,127.0.0.1,%s,,%s" %
+                               (self.vm_name, name, host, guest), shell=True, stdout=PIPE, stderr=PIPE).communicate()
+                STREAM.debug(result)
             STREAM.success(" -> Forwarded ports %s(guest) => %s(host)" % (guest, host))
 
 
