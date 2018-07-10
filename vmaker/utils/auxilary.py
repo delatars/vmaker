@@ -35,19 +35,10 @@ def exception_interceptor(f):
             f(self, *args, **kwargs)
         except Exception as exc:
             STREAM.error(exc)
-            STREAM.error(format_exc())
+            STREAM.debug(format_exc())
             sys.exit(1)
         return True
     return wrapper
-
-
-def aligner(line):
-    line_width = 40
-    length = len(line)
-    if length > line_width:
-        return
-    add = line_width - length
-    return line + "."*add
 
 
 if __name__ == "__main__":

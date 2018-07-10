@@ -139,7 +139,6 @@ class Keyword:
                 yield f.readline().strip()
 
         STREAM.info(" -> Executing command: %s" % command)
-        # Temporarily change locale of virtual machine to en_US to prevent UnicodeDecode errors
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command, get_pty=get_pty)
         ssh_stdin.write(stdin)
         ssh_stdin.flush()

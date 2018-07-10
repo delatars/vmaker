@@ -65,16 +65,22 @@ class Keyword(object):
     def command_exec(self, ssh, command, stdin=""):
         """Method to execute remote command via ssh connection"""
         STREAM.info(" -> Executing command: %s" % command)
-        # Temporarily change locale of virtual machine to en_US to prevent UnicodeDecode errors
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('bash -c "%s"' % command)
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
         ssh_stdin.write(stdin)
         ssh_stdin.flush()
-        STREAM.debug(ssh_stdout.read().decode("cp1251"))
-        # print ssh_stdout.read()
-        err = ssh_stderr.read()
-        if len(err) > 0:
-            STREAM.debug(err.decode("cp1251"))
-            # print err
+        stdout = ssh_stdout.read()
+        stderr = ssh_stderr.read()
+        try:
+            unicode(stdout)
+        except:
+            stdout = stdout.decode("cp1251")
+        STREAM.debug(stdout)
+        if len(stderr) > 0:
+            STREAM.debug(stderr)
+        if ssh_stdout.channel.recv_exit_status() == 0:
+            STREAM.success(" -> Command executed")
+        else:
+            raise Exception("Executed command exit status not 0")
 
     def get_connection_settings(self):
         """Method get connection settings from configuration file attributes"""

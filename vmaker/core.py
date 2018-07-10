@@ -90,12 +90,17 @@ class Core(Engine):
             # This function restore vm to previous state
             LoggerOptions.set_component("Core")
             LoggerOptions.set_action(None)
-            with open(LoadSettings.LOG, "r") as log:
-                log.seek(-3000, 2)
-                data = log.read()
-                index = data.rfind("Traceback")
-                report_exc = data[index:]
-                report_exc = re.sub(r"\d\d\d\d-\d\d-\d\d.*", r"", report_exc).strip()
+            if LoadSettings.DEBUG:
+                with open(LoadSettings.LOG, "r") as log:
+                    log.seek(-3000, 2)
+                    data = log.read()
+                    index = data.rfind("Traceback")
+                    report_exc = data[index:]
+                    report_exc = re.sub(r"\d\d\d\d-\d\d-\d\d.*", r"", report_exc).strip()
+                self.reports.add_report(self.current_vm_obj.__name__, action, report_exc)
+            else:
+                with open(LoadSettings.LOG, "r") as log:
+                    report_exc = log.readlines()[-1]
                 self.reports.add_report(self.current_vm_obj.__name__, action, report_exc)
             STREAM.error(" -> %s" % exception)
             STREAM.error(" -> Can't proceed with this vm")
