@@ -142,7 +142,7 @@ class Keyword(object):
             return
         STREAM.debug("Vm virtual hard drive location: %s" % disk)
         # Get image id, if image with specified name already exists
-        old_image_id = self.image_exists(connection)
+        old_image_id = self.image_exists(connection, args["name"])
         # Create image object with specified properties.
         image = connection.images.create(**args)
         # Uploading image.
@@ -154,11 +154,11 @@ class Keyword(object):
             STREAM.debug(" -> Removed image with id: %s" % old_image_id)
             STREAM.success(" -> Removed.")
 
-    def image_exists(self, connection):
+    def image_exists(self, connection, name):
         """Method to check if image already exists"""
         images = self.get_images(connection)
         for image in images:
-            if image["name"] == self.vm_name:
+            if image["name"] == name:
                 exists_image = image["id"]
                 return exists_image
         return None
