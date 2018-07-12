@@ -139,11 +139,11 @@ class Engine(object):
     def args(self):
         parser = optparse.OptionParser('vmaker [options]\n\nOptions:\n  -c <path>  - Specify configuration file.\n'
                                        '  -g         - Generate default configuration file.\n\n'
-                                       '  --gfp <path>                  - Generate configuration file, based on specified path.\n'
+                                       '  --generate-from-path <path>                  - Generate configuration file, based on specified VirtualBox path.\n'
                                        '  --check-plugin <plugin name>  - Check target plugin.')
         parser.add_option("-c", dest="config_path", type="string", help="Specify config file location")
         parser.add_option("-g", dest="generate_default", action="store_true", help="Generate default config")
-        parser.add_option("--gfp", dest="generate_from_path", type="string", help="Generate config from path")
+        parser.add_option("--generate", dest="generate_from_path", type="string", help="Generate config from path")
         parser.add_option("--check-plugin", dest="check_plugin", type="string", help="Check target plugin")
         options, args = parser.parse_args()
         if options.config_path:
