@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
+import os
+import sys
 from keystoneauth1 import loading, session
 from glanceclient import Client
 from ConfigParser import ConfigParser
 from vmaker.init.settings import LoadSettings
-import os
-import sys
 from vmaker.utils.logger import STREAM
 from vmaker.utils.auxilary import exception_interceptor
 

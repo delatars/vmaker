@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from time import sleep
 from subprocess import PIPE, Popen
 from vmaker.utils.logger import STREAM
 from vmaker.utils.auxilary import exception_interceptor
@@ -33,13 +32,14 @@ class Keyword:
         return False
 
     def create_base_snapshot(self):
-        STREAM.debug("==> Create a base snapshot")
+        STREAM.info("==> Create a base snapshot")
         result = Popen('VBoxManage snapshot %s take %s' % (self.vm_name, "base"),
                        shell=True, stdout=PIPE, stderr=PIPE).communicate()
         STREAM.debug(result)
+        STREAM.success(" -> Base snapshot created")
 
     def delete_base_snapshot(self):
-        STREAM.debug("==> Delete base snapshot.")
+        STREAM.debug(" -> Delete existed base snapshot.")
         result = Popen('VBoxManage snapshot %s delete %s' % (self.vm_name, "base"),
                        shell=True, stdout=PIPE, stderr=PIPE).communicate()
         STREAM.debug(result)
