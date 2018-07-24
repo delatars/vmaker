@@ -2,12 +2,14 @@
 
 The program is intended for automatic updating of virtual machines, their uploading into Vagrant catalog and Openstack.
 
+### Wiki
+https://wiki.dev.drweb.com:8443/display/testlab/vmaker
 
 ### Installation
 
 Install from Githib
 
-    pip install git+https://github.com/delatars/vmaker
+    pip install git+https://gitlab.i.drweb.ru/testlab-unix/vmaker.git
     
 ### Usage
 
