@@ -177,7 +177,7 @@ class ConfigController:
 ;   Key specifies, which type of object will be created (vm, group, alias).
 type = vm
 ;   Key specifies plugins which will be performed for this object.
-actions = port_forwarding, vbox_start, unix_update, vbox_stop, vagrant_export
+actions = vbox_start, vbox_stop
 ; Variable keys
 ;   Key specifies to which group this object belongs.
 group = linux
@@ -209,7 +209,6 @@ vagrant_catalog = /vagrant/boxes
 type = group
 ; User keys.
 ;actions = vbox_start, ...
-;credentials = root:root
 
 ; You can combine some plugins in one action, named alias.
 [linux_aliases]
