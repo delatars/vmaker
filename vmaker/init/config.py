@@ -172,15 +172,15 @@ class ConfigController:
     def generate_default_config(config_file):
         template = """; You can create vm objects and assign them any actions.
 ; Specify preffered section name.
-[my centos]
+[vm1]
 ; Mandatory keys.
 ;   Key specifies, which type of object will be created (vm, group, alias).
 type = vm
 ;   Key specifies plugins which will be performed for this object.
-actions = vagrant_export
+actions = port_forwarding, vbox_start, unix_update, vbox_stop, vagrant_export
+; Variable keys
 ;   Key specifies to which group this object belongs.
 group = linux
-; Variable keys
 ;  If you need to create snapshot executing doing all actions you can specify a special key.
 ;  Snapshot will be created before executing actions, and will be deleted if all actions are completed successfully.
 ;backup_snapshot = true
@@ -190,7 +190,15 @@ group = linux
 ;vagrant_export_timeout = 15
 ; User keys.
 ;   You can specify your keys and use it in your plugin's classobj attributes. ex: self.vm_name
-vm_name = centos7-amd64
+; name of the virtual machine in VirtualBox.
+vm_name = centos7-template
+; The catalog in which the vagrant boxes are stored.
+vagrant_catalog = /vagrant/boxes
+
+[vm2]
+type = vm
+actions = port_forwarding, vbox_start, unix_update, vbox_stop, vagrant_export
+vm_name = centos6-template
 vagrant_catalog = /vagrant/boxes
 
 ; You can create groups and combine it with other objects.
