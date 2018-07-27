@@ -48,7 +48,7 @@ class Keyword(object):
         while True:
             if self.get_instance_status(nova, server.id) == "ACTIVE":
                 self.delete_instance(nova, server)
-                STREAM.success(" -> Image cached.")
+                STREAM.success(" -> Image has been cached.")
                 break
 
     def openstack_credentials_harvester(self):

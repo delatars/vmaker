@@ -46,6 +46,7 @@ class Keyword:
         update_method = getattr(self, "update_%s" % self.detected_os)
         update_method(ssh)
         self.close_ssh_connection(ssh)
+        STREAM.success(" -> Virtual machine has been updated.")
 
     def get_connection_settings(self):
         """Method get connection settings from configuration file attributes"""
