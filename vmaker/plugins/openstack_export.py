@@ -15,10 +15,10 @@ class Keyword(object):
     Arguments of user configuration file:
     vm_name = name of the virtual machine in Virtual Box (example: vm_name = ubuntu1610-amd64)
     openstack_cluster = <path to configuration file which contains cluster connection settings>::<target_section>
-        if path not specified connection settings will be searched in the .vmaker.ini
+        if path not specified connection settings will be searched in the vmaker.ini
         (example:
             openstack_cluster = /home/user/clusters.ini::openstack_cluster_1
-            openstack_cluster = openstack_cluster_1 (target section will be searched in .vmaker.ini)
+            openstack_cluster = openstack_cluster_1 (target section will be searched in vmaker.ini)
     openstack_image_properties = base openstack image properties
         (example: openstack_image_properties = disk_format:vdi, container_format:bare, ...)
     openstack_image_custom_properties = custom openstack image properties (can contain an empty value)

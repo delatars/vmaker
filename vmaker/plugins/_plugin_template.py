@@ -23,7 +23,7 @@ from vmaker.utils.auxilary import exception_interceptor
 
 
 # In the plugin's module should only be one class, named Keyword
-class Keyword(object):
+class Keyword:
     """This class represents the plugin's template"""
     # Plugins can take attributes from user configuration file.
     # default.ini:

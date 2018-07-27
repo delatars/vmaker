@@ -15,9 +15,8 @@ class Keyword(object):
     Arguments of user configuration file:
     vm_name = name of the virtual machine in Virtual Box (example: vm_name = ubuntu1610-amd64)
     credentials = credentials to connect to virtual machine via management_type (example: credentials = root:toor)
-    management_type = method to connect to vm (example: management_type = ssh)
+    execute_command = command which will be executed in virtual machine (example: execute_command = dnf install -y curl)
     """
-
     REQUIRED_CONFIG_ATTRS = ['vm_name', 'credentials', 'execute_command']
     ssh_server = "localhost"
     ssh_port = None

@@ -14,6 +14,7 @@ class Keyword:
     forwarding_ports = label:guest:host, ... (example: forwarding_ports = manage:22:2020, icap:1344:1234)
         If 'label' = 'manage' therefore this port will be used to connect to vm.
         You can use manage:auto parameter to use automatic manage port forwarding.
+    management_type = method to connect to vm (example: management_type = ssh)
     """
     REQUIRED_CONFIG_ATTRS = ['vm_name', 'forwarding_ports', 'management_type']
     MANAGE_TYPES_DEFAULT = {"ssh": 22, "telnet": 23, "winrm": 5985}
@@ -89,6 +90,7 @@ class Keyword:
 
 
 def get_manage_port(vm_name):
+    """This function you can use in your plugins, to get manage port of virtual machine you need to"""
     manage_port = None
     check = Popen("vboxmanage showvminfo %s |grep -i %s" % (vm_name, "vmaker_manage"),
                   shell=True, stdout=PIPE, stderr=PIPE).communicate()
