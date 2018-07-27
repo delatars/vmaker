@@ -26,13 +26,14 @@ class Keyword(object):
             openstack_image_custom_properties =
             openstack_image_custom_properties = hw_video_model:vga, hw_vif_model:e1000, ...)
     """
-    REQUIRED_CONFIG_ATTRS = ["vm_name", "openstack_cluster",
+    REQUIRED_CONFIG_ATTRS = ["vm_name", "openstack_cluster", "openstack_image_name",
                              "openstack_image_properties", "openstack_image_custom_properties"]
 
     @exception_interceptor
     def main(self):
         self.vm_name = self.vm_name
         self.openstack_cluster = self.openstack_cluster
+        self.openstack_image_name = self.openstack_image_name
         self.openstack_image_properties = self.openstack_image_properties
         self.openstack_image_custom_properties = self.openstack_image_custom_properties
         # List of available clusters
@@ -124,6 +125,7 @@ class Keyword(object):
     def upload_image(self, connection):
         """Method to upload image to the openstack cluster"""
         args = self.get_image_properties()
+        args["name"] = self.openstack_image_name
         STREAM.info("==> Uploading image...")
         STREAM.debug("Image properties: %s" % args)
         # Find where vm files are located
