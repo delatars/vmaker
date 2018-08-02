@@ -92,6 +92,13 @@ class Keyword:
             osx += _os
         STREAM.debug(" -> Platform: %s" % osx_full.strip())
         for iter_os in known_oses:
+            # hack to detect last opensuse versions
+            if "glibc" in osx_full:
+                with open("/etc/os-release", "r") as lsb:
+                    name = lsb.readline()
+                if iter_os in name.lower():
+                    print(" -> Detected: %s" % iter_os)
+                    return iter_os
             if iter_os in osx:
                 STREAM.debug(" -> Detected: %s" % iter_os)
                 return iter_os

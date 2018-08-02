@@ -7,12 +7,11 @@ from ConfigParser import ConfigParser
 from vmaker.init.settings import LoadSettings
 from vmaker.utils.logger import STREAM
 from vmaker.utils.auxilary import exception_interceptor
-from time import sleep
 
 
 class Keyword(object):
     """
-    This plugin allows to export your virtual machine, to openstack cluster.
+    This plugin create a hot cache of virtual machine in Openstack cluster.
     Arguments of user configuration file:
     vm_name = name of the virtual machine in Virtual Box (example: vm_name = ubuntu1610-amd64)
     openstack_cluster = <path to configuration file which contains cluster connection settings>::<target_section>
@@ -20,7 +19,9 @@ class Keyword(object):
         (example:
             openstack_cluster = /home/user/clusters.ini::openstack_cluster_1
             openstack_cluster = openstack_cluster_1 (target section will be searched in vmaker.ini)
-
+    openstack_image_name = name of the virtual machine in Openstack cluster (example: openstack_image_name = ubuntu1610)
+    openstack_flavor =
+    openstack_network =
     """
     REQUIRED_CONFIG_ATTRS = ["openstack_cluster", "openstack_image_name", "openstack_flavor", "openstack_network"]
 

@@ -19,6 +19,7 @@ class Keyword(object):
         (example:
             openstack_cluster = /home/user/clusters.ini::openstack_cluster_1
             openstack_cluster = openstack_cluster_1 (target section will be searched in vmaker.ini)
+    openstack_image_name = name of the virtual machine in Openstack cluster (example: openstack_image_name = ubuntu1610)
     openstack_image_properties = base openstack image properties
         (example: openstack_image_properties = disk_format:vdi, container_format:bare, ...)
     openstack_image_custom_properties = custom openstack image properties (can contain an empty value)
