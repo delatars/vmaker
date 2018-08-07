@@ -51,7 +51,11 @@ class Engine(object):
                             req_attr = self.loaded_plugins[act].REQUIRED_CONFIG_ATTRS
                             req_args = set(req_args) | set(req_attr)
                     except KeyError as key:
-                        STREAM.error("Plugin %s not enabled." % key)
+                        STREAM.error('Plugin %s not exist or not enabled.' % key)
+                        STREAM.warning("You can't use this plugin until you turn it on in .vmaker.ini")
+                        sys.exit()
+                    except AttributeError:
+                        STREAM.error("Plugin u'%s' not exist or not enabled." % action)
                         STREAM.warning("You can't use this plugin until you turn it on in .vmaker.ini")
                         sys.exit()
             vm_attrs = [name for name in dir(self.config[vm]) if not name.startswith('__')]
