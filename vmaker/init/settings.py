@@ -2,16 +2,27 @@
 import os
 import sys
 import re
-from configparser import ConfigParser, NoSectionError
-import coloredlogs
-import verboselogs
+from subprocess import PIPE, Popen
+# Check requirements
+try:
+    import coloredlogs
+    import verboselogs
+    import requests
+    import bs4
+    import glanceclient
+    import novaclient
+    import paramiko
+    from configparser import ConfigParser, NoSectionError
+except ImportError as err:
+    sys.stderr.write("Can't start vmaker! %s\nYou can install it by using 'pip install'.\n" % err)
+    sys.exit(1)
 
 
 class LoadSettings:
     """Class loads and stores base settings of vmaker
         - Load settings
-        - store settings
-        - generate base configuration file"""
+        - Store settings
+        - Generate base configuration file"""
     WORK_DIR = os.path.join(os.path.expanduser("~"), ".vmaker")
     SESSION_FILE = os.path.join(WORK_DIR, '.vms.session')
     PID_FILE = os.path.join(WORK_DIR, '.vms.pid')
@@ -31,6 +42,12 @@ class LoadSettings:
     def __init__(self):
         self.log = verboselogs.VerboseLogger(__name__)
         coloredlogs.install(fmt='%(asctime)s [Core] [%(levelname)s] %(message)s', logger=self.log)
+        process = Popen("VBoxManage -h", shell=True, stdout=PIPE, stderr=PIPE).communicate()
+        if len(process[1]) > 0:
+            self.log.critical("VboxManage not found!\nvmaker uses VBoxManage to control virtual machines.\n"
+                              "Make sure, that you have installed VirtualBox or "
+                              "VBoxManage binary in $PATH environment.")
+            sys.exit(1)
         if not os.path.exists(self.WORK_DIR):
             self.log.warning("%s not found and will be generated!" % self.GENERAL_CONFIG_FILENAME)
             os.mkdir(self.WORK_DIR)
