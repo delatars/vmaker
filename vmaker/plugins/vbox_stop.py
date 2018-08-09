@@ -38,7 +38,6 @@ class Keyword:
                         stdout=PIPE, stderr=PIPE).communicate()
         stderr = process[1]
         if len(stderr) > 0:
-            STREAM.error(stderr)
             raise Exception(stderr)
         tries = 0
         while 1:
