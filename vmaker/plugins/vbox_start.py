@@ -34,7 +34,12 @@ class Keyword:
         if self.check_vm_status():
             STREAM.info(" -> Virtual machine is already booted")
             return
-        Popen("VBoxManage startvm %s --type headless" % self.vm_name, shell=True, stdout=PIPE, stderr=PIPE)
+        process = Popen("VBoxManage startvm %s --type headless" % self.vm_name, shell=True,
+                        stdout=PIPE, stderr=PIPE).communicate()
+        stderr = process[1]
+        if len(stderr) > 0:
+            STREAM.error(stderr)
+            raise Exception(stderr)
         while 1:
             sleep(10)
             rvms = Popen("VBoxManage list runningvms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)

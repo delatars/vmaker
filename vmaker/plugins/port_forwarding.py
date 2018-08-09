@@ -69,7 +69,6 @@ class Keyword:
             check_name = Popen("vboxmanage showvminfo %s |grep -i %s" % (self.vm_name, name),
                                shell=True, stdout=PIPE, stderr=PIPE).communicate()
             if check_name[0] != "":
-                print(name)
                 STREAM.debug(" -> Detecting previosly set up rule with the same name.")
                 Popen("vboxmanage modifyvm %s --natpf1 delete %s" % (self.vm_name, name),
                       shell=True, stdout=PIPE, stderr=PIPE).communicate()
