@@ -2,7 +2,7 @@
 
 import sys
 import os
-import optparse
+import argparse
 import hashlib
 from subprocess import Popen, PIPE
 from vmaker.init.config import ConfigController
@@ -141,14 +141,16 @@ class Engine(object):
         return config_hash.hexdigest()
 
     def args(self):
-        parser = optparse.OptionParser('vmaker [options]\n\nOptions:\n  -c <path>  - Specify configuration file.\n'
-                                       '  -g         - Generate default configuration file.\n\n'
-                                       '  --generate-from-path <path>         - Generate configuration file with Virtual machines objects, based on names of specified directory.\n'
-                                       '  --check-plugin       <plugin name>  - Check target plugin.')
-        parser.add_option("-c", dest="config_path", type="string", help="Specify config file location")
-        parser.add_option("-g", dest="generate_default", action="store_true", help="Generate default config")
-        parser.add_option("--generate-from-path", dest="generate_from_path", type="string", help="Generate config from path")
-        parser.add_option("--check-plugin", dest="check_plugin", type="string", help="Check target plugin")
+        parser = argparse.ArgumentParser('vmaker',
+                                         formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=50))
+        parser.add_argument("-c", dest="config_path", type=str, metavar="<path>", help="specify configuration file")
+        parser.add_argument("-g", dest="generate_default", action="store_true",
+                            help="generate default configuration file")
+        parser.add_argument("--generate-from-path", dest="generate_from_path", metavar="<path>", type=str,
+                            help="generate configuration file "
+                                 "with Virtual machines objects, based on names of specified directory.")
+        parser.add_argument("--check-plugin", dest="check_plugin",
+                            metavar="<plugin_name>", type=str, help="check target plugin")
         options, args = parser.parse_args()
         if options.config_path:
             self._CONFIG_FILE = options.config_path
