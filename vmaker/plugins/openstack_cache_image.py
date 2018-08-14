@@ -69,7 +69,7 @@ class Keyword(object):
         if self.clusters == {}:
             STREAM.error(" -> There are no connection settings for the Openstack clusters found!")
             STREAM.error(" -> Export passed.")
-            sys.exit(0)
+            sys.exit(1)
         STREAM.info(" -> Found connection settings for the Openstack cluster")
         STREAM.info(" -> Target Openstack cluster set to: %s" % section)
         target_cluster_name = section

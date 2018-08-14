@@ -25,10 +25,15 @@ class Core(Engine):
 
     def __init__(self):
         # Invoke Engine
-        super(Core, self).__init__()
-        # self.config - dict with vm objects {vm_name: object(vm)}
-        # self.config_sequence - sequence to work with virtual machines list[vm_name, ...]
-        # self.loaded_plugins - dict with loaded plugins {plugin_name: object(plugin)}
+        try:
+            super(Core, self).__init__()
+        except KeyboardInterrupt:
+            print "\nJob was interrupted by user."
+            exit(1)
+        # inherited attributes:
+        #   self.config - dict with vm objects {vm_name: object(vm)}
+        #   self.config_sequence - sequence to work with virtual machines list[vm_name, ...]
+        #   self.loaded_plugins - dict with loaded plugins {plugin_name: object(plugin)}
         STREAM.notice("==> BEGIN.")
         # Connect notification module
         self.reports = Reporter(self.config)
@@ -44,22 +49,33 @@ class Core(Engine):
         if vm is None:
             self.create_session()
         else:
-            # If job is interrupted, restore to previous state and restore from snapshot if needed
+            # If job was interrupted, restore to previous state and restore from snapshot if needed
             self.is_session = True
             if self.current_vm_obj_snapshot is not None:
                 vm_name = self.current_vm_obj_snapshot.split("__")[0]
                 self.current_vm_obj = self.config[vm]
+                self.vbox_stop()
                 self.restore_from_snapshot(vm_name)
-        self.main()
-    
+        try:
+            self.main()
+        except KeyboardInterrupt:
+            LoggerOptions.set_component("Core")
+            LoggerOptions.set_action(None)
+            STREAM.error("==> Job was interrupted by user.")
+            STREAM.notice("==> Clearing ourselves")
+            self.vbox_stop()
+            if self.exists_snapshot:
+                self.restore_from_snapshot(self.current_vm_obj.vm_name)
+
     def main(self):
         for vm in self.config_sequence:
             self.current_vm = vm
             self.current_vm_obj = self.config[vm]
-            # if vm exists "snapshot" attribute, creating snapshot
+            # if vm exists "backup_snapshot" attribute, creating snapshot
             try:
                 if self.current_vm_obj.backup_snapshot.lower() == "true" and self.is_session is False:
                     self.exists_snapshot = True
+                    self.vbox_stop(logger_action="backup_snapshot")
                     self.take_snapshot(self.current_vm_obj.vm_name)
                     self.update_session(vm, self.current_vm_obj_snapshot)
                 elif self.current_vm_obj.backup_snapshot.lower() == "true" and self.is_session is True:
@@ -105,15 +121,9 @@ class Core(Engine):
             STREAM.error(" -> %s" % exception)
             STREAM.error(" -> Can't proceed with this vm")
             STREAM.notice("==> Clearing ourselves")
+            self.vbox_stop()
             if self.exists_snapshot:
                 self.restore_from_snapshot(self.current_vm_obj.vm_name)
-            else:
-                invoked = self.invoke_plugin("vbox_stop")
-                try:
-                    getattr(invoked, "vm_name")
-                    invoked().main()
-                except AttributeError:
-                    pass
 
         def _get_timeout():
             try:
@@ -134,7 +144,7 @@ class Core(Engine):
             return ttk
 
         def _process_guard(timeout, process):
-            # This function kill proccess if it hung up
+            # This function kill child proccess if timeout exceed
             timer = 0
             while 1:
                 if process.is_alive():
@@ -188,31 +198,45 @@ class Core(Engine):
         return True
 
     def invoke_plugin(self, plugin_name):
+        """Method allows to invoke any existed plugin"""
         keyword = self.loaded_plugins[plugin_name]
         # Injecting config attributes to plugin
         mutual_keyword = type("Keyword", (keyword, self.current_vm_obj), {})
         return mutual_keyword
 
+    def vbox_stop(self, logger_action="clearing"):
+        """Uses plugin vbox_stop"""
+        LoggerOptions.set_action(logger_action)
+        invoked = self.invoke_plugin("vbox_stop")
+        try:
+            getattr(invoked, "vm_name")
+            invoked().main()
+        except AttributeError:
+            pass
+        LoggerOptions.set_action(None)
+
     def take_snapshot(self, vm_name):
-        invoked_plugin = self.invoke_plugin("vbox_stop")
-        invoked_plugin().main()
+        LoggerOptions.set_action("backup snapshot")
         STREAM.info("==> Taking a backup snapshot")
         self.current_vm_obj_snapshot = vm_name+"__"+str(datetime.now())[:-7].replace(" ", "_")
         Popen('VBoxManage snapshot %s take %s' % (vm_name, self.current_vm_obj_snapshot),
               shell=True, stdout=PIPE, stderr=PIPE).communicate()
+        LoggerOptions.set_action(None)
 
     def restore_from_snapshot(self, vm_name):
-        invoked_plugin = self.invoke_plugin("vbox_stop")
-        invoked_plugin().main()
+        LoggerOptions.set_action("backup snapshot")
         STREAM.info("==> Restoring to previous state...")
         Popen('VBoxManage snapshot %s restore %s' % (vm_name, self.current_vm_obj_snapshot),
               shell=True, stdout=PIPE, stderr=PIPE).communicate()
         STREAM.info(" -> Restore complete.")
+        LoggerOptions.set_action(None)
 
     def delete_snapshot(self, vm_name):
+        LoggerOptions.set_action("backup snapshot")
         STREAM.info("==> Deleting backup snapshot.")
         Popen('VBoxManage snapshot %s delete %s' % (vm_name, self.current_vm_obj_snapshot),
               shell=True, stdout=PIPE, stderr=PIPE).communicate()
+        LoggerOptions.set_action(None)
 
 
 if __name__ == "__main__":

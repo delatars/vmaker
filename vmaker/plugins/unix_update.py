@@ -155,6 +155,7 @@ class Keyword:
         # STREAM.error(err)
         if len(err) > 0:
             raise Exception(err)
+        STREAM.success(" -> Command executed successfully")
 
     def check_for_success_update(self):
         vbox_stop().main()

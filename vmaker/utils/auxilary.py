@@ -33,6 +33,8 @@ def exception_interceptor(f):
     def wrapper(self, *args, **kwargs):
         try:
             f(self, *args, **kwargs)
+        except KeyboardInterrupt:
+            sys.exit(1)
         except Exception as exc:
             STREAM.error(exc)
             STREAM.debug(format_exc())
