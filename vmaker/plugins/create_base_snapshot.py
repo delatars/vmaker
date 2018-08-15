@@ -35,6 +35,9 @@ class Keyword:
         STREAM.info("==> Create a base snapshot")
         result = Popen('VBoxManage snapshot %s take %s' % (self.vm_name, "base"),
                        shell=True, stdout=PIPE, stderr=PIPE).communicate()
+        stderr = result[1]
+        if len(stderr) > 0:
+            STREAM.error(stderr)
         STREAM.debug(result)
         STREAM.success(" -> Base snapshot created")
 
@@ -42,6 +45,9 @@ class Keyword:
         STREAM.debug(" -> Delete existed base snapshot.")
         result = Popen('VBoxManage snapshot %s delete %s' % (self.vm_name, "base"),
                        shell=True, stdout=PIPE, stderr=PIPE).communicate()
+        stderr = result[1]
+        if len(stderr) > 0:
+            STREAM.error(stderr)
         STREAM.debug(result)
     
 
