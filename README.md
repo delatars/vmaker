@@ -9,19 +9,22 @@ https://wiki.dev.drweb.com:8443/display/testlab/vmaker
 
 Install from Githib
 
-    pip install git+https://gitlab.i.drweb.ru/testlab-unix/vmaker.git
+    pip install 
     
 ### Usage
 
 ```bash
 $ vmaker -h
-Usage: vmaker [options]
-
-Options:
-  -c <path>  - Specify config file
-  -g         - Generate default config
-
-  --gfp <path>                  - Generate configuration file, based on specified path.
-  --check-plugin <plugin name>  - Check target plugin.
+usage: vmaker [-h] [-c <path>] [-g] [--generate-from-path <path>]
+              [--check-plugin <plugin_name>]
+ 
+optional arguments:
+  -h, --help                    show this help message and exit
+  -c <path>                     specify configuration file
+  -g                            generate default configuration file
+  --generate-from-path <path>   generate configuration file with Virtual
+                                machines objects, based on names of specified
+                                directory.
+  --check-plugin <plugin_name>  check target plugin
 
 ```
