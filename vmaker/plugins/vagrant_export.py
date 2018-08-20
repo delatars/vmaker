@@ -26,7 +26,8 @@ class Keyword:
         # ----------------------------
         if self.vagrant_catalog.endswith("/"):
             self.vagrant_catalog = self.vagrant_catalog[:-1]
-        if LoadSettings.VAGRANT_SERVER_URL == "":
+        self.vagrant_server_url = LoadSettings.VAGRANT_SERVER_URL
+        if self.vagrant_server_url == "":
             raise Exception("Parameter 'vagrant_server_url' not specified, you must specify it in vmaker.ini")
         if self.vagrant_server_url.endswith("/"):
             self.vagrant_server_url = self.vagrant_server_url[:-1]
