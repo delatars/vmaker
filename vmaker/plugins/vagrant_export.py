@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 import os
-import sys
 import shutil
 import tarfile
 from datetime import datetime
 from subprocess import Popen, PIPE
 from vmaker.utils.logger import STREAM
+from vmaker.init.settings import LoadSettings
 from vmaker.utils.auxilary import exception_interceptor
 
 
@@ -23,8 +23,12 @@ class Keyword:
         # - Config attributes
         self.vm_name = self.vm_name
         self.vagrant_catalog = self.vagrant_catalog
+        if self.vagrant_catalog.endswith("/"):
+            self.vagrant_catalog = self.vagrant_catalog[:-1]
         # ----------------------------
-        self.vagrant_server_box_location_url = "http:\/\/vagrant.i.drweb.ru\/files\/unix"
+        if LoadSettings.VAGRANT_SERVER_URL is None:
+            raise Exception("'vagrant_server_url' not specified, you must specify it in vmaker.ini")
+        self.vagrant_server_url = LoadSettings.VAGRANT_SERVER_URL.replace("\\", "\/")
         self.provider = "virtualbox"
         self.version = datetime.now().strftime("%Y%m%d%H%M")
         self.boxname = "%s_%s_%s.box.prep" % (self.vm_name, self.version, self.provider)
@@ -57,7 +61,11 @@ class Keyword:
         STREAM.debug(" -> Calculating box checksum...")
         checksum = self._calculate_box_hash()
         STREAM.debug(" -> sha1 checksum: %s" % checksum)
-        url = "\/".join([self.vagrant_server_box_location_url, self.vm_name, self.boxname[:-5]])
+        rel_path = self.vagrant_catalog[self.vagrant_catalog.find("html")+4:]
+        rel_path = rel_path.split("/")
+        url_rebuild = "\/".join(rel_path)
+        url = "\/".join([self.vagrant_server_url, url_rebuild, self.vm_name, self.boxname[:-5]])
+        name = os.path.basename(url_rebuild) + "\/" + self.vm_name
         template = """{
     "name": "unix\/%s",
     "versions": [
@@ -74,7 +82,7 @@ class Keyword:
         }
     ]
 }
-        """ % (self.vm_name, self.version, self.provider, url, checksum)
+        """ % (name, self.version, self.provider, url, checksum)
         with open(os.path.join(self.work_dir, "metadata.json"), "w") as metadata:
             metadata.write(template)
 

@@ -34,6 +34,8 @@ class LoadSettings:
     TIMEOUT = 20
     LOG = os.path.join(WORK_DIR, "stdout.log")
     DEBUG = False
+
+    VAGRANT_SERVER_URL = None
     SMTP_SERVER = ""
     SMTP_PORT = 25
     SMTP_USER = ""
@@ -76,6 +78,8 @@ timeout = 20
 log = %s
 ; Enable/Disable debug prints
 debug = false
+; Url to your vagrant server
+;vagrant_server_url = "http:\\localhost"
 
 ; Email notifications connection settings
 ;smtp_server = 
