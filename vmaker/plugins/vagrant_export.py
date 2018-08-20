@@ -23,12 +23,14 @@ class Keyword:
         # - Config attributes
         self.vm_name = self.vm_name
         self.vagrant_catalog = self.vagrant_catalog
+        # ----------------------------
         if self.vagrant_catalog.endswith("/"):
             self.vagrant_catalog = self.vagrant_catalog[:-1]
-        # ----------------------------
         if LoadSettings.VAGRANT_SERVER_URL is None:
-            raise Exception("'vagrant_server_url' not specified, you must specify it in vmaker.ini")
-        self.vagrant_server_url = LoadSettings.VAGRANT_SERVER_URL.replace("\\", "\/")
+            raise Exception("Parameter 'vagrant_server_url' not specified, you must specify it in vmaker.ini")
+        if self.vagrant_server_url.endswith("/"):
+            self.vagrant_server_url = self.vagrant_server_url[:-1]
+        self.vagrant_server_url = LoadSettings.VAGRANT_SERVER_URL.replace("//", "\/")
         self.provider = "virtualbox"
         self.version = datetime.now().strftime("%Y%m%d%H%M")
         self.boxname = "%s_%s_%s.box.prep" % (self.vm_name, self.version, self.provider)
