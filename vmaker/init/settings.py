@@ -35,7 +35,7 @@ class LoadSettings:
     LOG = os.path.join(WORK_DIR, "stdout.log")
     DEBUG = False
 
-    VAGRANT_SERVER_URL = None
+    VAGRANT_SERVER_URL = ""
     SMTP_SERVER = ""
     SMTP_PORT = 25
     SMTP_USER = ""
