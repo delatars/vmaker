@@ -151,17 +151,17 @@ class Engine(object):
                                  "with Virtual machines objects, based on names of specified directory.")
         parser.add_argument("--check-plugin", dest="check_plugin",
                             metavar="<plugin_name>", type=str, help="check target plugin")
-        options, args = parser.parse_args()
-        if options.config_path:
-            self._CONFIG_FILE = options.config_path
-        if options.generate_default:
+        args = parser.parse_args()
+        if args.config_path:
+            self._CONFIG_FILE = args.config_path
+        if args.generate_default:
             ConfigController.generate_default_config(self._CONFIG_FILE)
             exit(0)
-        if options.generate_from_path:
-            ConfigController.generate_from_path(options.generate_from_path)
+        if args.generate_from_path:
+            ConfigController.generate_from_path(args.generate_from_path)
             exit(0)
-        if options.check_plugin:
-            PluginController.check_plugin(options.check_plugin)
+        if args.check_plugin:
+            PluginController.check_plugin(args.check_plugin)
             exit(0)
 
 
