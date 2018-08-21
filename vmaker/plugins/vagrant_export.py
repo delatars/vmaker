@@ -70,7 +70,7 @@ class Keyword:
         url = "\/".join([self.vagrant_server_url, url_rebuild, self.vm_name, self.boxname[:-5]])
         name = os.path.basename(url_rebuild) + "\/" + self.vm_name
         template = """{
-    "name": "unix\/%s",
+    "name": "%s",
     "versions": [
         {
             "version": "%s",
