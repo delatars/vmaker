@@ -159,3 +159,5 @@ load include_vagrantfile if File.exist?(include_vagrantfile)
         os.rename(os.path.join(self.work_dir, self.boxname), os.path.join(self.work_dir, self.boxname[:-5]))
 
 
+if __name__ == "__main__":
+    pass

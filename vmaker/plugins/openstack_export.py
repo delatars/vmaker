@@ -120,7 +120,9 @@ class Keyword(object):
                 vm_path = os.path.join(paths, self.vm_name)
                 return vm_path
         if vm_path is None:
-            STREAM.error("Vm directory (%s) not found in the Vbox catalog directory(%s)" % (self.vm_name, vbox_path))
+            STREAM.error("VirtualMachine directory(%s) not found in the VirtualBox catalog directory tree(%s)!\n"
+                         "Make sure that the virtual machine name you specify in parameter(vm_name) exists"
+                         " in the directory tree (%s)" % (self.vm_name, vbox_path, vbox_path))
             return None
 
     def upload_image(self, connection):
@@ -131,7 +133,7 @@ class Keyword(object):
         STREAM.debug("Image properties: %s" % args)
         # Find where vm files are located
         vm_dir = self.find_vm_files()
-        STREAM.debug("Vm directory: %s" % vm_dir)
+        STREAM.debug("VirtualMachine directory: %s" % vm_dir)
         if vm_dir is None:
             return
         # Find specified disk format in vm directory.
@@ -140,10 +142,11 @@ class Keyword(object):
             if fil.endswith(args["disk_format"]):
                 disk = os.path.join(vm_dir, fil)
         if disk is None:
-            STREAM.error("%s disk not found in %s" % (args["disk_format"], vm_dir))
+            STREAM.error("%s disk not found in %s\nMake sure that you are specify a right disk_format "
+                         "in parameter(openstack_image_properties) or the disk exists." % (args["disk_format"], vm_dir))
             STREAM.error("Export in openstack passed.")
             return
-        STREAM.debug("Vm virtual hard drive location: %s" % disk)
+        STREAM.debug("VirtualMachine's virtual hard drive location: %s" % disk)
         # Get image id, if image with specified name already exists
         old_image_id = self.image_exists(connection, args["name"])
         # Create image object with specified properties.
@@ -173,4 +176,4 @@ class Keyword(object):
 
 
 if __name__ == "__main__":
-    Keyword().main()
+    pass
