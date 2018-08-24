@@ -114,14 +114,16 @@ load include_vagrantfile if File.exist?(include_vagrantfile)
         vms = Popen("vboxmanage list vms |awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE).communicate()
         vms = vms[0]
         if not self.vm_name in vms:
-            STREAM.error(" -> Vm doesn't exist, passed.")
+            STREAM.error(" -> VirtualMachine doesn't exist!\nMake sure that the virtual machine"
+                         " you specified in the parameter(vm_name) are exists.")
             return False
         STREAM.success(" -> Exists: True")
         STREAM.info("==> Exporting configuration...")
         STREAM.debug(" -> vagrant catalog directory: %s" % self.vagrant_catalog)
         if not os.path.exists(self.vagrant_catalog):
-            STREAM.critical(" -> Vagrant catalog (%s) directory does not exist" % self.vagrant_catalog)
-            STREAM.warning(" -> Export, passed.")
+            STREAM.error(" -> Vagrant catalog (%s) does not exist!\nMake sure that the catalog"
+                         " you specified in the parameter(vagrant_catalog) are exists." % self.vagrant_catalog)
+            STREAM.warning(" -> Export in vagrant, passed.")
             return False
         self.work_dir = os.path.join(self.vagrant_catalog, self.vm_name)
         self.tmp_dir = os.path.join(self.vagrant_catalog, self.vm_name, "tmp")

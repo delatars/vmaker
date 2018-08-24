@@ -67,8 +67,9 @@ class Keyword(object):
         args = {key: value.strip() for key, value in config.items(section)}
         self.clusters[section] = args
         if self.clusters == {}:
-            STREAM.error(" -> There are no connection settings for the Openstack clusters found!")
-            STREAM.error(" -> Export passed.")
+            STREAM.error(" -> There are no connection settings for the Openstack clusters found!\nMake sure"
+                         "that parameter(openstack_cluster) specified correctly.")
+            STREAM.error(" -> Export in Openstack passed.")
             sys.exit(1)
         STREAM.info(" -> Found connection settings for the Openstack cluster")
         STREAM.info(" -> Target Openstack cluster set to: %s" % section)

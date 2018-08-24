@@ -152,7 +152,6 @@ class Keyword:
         for l in line_buffered(ssh_stdout):
             STREAM.debug(l)
         err = ssh_stderr.read()
-        # STREAM.error(err)
         if len(err) > 0:
             raise Exception(err)
         STREAM.success(" -> Command executed successfully")
