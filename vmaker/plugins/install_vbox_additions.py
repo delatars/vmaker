@@ -14,10 +14,10 @@ from vmaker.plugins.port_forwarding import get_manage_port
 
 class Keyword:
     """
-    This plugin allows to install VirtualBox Guest Additions in your virtual machines.
+    This plugin allows to install VirtualBox Guest Additions in your VirtualMachines.
     Arguments of user configuration file:
-    vm_name = name of the virtual machine in Virtual Box (example: vm_name = ubuntu1610-amd64)
-    credentials = credentials to connect to virtual machine via management_type (example: credentials = root:toor)
+    vm_name = name of the VirtualMachine in Virtual Box (example: vm_name = ubuntu1610-amd64)
+    credentials = credentials to connect to VirtualMachine via management_type (example: credentials = root:toor)
     management_type = method to connect to vm (example: management_type = ssh)
     """
     REQUIRED_CONFIG_ATTRS = ['vm_name', 'credentials', 'management_type']
@@ -56,7 +56,7 @@ class Keyword:
         self.ssh_password = password.strip()
 
     def ssh_connect_to_vm(self):
-        """Method connects to virtual machine via ssh"""
+        """Method connects to VirtualMachine via ssh"""
         def try_connect(ssh):
             """Recursive function to enable multiple connection attempts"""
             try:
@@ -76,7 +76,7 @@ class Keyword:
                 sleep(15)
                 try_connect(ssh)
 
-        STREAM.info("==> Connecting to Virtual machine (port = %s)." % self.ssh_port)
+        STREAM.info("==> Connecting to VirtualMachine (port = %s)." % self.ssh_port)
         ssh = paramiko.SSHClient()
         ssh.load_system_host_keys()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -90,7 +90,7 @@ class Keyword:
         ssh.close()
 
     def vbox_guestadditions_update(self, ssh):
-        """Method to update Virtual Box Guest Additions in virtual machine"""
+        """Method to update Virtual Box Guest Additions in VirtualMachine"""
         def line_buffered(f, f2):
             while not f.channel.exit_status_ready():
                 yield f.readline().strip(), f2.readline().strip()
@@ -108,7 +108,7 @@ class Keyword:
         STREAM.success(" -> VboxGuestAdditions updated")
 
     def mount_vbox_guestadditions(self, ssh):
-        """Method to mount VirtualBoxGuestAdditions.iso to virtual machine"""
+        """Method to mount VirtualBoxGuestAdditions.iso to VirtualMachine"""
         Popen('vboxmanage storageattach %s --storagectl "IDE" --port 1 --device 0'
                         ' --type dvddrive --medium %s --forceunmount' % (self.vm_name, "emptydrive"),
                         shell=True, stdout=PIPE, stderr=PIPE).communicate()
@@ -127,7 +127,7 @@ class Keyword:
         return True
 
     def check_vbox_guestadditions_version(self, ssh):
-        """Method to check version of Virtual Box Guest Additions in virtual machine"""
+        """Method to check version of Virtual Box Guest Additions in VirtualMachine"""
         STREAM.debug(" -> Checking VboxGuestAdditions version")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("modinfo vboxguest |grep -iw version| awk '{print $2}'")
         version = ssh_stdout.read()

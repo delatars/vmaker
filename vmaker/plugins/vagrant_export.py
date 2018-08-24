@@ -11,9 +11,9 @@ from vmaker.utils.auxilary import exception_interceptor
 
 class Keyword:
     """
-    This plugin allows to export your virtual machine, to vagrant catalog.
+    This plugin allows to export your VirtualMachine, to vagrant catalog.
     Arguments of user configuration file:
-    vm_name = name of the virtual machine in Virtual Box (example: vm_name = ubuntu1610-amd64)
+    vm_name = name of the VirtualMachine in Virtual Box (example: vm_name = ubuntu1610-amd64)
     vagrant_catalog = path to vagrant catalog (example: vagrant_catalog = /var/www/vagrant)
     """
     REQUIRED_CONFIG_ATTRS = ['vm_name', 'vagrant_catalog']
@@ -109,12 +109,12 @@ load include_vagrantfile if File.exist?(include_vagrantfile)
             vagrant_file.write(template)
 
     def export_vm_configuration(self):
-        """Method to export virtual machine configuration from Virtual Vox"""
+        """Method to export VirtualMachine configuration from Virtual Vox"""
         STREAM.info("==> Checking if vm exists...")
         vms = Popen("vboxmanage list vms |awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE).communicate()
         vms = vms[0]
         if not self.vm_name in vms:
-            STREAM.error(" -> VirtualMachine doesn't exist!\nMake sure that the virtual machine"
+            STREAM.error(" -> VirtualMachine doesn't exist!\nMake sure that the VirtualMachine"
                          " you specified in the parameter(vm_name) are exists.")
             return False
         STREAM.success(" -> Exists: True")

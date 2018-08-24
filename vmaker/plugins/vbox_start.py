@@ -6,9 +6,9 @@ from vmaker.utils.auxilary import exception_interceptor
 
 class Keyword:
     """
-    This plugin allows to start your virtual machine.
+    This plugin allows to start your VirtualMachine.
     Arguments of user configuration file:
-    vm_name = name of the virtual machine in Virtual Box (example: vm_name = ubuntu1610-amd64)
+    vm_name = name of the VirtualMachine in Virtual Box (example: vm_name = ubuntu1610-amd64)
     """
     REQUIRED_CONFIG_ATTRS = ['vm_name']
 
@@ -24,15 +24,15 @@ class Keyword:
         rvms = Popen("VBoxManage list runningvms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)
         data = rvms.stdout.read()
         if self.vm_name in data:
-            STREAM.debug(" -> Virtual machine is already booted")
+            STREAM.debug(" -> VirtualMachine is already booted")
             return True
-        STREAM.debug(" -> Virtual machine is turned off")
+        STREAM.debug(" -> VirtualMachine is turned off")
         return False
 
     def start(self):
-        STREAM.info("==> Starting Virtual machine...")
+        STREAM.info("==> Starting VirtualMachine...")
         if self.check_vm_status():
-            STREAM.info(" -> Virtual machine is already booted")
+            STREAM.info(" -> VirtualMachine is already booted")
             return
         process = Popen("VBoxManage startvm %s --type headless" % self.vm_name, shell=True,
                         stdout=PIPE, stderr=PIPE).communicate()
@@ -45,7 +45,7 @@ class Keyword:
             data = rvms.stdout.read()
             if self.vm_name in data:
                 break
-        STREAM.info(" -> Virtual machine successfully booted.")
+        STREAM.info(" -> VirtualMachine successfully booted.")
     
 
 if __name__ == "__main__":

@@ -11,15 +11,15 @@ from vmaker.utils.auxilary import exception_interceptor
 
 class Keyword(object):
     """
-    This plugin create a hot cache of virtual machine in Openstack cluster.
+    This plugin create a hot cache of VirtualMachine in Openstack cluster.
     Arguments of user configuration file:
-    vm_name = name of the virtual machine in Virtual Box (example: vm_name = ubuntu1610-amd64)
+    vm_name = name of the VirtualMachine in Virtual Box (example: vm_name = ubuntu1610-amd64)
     openstack_cluster = <path to configuration file which contains cluster connection settings>::<target_section>
         if path not specified connection settings will be searched in the vmaker.ini
         (example:
             openstack_cluster = /home/user/clusters.ini::openstack_cluster_1
             openstack_cluster = openstack_cluster_1 (target section will be searched in vmaker.ini)
-    openstack_image_name = name of the virtual machine in Openstack cluster (example: openstack_image_name = ubuntu1610)
+    openstack_image_name = name of the VirtualMachine in Openstack cluster (example: openstack_image_name = ubuntu1610)
     openstack_flavor =
     openstack_network =
     """

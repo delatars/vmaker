@@ -12,10 +12,10 @@ from vmaker.plugins.port_forwarding import get_manage_port
 
 class Keyword:
     """
-    This plugin allows to automatically update your virtual machines.
+    This plugin allows to automatically update your VirtualMachines.
     Arguments of user configuration file:
-    vm_name = name of the virtual machine in Virtual Box (example: vm_name = ubuntu1610-amd64)
-    credentials = credentials to connect to virtual machine via management_type (example: credentials = root:toor)
+    vm_name = name of the VirtualMachine in Virtual Box (example: vm_name = ubuntu1610-amd64)
+    credentials = credentials to connect to VirtualMachine via management_type (example: credentials = root:toor)
     management_type = method to connect to vm (example: management_type = ssh)
     """
     REQUIRED_CONFIG_ATTRS = ['vm_name', 'credentials', 'management_type']
@@ -35,7 +35,7 @@ class Keyword:
         # -------------------------------------------
         vbox_stop.vm_name = self.vm_name
         vbox_start.vm_name = self.vm_name
-        STREAM.info("==> Updating Virtual machine.")
+        STREAM.info("==> Updating VirtualMachine.")
         self.get_connection_settings()
         if self.management_type == "ssh":
             ssh = self.ssh_connect_to_vm()
@@ -46,7 +46,7 @@ class Keyword:
         update_method = getattr(self, "update_%s" % self.detected_os)
         update_method(ssh)
         self.close_ssh_connection(ssh)
-        STREAM.success(" -> Virtual machine has been updated.")
+        STREAM.success(" -> VirtualMachine has been updated.")
 
     def get_connection_settings(self):
         """Method get connection settings from configuration file attributes"""
@@ -61,7 +61,7 @@ class Keyword:
         self.ssh_password = password.strip()
 
     def get_vm_platform(self, ssh):
-        """Method detects platform in virtual machine"""
+        """Method detects platform in VirtualMachine"""
         known_oses = [
             "arch",
             "altlinux",
@@ -105,7 +105,7 @@ class Keyword:
         raise KeyError("Unknown os! (Not in list of 'known_oses')")
 
     def ssh_connect_to_vm(self):
-        """Method connects to virtual machine via ssh"""
+        """Method connects to VirtualMachine via ssh"""
         def try_connect(ssh):
             """Recursive function to enable multiple connection attempts"""
             try:
@@ -125,7 +125,7 @@ class Keyword:
                 sleep(15)
                 try_connect(ssh)
 
-        STREAM.info("==> Connecting to Virtual machine (port = %s)." % self.ssh_port)
+        STREAM.info("==> Connecting to VirtualMachine (port = %s)." % self.ssh_port)
         ssh = paramiko.SSHClient()
         ssh.load_system_host_keys()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())

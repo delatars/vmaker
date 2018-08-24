@@ -6,9 +6,9 @@ from vmaker.utils.auxilary import exception_interceptor
 
 class Keyword:
     """
-    This plugin allows to stop your virtual machine.
+    This plugin allows to stop your VirtualMachine.
     Arguments of user configuration file:
-    vm_name = name of the virtual machine in Virtual Box (example: vm_name = ubuntu1610-amd64)
+    vm_name = name of the VirtualMachine in Virtual Box (example: vm_name = ubuntu1610-amd64)
     """
     REQUIRED_CONFIG_ATTRS = ['vm_name']
 
@@ -24,15 +24,15 @@ class Keyword:
         rvms = Popen("VBoxManage list runningvms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)
         data = rvms.stdout.read()
         if self.vm_name in data:
-            STREAM.debug(" -> Virtual machine is already booted")
+            STREAM.debug(" -> VirtualMachine is already booted")
             return True
-        STREAM.debug(" -> Virtual machine is turned off")
+        STREAM.debug(" -> VirtualMachine is turned off")
         return False
 
     def stop(self):
-        STREAM.info("==> Attempting to gracefull shutdown Virtual machine")
+        STREAM.info("==> Attempting to gracefull shutdown VirtualMachine")
         if not self.check_vm_status():
-            STREAM.info(" -> Virtual machine is already stoped")
+            STREAM.info(" -> VirtualMachine is already stoped")
             return
         process = Popen("VBoxManage controlvm %s acpipowerbutton" % self.vm_name, shell=True,
                         stdout=PIPE, stderr=PIPE).communicate()
@@ -46,7 +46,7 @@ class Keyword:
             if self.vm_name not in data:
                 break            
             if tries > 5:
-                STREAM.info(" -> Forcing shutdown Virtual machine")
+                STREAM.info(" -> Forcing shutdown VirtualMachine")
                 Popen("VBoxManage controlvm %s poweroff soft" % self.vm_name, shell=True,
                       stdout=PIPE, stderr=PIPE).communicate()
                 break

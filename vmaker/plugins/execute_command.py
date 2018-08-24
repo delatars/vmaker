@@ -10,12 +10,12 @@ from vmaker.plugins.port_forwarding import get_manage_port
 
 class Keyword(object):
     """
-    This plugin allows to execute arbitrary command in virtual machine.
+    This plugin allows to execute arbitrary command in VirtualMachine.
         Command must return exitcode 0 if success, otherwise Exception raised.
     Arguments of user configuration file:
-    vm_name = name of the virtual machine in Virtual Box (example: vm_name = ubuntu1610-amd64)
-    credentials = credentials to connect to virtual machine via management_type (example: credentials = root:toor)
-    execute_command = command which will be executed in virtual machine (example: execute_command = dnf install -y curl)
+    vm_name = name of the VirtualMachine in Virtual Box (example: vm_name = ubuntu1610-amd64)
+    credentials = credentials to connect to VirtualMachine via management_type (example: credentials = root:toor)
+    execute_command = command which will be executed in VirtualMachine (example: execute_command = dnf install -y curl)
     """
     REQUIRED_CONFIG_ATTRS = ['vm_name', 'credentials', 'execute_command']
     ssh_server = "localhost"
@@ -37,7 +37,7 @@ class Keyword(object):
         self.close_ssh_connection(ssh)
 
     def connect_to_vm(self):
-        """Method connects to virtual machine via ssh"""
+        """Method connects to VirtualMachine via ssh"""
         def try_connect(ssh):
             """Recursive function to enable multiple connection attempts"""
             self.connect_tries += 1
@@ -58,7 +58,7 @@ class Keyword(object):
                 sleep(15)
                 try_connect(ssh)
 
-        STREAM.info("==> Connecting to Virtual machine (port = %s)." % self.ssh_port)
+        STREAM.info("==> Connecting to VirtualMachine (port = %s)." % self.ssh_port)
         ssh = paramiko.SSHClient()
         ssh.load_system_host_keys()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())

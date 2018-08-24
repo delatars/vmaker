@@ -11,15 +11,15 @@ from vmaker.utils.auxilary import exception_interceptor
 
 class Keyword(object):
     """
-    This plugin allows to export your virtual machine, to openstack cluster.
+    This plugin allows to export your VirtualMachine, to openstack cluster.
     Arguments of user configuration file:
-    vm_name = name of the virtual machine in Virtual Box (example: vm_name = ubuntu1610-amd64)
+    vm_name = name of the VirtualMachine in Virtual Box (example: vm_name = ubuntu1610-amd64)
     openstack_cluster = <path to configuration file which contains cluster connection settings>::<target_section>
         if path not specified connection settings will be searched in the vmaker.ini
         (example:
             openstack_cluster = /home/user/clusters.ini::openstack_cluster_1
             openstack_cluster = openstack_cluster_1 (target section will be searched in vmaker.ini)
-    openstack_image_name = name of the virtual machine in Openstack cluster (example: openstack_image_name = ubuntu1610)
+    openstack_image_name = name of the VirtualMachine in Openstack cluster (example: openstack_image_name = ubuntu1610)
     openstack_image_properties = base openstack image properties
         (example: openstack_image_properties = disk_format:vdi, container_format:bare, ...)
     openstack_image_custom_properties = custom openstack image properties (can contain an empty value)
@@ -101,7 +101,7 @@ class Keyword(object):
         connection.images.delete(id)
 
     def find_vm_files(self):
-        """Method to find virtual machine files location"""
+        """Method to find VirtualMachine files location"""
         try:
             vbox_path = getattr(self, "openstack_vbox_catalog")
         except AttributeError:
@@ -121,7 +121,7 @@ class Keyword(object):
                 return vm_path
         if vm_path is None:
             STREAM.error("VirtualMachine directory(%s) not found in the VirtualBox catalog directory tree(%s)!\n"
-                         "Make sure that the virtual machine name you specify in parameter(vm_name) exists"
+                         "Make sure that the VirtualMachine name you specify in parameter(vm_name) exists"
                          " in the directory tree (%s)" % (self.vm_name, vbox_path, vbox_path))
             return None
 
