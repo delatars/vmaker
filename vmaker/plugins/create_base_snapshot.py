@@ -58,8 +58,8 @@ class Keyword:
             STREAM.debug(result)
 
         def deletor():
-            snapshots = self.get_snapshots_list()
             try:
+                snapshots = self.get_snapshots_list()
                 for uuid, name in snapshots.items():
                     if name == "base":
                         delete_snap(uuid)
