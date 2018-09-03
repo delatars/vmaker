@@ -2,7 +2,7 @@
 import os
 import sys
 from keystoneauth1 import loading, session
-from novaclient.v2.client import Client
+from novaclient.client import Client
 from ConfigParser import ConfigParser
 from vmaker.init.settings import LoadSettings
 from vmaker.utils.logger import STREAM
