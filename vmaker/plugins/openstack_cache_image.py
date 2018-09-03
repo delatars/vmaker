@@ -2,7 +2,7 @@
 import os
 import sys
 from keystoneauth1 import loading, session
-from novaclient.client import Client
+from novaclient.v2.client import Client
 from ConfigParser import ConfigParser
 from vmaker.init.settings import LoadSettings
 from vmaker.utils.logger import STREAM
@@ -37,7 +37,9 @@ class Keyword(object):
         nova = self.cluster_connect(target_cluster)
         STREAM.info("==> Creating cache for image %s" % self.openstack_image_name)
         # Check for already created instance with current name
+        STREAM.debug(" -> Check for running instances with the same name")
         images = self.get_running_instances(nova)
+        STREAM.debug("Running instances: %s" % images)
         for image in images:
             if image.name == "vmaker-"+self.openstack_image_name:
                 # if instance exists delete it
