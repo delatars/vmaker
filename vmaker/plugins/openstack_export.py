@@ -114,6 +114,7 @@ class Keyword(object):
                 STREAM.warning("You may specify it directly by adding 'openstack_vbox_catalog' attribute"
                                " in your configuration file")
                 return None
+        STREAM.debug("VirtualBox directory: %s" % vbox_path)
         vm_path = None
         for paths, dirs, files in os.walk(vbox_path):
             if self.vm_name in dirs:
@@ -133,7 +134,6 @@ class Keyword(object):
         STREAM.debug("Image properties: %s" % args)
         # Find where vm files are located
         vm_dir = self.find_vm_files()
-        STREAM.debug("VirtualMachine directory: %s" % vm_dir)
         if vm_dir is None:
             return
         # Find specified disk format in vm directory.
