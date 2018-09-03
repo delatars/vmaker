@@ -137,7 +137,7 @@ class Core(Engine):
                 ttk = LoadSettings.TIMEOUT
                 LoggerOptions.set_component("Core")
                 LoggerOptions.set_action(None)
-                STREAM.debug(" Parameter 'timeout' not assigned, for action, using global: %s = %s min" % (action, ttk))
+                STREAM.debug(" Parameter 'timeout' not assigned, for action (%s), using global: %s min" % (action, ttk))
                 LoggerOptions.set_component(self.current_vm)
                 LoggerOptions.set_action(action)
             ttk = int(ttk)*60
