@@ -46,6 +46,11 @@ class Keyword:
         stderr = process[1]
         if len(stderr) > 0:
             raise Exception(stderr)
+        while 1:
+            rvms = Popen("VBoxManage list runningvms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)
+            data = rvms.stdout.read()
+            if self.vm_name not in data:
+                break
 
     def stop(self):
         STREAM.info("==> Attempting to gracefull shutdown VirtualMachine")

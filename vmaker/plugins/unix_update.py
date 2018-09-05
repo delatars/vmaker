@@ -78,7 +78,9 @@ class Keyword:
 
         def try_harder():
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("cat /etc/os-release")
-            STREAM.debug(name)
+            data = ssh_stdout
+            STREAM.debug(data)
+            name = data.split("\n")[0]
             for known_os in known_oses:
                 STREAM.debug(known_os)
                 if known_os in name.lower():
