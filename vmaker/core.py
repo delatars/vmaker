@@ -121,9 +121,9 @@ class Core(Engine):
             STREAM.error(" -> %s" % exception)
             STREAM.error(" -> Can't proceed with this vm")
             STREAM.notice("==> Clearing ourselves")
-            self.vbox_stop()
-            if self.exists_snapshot:
-                self.restore_from_snapshot(self.current_vm_obj.vm_name)
+            # self.vbox_stop()
+            # if self.exists_snapshot:
+            #     self.restore_from_snapshot(self.current_vm_obj.vm_name)
 
         def _get_timeout():
             try:

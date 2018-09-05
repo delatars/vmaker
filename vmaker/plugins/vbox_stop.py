@@ -16,8 +16,15 @@ class Keyword:
     def main(self):
         # - Config attributes
         self.vm_name = self.vm_name
+        try:
+            self.vbox_stop_windows = getattr(self, "vbox_stop_windows")
+        except:
+            self.vbox_stop_windows = False
         #----------------------------------
-        self.stop()
+        if self.vbox_stop_windows:
+            self.windows_stop()
+        else:
+            self.stop()
 
     def check_vm_status(self):
         STREAM.debug("==> Check Vm status...")
@@ -28,6 +35,17 @@ class Keyword:
             return True
         STREAM.debug(" -> VirtualMachine is turned off")
         return False
+
+    def windows_stop(self):
+        STREAM.info("==> Attempting to gracefull shutdown VirtualMachine")
+        if not self.check_vm_status():
+            STREAM.info(" -> VirtualMachine is already stoped")
+            return
+        process = Popen("VBoxManage controlvm %s acpipowerbutton" % self.vm_name, shell=True,
+                        stdout=PIPE, stderr=PIPE).communicate()
+        stderr = process[1]
+        if len(stderr) > 0:
+            raise Exception(stderr)
 
     def stop(self):
         STREAM.info("==> Attempting to gracefull shutdown VirtualMachine")

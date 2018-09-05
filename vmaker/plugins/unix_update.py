@@ -75,6 +75,17 @@ class Keyword:
             "suse",
             "ubuntu"
         ]
+
+        def try_harder():
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("cat /etc/os-release")
+            STREAM.debug(name)
+            for known_os in known_oses:
+                STREAM.debug(known_os)
+                if known_os in name.lower():
+                    STREAM.debug(" -> Detected: %s" % known_os)
+                    return known_os
+            return None
+
         STREAM.debug("==> Detecting platform")
         STREAM.debug("Known_oses: %s" % known_oses)
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("python -m platform")
@@ -91,17 +102,16 @@ class Keyword:
         for _os in _osx:
             osx += _os
         STREAM.debug(" -> Platform: %s" % osx_full.strip())
-        for iter_os in known_oses:
-            # hack to detect last opensuse versions
-            if "glibc" in osx_full:
-                with open("/etc/os-release", "r") as lsb:
-                    name = lsb.readline()
-                if iter_os in name.lower():
-                    print(" -> Detected: %s" % iter_os)
-                    return iter_os
-            if iter_os in osx:
-                STREAM.debug(" -> Detected: %s" % iter_os)
-                return iter_os
+        # hack to detect last opensuse versions
+        if "glibc" in osx_full:
+            ret = try_harder()
+            if ret is not None:
+                return ret
+        else:
+            for known_os in known_oses:
+                if known_os in osx:
+                    STREAM.debug(" -> Detected: %s" % known_os)
+                    return known_os
         raise KeyError("Unknown os! (Not in list of 'known_oses')")
 
     def ssh_connect_to_vm(self):
