@@ -7,7 +7,7 @@ https://wiki.dev.drweb.com:8443/display/testlab/vmaker
 
 ### Installation
 
-Install from Githib
+Install from GitLab
 
     pip install 
     
