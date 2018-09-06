@@ -17,12 +17,16 @@ class Keyword:
         # - Config attributes
         self.vm_name = self.vm_name
         try:
-            self.vbox_stop_windows = getattr(self, "vbox_stop_windows")
+            self.vbox_stop_noforce = getattr(self, "vbox_stop_windows")
+            if self.vbox_stop_noforce.lower() == "true":
+                self.vbox_stop_noforce = True
+            else:
+                self.vbox_stop_noforce = False
         except:
-            self.vbox_stop_windows = False
+            self.vbox_stop_noforce = False
         #----------------------------------
-        if self.vbox_stop_windows:
-            self.windows_stop()
+        if self.vbox_stop_noforce:
+            self.noforce_stop()
         else:
             self.stop()
 
@@ -36,7 +40,7 @@ class Keyword:
         STREAM.debug(" -> VirtualMachine is turned off")
         return False
 
-    def windows_stop(self):
+    def noforce_stop(self):
         STREAM.info("==> Attempting to gracefull shutdown VirtualMachine")
         if not self.check_vm_status():
             STREAM.info(" -> VirtualMachine is already stopped")
