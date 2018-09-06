@@ -36,6 +36,8 @@ class Keyword:
         result = Popen('VBoxManage snapshot %s list' % self.vm_name, shell=True,
                        stdout=PIPE, stderr=PIPE).communicate()
         data = result[0].strip().split("\n")
+        if 'This machine does not have any snapshots' in data:
+            return {"": ""}
         snapshots = {}
         for snap in data:
             name = re.findall(r'Name:\s[^\s]*\s', snap.strip())[0].split(":")[1].strip()
@@ -58,14 +60,13 @@ class Keyword:
             STREAM.debug(result)
 
         def deletor():
-            try:
-                snapshots = self.get_snapshots_list()
-                for uuid, name in snapshots.items():
-                    if name == "base":
-                        delete_snap(uuid)
-                deletor()
-            except IndexError:
+            snapshots = self.get_snapshots_list()
+            if "base" not in snapshots.values():
                 return
+            for uuid, name in snapshots.items():
+                if name == "base":
+                    delete_snap(uuid)
+            deletor()
         STREAM.debug(" -> Delete existed base snapshots.")
         deletor()
     
