@@ -31,7 +31,7 @@ class Keyword:
         rvms = Popen("VBoxManage list runningvms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)
         data = rvms.stdout.read()
         if self.vm_name in data:
-            STREAM.debug(" -> VirtualMachine is already booted")
+            STREAM.debug(" -> VirtualMachine is booted")
             return True
         STREAM.debug(" -> VirtualMachine is turned off")
         return False
@@ -39,7 +39,7 @@ class Keyword:
     def windows_stop(self):
         STREAM.info("==> Attempting to gracefull shutdown VirtualMachine")
         if not self.check_vm_status():
-            STREAM.info(" -> VirtualMachine is already stoped")
+            STREAM.info(" -> VirtualMachine is already stopped")
             return
         process = Popen("VBoxManage controlvm %s acpipowerbutton" % self.vm_name, shell=True,
                         stdout=PIPE, stderr=PIPE).communicate()

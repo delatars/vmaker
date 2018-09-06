@@ -24,7 +24,7 @@ class Keyword:
         rvms = Popen("VBoxManage list runningvms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)
         data = rvms.stdout.read()
         if self.vm_name in data:
-            STREAM.debug(" -> VirtualMachine is already booted")
+            STREAM.debug(" -> VirtualMachine is booted")
             return True
         STREAM.debug(" -> VirtualMachine is turned off")
         return False
