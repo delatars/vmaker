@@ -38,7 +38,7 @@ class Keyword:
         data = result[0].strip().split("\n")
         snapshots = {}
         for snap in data:
-            name = re.findall(r'Name:\s\w*\s', snap.strip())[0].split(":")[1].strip()
+            name = re.findall(r'Name:\s[^\s]*\s', snap.strip())[0].split(":")[1].strip()
             uuid = re.findall(r'UUID:\s.*\)', snap.strip())[0][:-1].split(":")[1].strip()
             snapshots[uuid] = name
         return snapshots
