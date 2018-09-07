@@ -10,14 +10,14 @@ class Keyword(object):
     @exception_interceptor
     def main(self):
         STREAM.info("This is a test plugin %s")
-        # s = 1
-        # while 1:
-        #     if s > 1000:
-        #         break
-        #     s += 1
-        #     sleep(1)
-        #     if s % 10 == 0:
-        #         STREAM.info("s = %s" % s)
+        s = 1
+        while 1:
+            if s > 100:
+                break
+            s += 1
+            sleep(1)
+            if s % 10 == 0:
+                STREAM.info("s = %s" % s)
 
 
 if __name__ == "__main__":

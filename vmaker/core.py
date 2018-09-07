@@ -43,19 +43,6 @@ class Core(Engine):
         self.current_vm = None
         # Flag if snapshot needed for vm
         self.exists_snapshot = False
-        # Flag if start from restored session
-        self.is_session = False
-        vm, self.current_vm_obj_snapshot = self.check_session()
-        if vm is None:
-            self.create_session()
-        else:
-            # If job was interrupted, restore to previous state and restore from snapshot if needed
-            self.is_session = True
-            if self.current_vm_obj_snapshot is not None:
-                vm_name = self.current_vm_obj_snapshot.split("__")[0]
-                self.current_vm_obj = self.config[vm]
-                self.vbox_stop()
-                self.restore_from_snapshot(vm_name)
         try:
             self.main()
         except KeyboardInterrupt:
@@ -71,20 +58,14 @@ class Core(Engine):
         for vm in self.config_sequence:
             self.current_vm = vm
             self.current_vm_obj = self.config[vm]
-            # if vm exists "backup_snapshot" attribute, creating snapshot
             try:
-                if self.current_vm_obj.backup_snapshot.lower() == "true" and self.is_session is False:
+                # if vm exists "backup_snapshot" attribute, creating snapshot
+                if self.current_vm_obj.backup_snapshot.lower() == "true":
                     self.exists_snapshot = True
                     self.vbox_stop(logger_action="backup_snapshot")
                     self.take_snapshot(self.current_vm_obj.vm_name)
-                    self.update_session(vm, self.current_vm_obj_snapshot)
-                elif self.current_vm_obj.backup_snapshot.lower() == "true" and self.is_session is True:
-                    self.exists_snapshot = True
-                    self.update_session(vm, self.current_vm_obj_snapshot)
-                else:
-                    self.update_session(vm)
             except AttributeError:
-                self.update_session(vm)
+                pass
             # Set logger filter
             LoggerOptions.set_component(self.current_vm)
             result = self.do_actions(self.current_vm_obj.actions)
@@ -98,12 +79,11 @@ class Core(Engine):
         self.reports.send_reports()
         STREAM.notice("==> There are no more virtual machines, exiting")
         STREAM.notice("==> END.")
-        self.destroy_session()
 
     # recursion function which unpack aliases
     def do_actions(self, actions_list):
         def _restore(exception, action):
-            # This function restore vm to previous state
+            """The function restore vm to previous state"""
             LoggerOptions.set_component("Core")
             LoggerOptions.set_action(None)
             if LoadSettings.DEBUG:
@@ -126,6 +106,7 @@ class Core(Engine):
                 self.restore_from_snapshot(self.current_vm_obj.vm_name)
 
         def _get_timeout():
+            """The function searches for a timeout for the keyword termination"""
             try:
                 ttk = getattr(self.current_vm_obj, "%s_timeout" % action)
                 LoggerOptions.set_component("Core")

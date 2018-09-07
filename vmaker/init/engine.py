@@ -83,55 +83,6 @@ class Engine(object):
         with open(self._PID_FILE, "w") as pf:
             pf.write(str(os.getpid()))
 
-    def check_session(self):
-        if os.path.exists(self._SESSION_FILE):
-            STREAM.warning("==> Detecting uncompleted session, restoring...")
-            with open(self._SESSION_FILE, "r") as sf:
-                vms = sf.readlines()
-            checksum = vms.pop(0).strip()
-            if checksum != self.get_hash(self._CONFIG_FILE):
-                STREAM.warning(" -> The configuration file seems to have changed since the last session!")
-                STREAM.warning(" -> Saved session is no longer valid.")
-                STREAM.warning(" -> Start over.")
-                self.destroy_session()
-                return None, None
-            STREAM.debug("vms: %s" % vms)
-            try:
-                last_vm, last_modified_vm_snapshot = vms.pop(-1).split("<--->")
-            except IndexError:
-                STREAM.warning(" -> Session is broken.")
-                STREAM.warning(" -> Start over.")
-                self.destroy_session()
-                return None, None
-            STREAM.debug("Taken snapshot: %s" % last_modified_vm_snapshot.strip())
-            if last_modified_vm_snapshot.strip() == "None":
-                last_modified_vm_snapshot = None
-            else:
-                last_modified_vm_snapshot = last_modified_vm_snapshot.strip()
-            ready_vms = [vm.split("<--->")[0].strip() for vm in vms]
-            STREAM.debug("Ready vms: %s" % ready_vms)
-            # remove already worked virtual machines from working queue
-            map(lambda x: self.config_sequence.remove(x), ready_vms)
-            # Recreating session file without last got vm to prevent duplication
-            with open(self._SESSION_FILE, "w") as sf:
-                sf.write("%s\n" % checksum)
-                for vm in vms:
-                    sf.write(vm)
-            return last_vm.strip(), last_modified_vm_snapshot
-        return None, None
-
-    def create_session(self):
-        config_hash = self.get_hash(self._CONFIG_FILE)
-        with open(self._SESSION_FILE, "a") as sf:
-            sf.write("%s\n" % config_hash)
-
-    def update_session(self, vm, snapshot="None"):
-        with open(self._SESSION_FILE, "a") as sf:
-            sf.write("%s <---> %s\n" % (vm, snapshot))
-
-    def destroy_session(self):
-        os.remove(self._SESSION_FILE)
-
     def get_hash(self, filepath):
         with open(filepath, "r") as cf:
             data = cf.read()
