@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
+import random
+import string
 import coloredlogs
 import logging
 import verboselogs
 from vmaker.init.settings import LoadSettings
 
 
-class _Component_filter(logging.Filter):
+class _Commmon_filter(logging.Filter):
     """Class added additional records to logger formatter"""
     def filter(self, record):
         record.component = LoggerOptions._COMPONENT
         record.action = LoggerOptions._ACTION
+        record.session_id = LoggerOptions._SESSION_ID
         return True
 
 
@@ -19,6 +22,7 @@ class LoggerOptions:
     DEBUG = LoadSettings.DEBUG
     _COMPONENT = "Core"
     _ACTION = ""
+    _SESSION_ID = ""
 
     @staticmethod
     def set_component(arg):
@@ -34,19 +38,27 @@ class LoggerOptions:
     @staticmethod
     def logger():
         """Function setting options and return logger object"""
+        LoggerOptions._SESSION_ID = LoggerOptions.generate_session_id()
         logfile = open(LoggerOptions._LOGFILE, "a")
         handler = logging.StreamHandler(stream=logfile)
-        handler.setFormatter(logging.Formatter('%(asctime)s [%(component)s] %(action)s [%(levelname)s] %(message)s',
-                                               "%Y-%m-%d %H:%M:%S"))
+        handler.setFormatter(logging.Formatter('%(asctime)s [%(session_id)s] [%(component)s] %(action)s'
+                                               ' [%(levelname)s] %(message)s', "%Y-%m-%d %H:%M:%S"))
         log = verboselogs.VerboseLogger(__name__)
-        log.addFilter(_Component_filter())
+        log.addFilter(_Commmon_filter())
         log.addHandler(handler)
         if LoggerOptions.DEBUG:
-            coloredlogs.install(fmt='%(asctime)s [%(component)s] %(action)s [%(levelname)s] %(message)s', logger=log,
-                                level="debug")
+            coloredlogs.install(fmt='%(asctime)s [%(session_id)s] [%(component)s] %(action)s '
+                                    '[%(levelname)s] %(message)s', logger=log, level="debug")
         else:
-            coloredlogs.install(fmt='%(asctime)s [%(component)s] %(action)s [%(levelname)s] %(message)s', logger=log)
+            coloredlogs.install(fmt='%(asctime)s [%(session_id)s] [%(component)s] %(action)s'
+                                    ' [%(levelname)s] %(message)s', logger=log)
         return log
+
+    @staticmethod
+    def generate_session_id():
+        length = 8
+        pool = string.letters + string.digits
+        return ''.join(random.choice(pool) for i in range(length))
 
 
 STREAM = LoggerOptions.logger()

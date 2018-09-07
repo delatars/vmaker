@@ -2,7 +2,6 @@
 import sys
 import os
 import argparse
-import hashlib
 from subprocess import Popen, PIPE
 from vmaker.init.config import ConfigController
 from vmaker.init.plugins import PluginController
@@ -82,13 +81,6 @@ class Engine(object):
     def create_pid(self):
         with open(self._PID_FILE, "w") as pf:
             pf.write(str(os.getpid()))
-
-    def get_hash(self, filepath):
-        with open(filepath, "r") as cf:
-            data = cf.read()
-        config_hash = hashlib.md5()
-        config_hash.update(data)
-        return config_hash.hexdigest()
 
     def args(self):
         parser = argparse.ArgumentParser('vmaker',
