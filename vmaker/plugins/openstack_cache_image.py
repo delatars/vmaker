@@ -46,6 +46,9 @@ class Keyword(object):
                 STREAM.debug(" -> Detected instance with the same name.")
                 self.delete_instance(nova, image)
                 STREAM.debug(" -> Deleted instance that already exist.")
+        self.cache_image(nova)
+
+    def cache_image(self, nova):
         server = self.create_instance(nova)
         # if cycle will not breaked, then plugin will be terminated by vmaker timeout.
         while True:
@@ -53,30 +56,11 @@ class Keyword(object):
                 self.delete_instance(nova, server)
                 STREAM.success(" -> Image has been cached.")
                 break
-
-    def openstack_credentials_harvester(self):
-        """Method to get cluster's connection settings from the configuration file"""
-        STREAM.info("==> Get Openstack cluster connection settings")
-        try:
-            configfile, section = self.openstack_cluster.split("::")
-            STREAM.debug(" -> Using user configuration file %s" % configfile)
-        except ValueError:
-            configfile = LoadSettings.GENERAL_CONFIG
-            STREAM.debug(" -> Using general configuration file %s" % configfile)
-            section = self.openstack_cluster
-        config = ConfigParser()
-        config.read(configfile)
-        args = {key: value.strip() for key, value in config.items(section)}
-        self.clusters[section] = args
-        if self.clusters == {}:
-            STREAM.error(" -> There are no connection settings for the Openstack clusters found!\nMake sure"
-                         "that parameter(openstack_cluster) specified correctly.")
-            STREAM.error(" -> Export in Openstack passed.")
-            sys.exit(1)
-        STREAM.info(" -> Found connection settings for the Openstack cluster")
-        STREAM.info(" -> Target Openstack cluster set to: %s" % section)
-        target_cluster_name = section
-        return target_cluster_name
+            if self.get_instance_status(nova, server.id) == "ERROR":
+                self.delete_instance(nova, server)
+                STREAM.warning(" -> Unexpected error while launch instance")
+                STREAM.warning(" -> Trying to cache image again.")
+                self.cache_image(nova)
 
     def cluster_connect(self, target_cluster):
         """Method to connect to the openstack cluster"""
@@ -104,17 +88,41 @@ class Keyword(object):
                                              nics=[{'net-id': network.id}])
         return instance
 
+    def delete_instance(self, connection, server):
+        connection.servers.force_delete(server)
+
     def get_instance_status(self, connection, id):
         instance = connection.servers.find(id=id)
         return instance.status
-
-    def delete_instance(self, connection, server):
-        connection.servers.force_delete(server)
 
     def get_running_instances(self, connection):
         """Method to get images from the openstack cluster"""
         images = connection.servers.list()
         return images
+
+    def openstack_credentials_harvester(self):
+        """Method to get cluster's connection settings from the configuration file"""
+        STREAM.info("==> Get Openstack cluster connection settings")
+        try:
+            configfile, section = self.openstack_cluster.split("::")
+            STREAM.debug(" -> Using user configuration file %s" % configfile)
+        except ValueError:
+            configfile = LoadSettings.GENERAL_CONFIG
+            STREAM.debug(" -> Using general configuration file %s" % configfile)
+            section = self.openstack_cluster
+        config = ConfigParser()
+        config.read(configfile)
+        args = {key: value.strip() for key, value in config.items(section)}
+        self.clusters[section] = args
+        if self.clusters == {}:
+            STREAM.error(" -> There are no connection settings for the Openstack clusters found!\nMake sure"
+                         "that parameter(openstack_cluster) specified correctly.")
+            STREAM.error(" -> Export in Openstack passed.")
+            sys.exit(1)
+        STREAM.info(" -> Found connection settings for the Openstack cluster")
+        STREAM.info(" -> Target Openstack cluster set to: %s" % section)
+        target_cluster_name = section
+        return target_cluster_name
 
 
 if __name__ == "__main__":
