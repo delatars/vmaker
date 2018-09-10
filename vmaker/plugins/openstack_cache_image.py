@@ -52,11 +52,12 @@ class Keyword(object):
         server = self.create_instance(nova)
         # if cycle will not breaked, then plugin will be terminated by vmaker timeout.
         while True:
-            if self.get_instance_status(nova, server.id) == "ACTIVE":
+            status = self.get_instance_status(nova, server.id)
+            if status == "ACTIVE":
                 self.delete_instance(nova, server)
                 STREAM.success(" -> Image has been cached.")
                 break
-            if self.get_instance_status(nova, server.id) == "ERROR":
+            elif status == "ERROR":
                 self.delete_instance(nova, server)
                 STREAM.warning(" -> Unexpected error while launch instance")
                 STREAM.warning(" -> Trying to cache image again.")

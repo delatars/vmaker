@@ -56,8 +56,8 @@ class LoggerOptions:
 
     @staticmethod
     def generate_session_id():
-        length = 8
-        pool = string.letters + string.digits
+        length = 5
+        pool = string.ascii_lowercase + string.digits
         return ''.join(random.choice(pool) for i in range(length))
 
 
