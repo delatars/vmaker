@@ -115,7 +115,7 @@ class Keyword:
         last_realese = self.get_vboxga_latest_realese()
         iso = self.get_vbox_guestadditions_iso(last_realese)
         if self.check_vbox_guestadditions_version(ssh) == last_realese:
-            STREAM.success("VboxGuestAdditions have a latest version (%s)." % last_realese)
+            STREAM.success(" -> VboxGuestAdditions have a latest version (%s)." % last_realese)
             return False
         Popen('vboxmanage storageattach %s --storagectl "IDE"'
                         ' --port 1 --device 0 --type dvddrive --medium %s' % (self.vm_name, iso),
@@ -132,10 +132,10 @@ class Keyword:
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("modinfo vboxguest |grep -iw version| awk '{print $2}'")
         version = ssh_stdout.read()
         if len(version) > 0:
-            STREAM.debug("Guest VboxGuestAdditions version: %s" % version.strip())
+            STREAM.debug(" -> Guest VboxGuestAdditions version: %s" % version.strip())
             return version.strip()
         else:
-            STREAM.debug("Guest VboxGuestAdditions version: undefined")
+            STREAM.debug(" -> Guest VboxGuestAdditions version: undefined")
             return None
 
     def get_vboxga_latest_realese(self):
@@ -145,7 +145,7 @@ class Keyword:
         data = soup.find_all('a')
         data = [a.get("href") for a in data if re.match(r"\d*\.\d*\.\d*/$", a.get("href"))]
         last_release = data[-1][:-1]
-        STREAM.debug("last release: %s" % last_release)
+        STREAM.debug(" -> last release: %s" % last_release)
         return last_release
 
     def get_vbox_guestadditions_iso(self, version):
@@ -156,7 +156,7 @@ class Keyword:
             return download_path
         Popen('rm -rf *.iso', shell=True, stdout=PIPE, stderr=PIPE).communicate()
         download_link = self.vbox_url+version+"/"+filename
-        STREAM.debug("download link: %s" % download_link)
+        STREAM.debug(" -> download link: %s" % download_link)
         iso = requests.get(download_link).content
         STREAM.info(" -> Downloading VboxGuestAdditions...")
         with open(download_path, "wb") as ga:

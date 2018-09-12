@@ -88,7 +88,7 @@ class Keyword:
             return None
 
         STREAM.debug("==> Detecting platform")
-        STREAM.debug("Known_oses: %s" % known_oses)
+        STREAM.debug(" -> Known_oses: %s" % known_oses)
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("python -m platform")
         if len(ssh_stderr.read()) > 0:
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("python2 -m platform")

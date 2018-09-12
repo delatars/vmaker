@@ -110,11 +110,11 @@ class Keyword(object):
             elif os.path.exists(os.path.join(os.path.expanduser("~"), "virtualbox")):
                 vbox_path = os.path.join(os.path.expanduser("~"), "virtualbox")
             else:
-                STREAM.error("Virtual box catalog not found!")
-                STREAM.warning("You may specify it directly by adding 'openstack_vbox_catalog' attribute"
+                STREAM.error(" -> Virtual box catalog not found!")
+                STREAM.warning(" -> You may specify it directly by adding 'openstack_vbox_catalog' attribute"
                                " in your configuration file")
                 return None
-        STREAM.debug("VirtualBox directory: %s" % vbox_path)
+        STREAM.debug(" -> VirtualBox directory: %s" % vbox_path)
         vm_path = None
         for paths, dirs, files in os.walk(vbox_path):
             if self.vm_name in dirs:
@@ -131,7 +131,7 @@ class Keyword(object):
         args = self.get_image_properties()
         args["name"] = self.openstack_image_name
         STREAM.info("==> Uploading image...")
-        STREAM.debug("Image properties: %s" % args)
+        STREAM.debug(" -> Image properties: %s" % args)
         # Find where vm files are located
         vm_dir = self.find_vm_files()
         if vm_dir is None:
@@ -146,7 +146,7 @@ class Keyword(object):
                          "in parameter(openstack_image_properties) or the disk exists." % (args["disk_format"], vm_dir))
             STREAM.error("Export in openstack passed.")
             return
-        STREAM.debug("VirtualMachine's virtual hard drive location: %s" % disk)
+        STREAM.debug(" -> VirtualMachine's virtual hard drive location: %s" % disk)
         # Get image id, if image with specified name already exists
         old_image_id = self.image_exists(connection, args["name"])
         # Create image object with specified properties.

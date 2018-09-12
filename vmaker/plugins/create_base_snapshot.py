@@ -61,7 +61,7 @@ class Keyword:
 
         def deletor():
             snapshots = self.get_snapshots_list()
-            STREAM.debug("VirtualMachine snapshots: %s" % snapshots)
+            STREAM.debug(" -> VirtualMachine snapshots: %s" % snapshots)
             if "base" not in snapshots.values():
                 return
             for uuid, name in snapshots.items():

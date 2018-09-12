@@ -87,7 +87,7 @@ class Keyword(object):
         if len(stderr) > 0:
             STREAM.debug(stderr)
         exit_code = ssh_stdout.channel.recv_exit_status()
-        STREAM.debug("Command exitcode: %s" % exit_code)
+        STREAM.debug(" -> Command exitcode: %s" % exit_code)
         if exit_code == 0:
             STREAM.success(" -> Command executed successfully")
         else:

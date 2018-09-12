@@ -39,7 +39,7 @@ class Keyword(object):
         # Check for already created instance with current name
         STREAM.debug(" -> Check for running instances with the same name")
         images = self.get_running_instances(nova)
-        STREAM.debug("Running instances: %s" % images)
+        STREAM.debug(" -> Running instances: %s" % images)
         for image in images:
             if image.name == "vmaker-"+self.openstack_image_name:
                 # if instance exists delete it
