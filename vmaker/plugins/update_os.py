@@ -161,10 +161,10 @@ class Keyword:
         ssh_stdin.write(stdin)
         ssh_stdin.flush()
         for l in line_buffered(ssh_stdout):
-            STREAM.debug(l)
-        err = ssh_stderr.read()
-        if len(err) > 0:
-            raise Exception(err)
+            STREAM.debug(l.decode("utf-8"))
+        stderr = ssh_stderr.read().decode("utf-8")
+        if len(stderr) > 0:
+            raise Exception(stderr)
         STREAM.success(" -> Command executed successfully")
 
     def check_for_success_update(self):

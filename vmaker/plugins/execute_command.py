@@ -77,12 +77,8 @@ class Keyword(object):
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
         ssh_stdin.write(stdin)
         ssh_stdin.flush()
-        stdout = ssh_stdout.read()
-        stderr = ssh_stderr.read()
-        try:
-            unicode(stdout)
-        except:
-            stdout = stdout.decode("cp1251")
+        stdout = ssh_stdout.read().decode("utf-8")
+        stderr = ssh_stderr.read().decode("utf-8")
         STREAM.debug(stdout)
         if len(stderr) > 0:
             STREAM.debug(stderr)
