@@ -77,11 +77,11 @@ class Keyword(object):
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
         ssh_stdin.write(stdin)
         ssh_stdin.flush()
-        stdout = ssh_stdout.read().decode("utf-8")
-        stderr = ssh_stderr.read().decode("utf-8")
-        STREAM.debug(stdout)
+        stdout = ssh_stdout.read()
+        stderr = ssh_stderr.read()
+        STREAM.debug(self.get_decoded(stdout))
         if len(stderr) > 0:
-            STREAM.debug(stderr)
+            STREAM.debug(self.get_decoded(stderr))
         exit_code = ssh_stdout.channel.recv_exit_status()
         STREAM.debug(" -> Command exitcode: %s" % exit_code)
         if exit_code == 0:
@@ -100,6 +100,19 @@ class Keyword(object):
             raise Exception("Credentials must be in 'user:pass' format!")
         self.ssh_user = user.strip()
         self.ssh_password = password.strip()
+
+    def get_decoded(self, line):
+        codes = ["utf-8",
+                 "cp866",
+                 "cp1251",
+                 "koi8-r"]
+        for code in codes:
+            try:
+                decoded = line.decode(code)
+                return decoded
+            except UnicodeDecodeError:
+                pass
+        return u"Can't decode line"
 
 
 if __name__ == "__main__":
