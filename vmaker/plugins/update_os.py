@@ -27,7 +27,7 @@ class Keyword:
 
     @exception_interceptor
     def main(self):
-        # - Config attributes
+        # - Attributes taken from config
         self.vm_name = self.vm_name
         self.forwarding_ports = self.forwarding_ports
         self.credentials = self.credentials
@@ -161,10 +161,16 @@ class Keyword:
         ssh_stdin.write(stdin)
         ssh_stdin.flush()
         for l in line_buffered(ssh_stdout):
-            STREAM.debug(l.decode("utf-8"))
-        stderr = ssh_stderr.read().decode("utf-8")
+            try:
+                STREAM.debug(l)
+            except UnicodeDecodeError:
+                STREAM.debug(self.get_decoded(l))
+        stderr = ssh_stderr.read()
         if len(stderr) > 0:
-            raise Exception(stderr)
+            try:
+                raise Exception(stderr)
+            except UnicodeDecodeError:
+                raise Exception(self.get_decoded(stderr))
         STREAM.success(" -> Command executed successfully")
 
     def check_for_success_update(self):
@@ -173,11 +179,26 @@ class Keyword:
         ssh = self.ssh_connect_to_vm()
         self.close_ssh_connection(ssh)
 
+    def get_decoded(self, line):
+        codes = ["utf-8",
+                 "cp866",
+                 "cp1251",
+                 "koi8-r"]
+        for code in codes:
+            try:
+                decoded = line.decode(code)
+                return decoded
+            except UnicodeDecodeError:
+                pass
+        return u"Can't decode line"
+
 # Update methods.
 # -----------------------------------------------------------------------------------
     def update_arch(self, ssh):
         self.command_exec(ssh, "pacman -Syu -y", "2\n")
+        self.command_exec(ssh, "depmod")
         self.check_for_success_update()
+        self.command_exec(ssh, "depmod")
 
     def update_altlinux(self, ssh):
         self.command_exec(ssh, "fuser -k /var/lib/dpkg/lock")
@@ -186,7 +207,9 @@ class Keyword:
         self.command_exec(ssh, "apt-get upgrade -y", get_pty=True)
         self.command_exec(ssh, "apt-get autoremove -y")
         self.command_exec(ssh, "apt-get clean")
+        self.command_exec(ssh, "depmod")
         self.check_for_success_update()
+        self.command_exec(ssh, "depmod")
 
     def update_centos(self, ssh):
         self.command_exec(ssh, "yum update -y", "2\n")
@@ -201,11 +224,15 @@ class Keyword:
         self.command_exec(ssh, "apt-get autoremove -y")
         self.command_exec(ssh, "apt-get clean")
         # self.command_exec(ssh, "apt-get update && apt-get upgrade -y > /dev/null 2>&1", get_pty=True)
+        self.command_exec(ssh, "depmod")
         self.check_for_success_update()
+        self.command_exec(ssh, "depmod")
 
     def update_fedora(self, ssh):
         self.command_exec(ssh, "dnf update -y", "2\n")
+        self.command_exec(ssh, "depmod")
         self.check_for_success_update()
+        self.command_exec(ssh, "depmod")
         # remove old kernels $ package-cleanup --oldkernels
 
     def update_freebsd(self, ssh):
@@ -213,7 +240,9 @@ class Keyword:
         self.command_exec(ssh, "pkg upgrade -y")
         self.command_exec(ssh, "freebsd-update fetch --not-running-from-cron")
         self.command_exec(ssh, "freebsd-update install")
+        self.command_exec(ssh, "depmod")
         self.check_for_success_update()
+        self.command_exec(ssh, "depmod")
 
     def update_linuxmint(self, ssh):
         self.command_exec(ssh, "fuser -k /var/lib/dpkg/lock")
@@ -222,25 +251,33 @@ class Keyword:
         self.command_exec(ssh, "apt-get upgrade -y", get_pty=True)
         self.command_exec(ssh, "apt-get autoremove -y")
         self.command_exec(ssh, "apt-get clean")
+        self.command_exec(ssh, "depmod")
         self.check_for_success_update()
+        self.command_exec(ssh, "depmod")
 
     def update_opensuse(self, ssh):
         self.command_exec(ssh, "zypper clean", "a\n")
         self.command_exec(ssh, "zypper refresh", "a\n")
         self.command_exec(ssh, "zypper update -y", "2\n")
+        self.command_exec(ssh, "depmod")
         self.check_for_success_update()
+        self.command_exec(ssh, "depmod")
 
     def update_redhat(self, ssh):
         """Rhel"""
         self.command_exec(ssh, "yum update -y")
+        self.command_exec(ssh, "depmod")
         self.check_for_success_update()
+        self.command_exec(ssh, "depmod")
 
     def update_suse(self, ssh):
         """Sles"""
         self.command_exec(ssh, "zypper clean", "a\n")
         self.command_exec(ssh, "zypper refresh", "a\n")
         self.command_exec(ssh, "zypper update -y")
+        self.command_exec(ssh, "depmod")
         self.check_for_success_update()
+        self.command_exec(ssh, "depmod")
 
     def update_ubuntu(self, ssh):
         self.command_exec(ssh, "fuser -k /var/lib/dpkg/lock")
@@ -249,7 +286,9 @@ class Keyword:
         self.command_exec(ssh, "apt-get upgrade -y", get_pty=True)
         self.command_exec(ssh, "apt-get autoremove -y")
         self.command_exec(ssh, "apt-get clean")
+        self.command_exec(ssh, "depmod")
         self.check_for_success_update()
+        self.command_exec(ssh, "depmod")
 
 
 if __name__ == "__main__":

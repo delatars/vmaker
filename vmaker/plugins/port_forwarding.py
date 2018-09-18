@@ -21,7 +21,7 @@ class Keyword:
 
     @exception_interceptor
     def main(self):
-        # - Use Config attributes
+        # - Attributes taken from config
         self.vm_name = self.vm_name
         # self.forwarding_ports input format: name:guest:host, ... ex: vm_ssh:22:2020, icap:1344:1234
         self.forwarding_ports = self.forwarding_ports

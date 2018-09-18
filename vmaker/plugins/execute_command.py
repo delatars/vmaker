@@ -26,7 +26,7 @@ class Keyword(object):
 
     @exception_interceptor
     def main(self):
-        # - Config attributes
+        # - Attributes taken from config
         self.vm_name = self.vm_name
         self.execute_command = self.execute_command
         self.credentials = self.credentials

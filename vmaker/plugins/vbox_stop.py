@@ -14,8 +14,9 @@ class Keyword:
 
     @exception_interceptor
     def main(self):
-        # - Config attributes
+        # - Attributes taken from config
         self.vm_name = self.vm_name
+        # - Optional attribute taken from config
         try:
             self.vbox_stop_noforce = getattr(self, "vbox_stop_windows")
             if self.vbox_stop_noforce.lower() == "true":

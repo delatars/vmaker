@@ -13,7 +13,7 @@ class Keyword:
 
     @exception_interceptor
     def main(self):
-        # - Config attributes
+        # - Attributes taken from config
         self.vm_name = self.vm_name
         #----------------------------------
         if self.check_vm_status():

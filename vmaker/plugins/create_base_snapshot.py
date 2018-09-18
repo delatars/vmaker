@@ -14,7 +14,7 @@ class Keyword:
 
     @exception_interceptor
     def main(self):
-        # - Config attributes
+        # - Attributes taken from config
         self.vm_name = self.vm_name
         #----------------------------------
         if self.check_vm_status():
@@ -59,7 +59,7 @@ class Keyword:
                            shell=True, stdout=PIPE, stderr=PIPE).communicate()
             STREAM.debug(result)
 
-        def deletor():
+        def deletor(recursion_depth):
             snapshots = self.get_snapshots_list()
             STREAM.debug(" -> VirtualMachine snapshots: %s" % snapshots)
             if "base" not in snapshots.values():
@@ -67,9 +67,12 @@ class Keyword:
             for uuid, name in snapshots.items():
                 if name == "base":
                     delete_snap(uuid)
-            deletor()
+            if recursion_depth == 0:
+                return
+            recursion_depth -= 1
+            deletor(recursion_depth)
         STREAM.debug(" -> Delete existed base snapshots.")
-        deletor()
+        deletor(10)
     
 
 if __name__ == "__main__":

@@ -32,11 +32,13 @@ class Keyword(object):
 
     @exception_interceptor
     def main(self):
+        # - Attributes taken from config
         self.vm_name = self.vm_name
         self.openstack_cluster = self.openstack_cluster
         self.openstack_image_name = self.openstack_image_name
         self.openstack_image_properties = self.openstack_image_properties
         self.openstack_image_custom_properties = self.openstack_image_custom_properties
+        # --------------------------------
         # List of available clusters
         self.clusters = {}
         target_cluster = self.openstack_credentials_harvester()

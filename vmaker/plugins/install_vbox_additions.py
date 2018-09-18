@@ -30,7 +30,7 @@ class Keyword:
 
     @exception_interceptor
     def main(self):
-        # - Config attributes
+        # - Attributes taken from config
         self.vm_name = self.vm_name
         self.forwarding_ports = self.forwarding_ports
         self.credentials = self.credentials

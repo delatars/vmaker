@@ -2,11 +2,12 @@
 import os
 import sys
 from keystoneauth1 import loading, session
-from novaclient.client import Client
+from novaclient.v2.client import Client
 from ConfigParser import ConfigParser
 from vmaker.init.settings import LoadSettings
 from vmaker.utils.logger import STREAM
 from vmaker.utils.auxilary import exception_interceptor
+from multiprocessing import Process
 
 
 class Keyword(object):
@@ -24,13 +25,23 @@ class Keyword(object):
     openstack_network =
     """
     REQUIRED_CONFIG_ATTRS = ["openstack_cluster", "openstack_image_name", "openstack_flavor", "openstack_network"]
+    THREADS = 4
 
     @exception_interceptor
     def main(self):
+        # - Attributes taken from config
         self.openstack_cluster = self.openstack_cluster
         self.openstack_image_name = self.openstack_image_name
         self.openstack_flavor = self.openstack_flavor
         self.openstack_network = self.openstack_network
+        # - Optional attribute taken from config
+        try:
+            self.openstack_availability_zone = getattr(self, "openstack_availability_zone")
+            nodes = self.get_nodes(self.openstack_availability_zone)
+        except:
+            self.openstack_availability_zone = None
+            nodes = None
+        # --------------------------------
         # List of available clusters
         self.clusters = {}
         target_cluster = self.openstack_credentials_harvester()
@@ -38,21 +49,19 @@ class Keyword(object):
         STREAM.info("==> Creating cache for image %s" % self.openstack_image_name)
         # Check for already created instance with current name
         STREAM.debug(" -> Check for running instances with the same name")
-        images = self.get_running_instances(nova)
-        STREAM.debug(" -> Running instances: %s" % images)
-        for image in images:
-            if image.name == "vmaker-"+self.openstack_image_name:
-                # if instance exists delete it
-                STREAM.debug(" -> Detected instance with the same name.")
-                self.delete_instance(nova, image)
-                STREAM.debug(" -> Deleted instance that already exist.")
-        self.cache_image(nova)
+        self.check_for_running_instances(nova)
+        if self.openstack_availability_zone is None:
+            self.cache_image(nova)
+        else:
+            self.cache_image_multi(nova, nodes)
 
     def cache_image(self, nova):
         server = self.create_instance(nova)
-        # if cycle will not breaked, then plugin will be terminated by vmaker timeout.
+        STREAM.debug(" -> Created instance: %s" % server)
+        # if recursion will not breaked, whatever plugin will be terminated by vmaker timeout.
         while True:
             status = self.get_instance_status(nova, server.id)
+            STREAM.debug(" -> Creation status: %s" % status)
             if status == "ACTIVE":
                 self.delete_instance(nova, server)
                 STREAM.success(" -> Image has been cached.")
@@ -62,6 +71,20 @@ class Keyword(object):
                 STREAM.warning(" -> Unexpected error while launch instance")
                 STREAM.warning(" -> Trying to cache image again.")
                 self.cache_image(nova)
+
+    # To do
+    def cache_image_multi(self, nova, nodes):
+        pass
+
+    def check_for_running_instances(self, nova):
+        images = self.get_running_instances(nova)
+        STREAM.debug(" -> Running instances: %s" % images)
+        for image in images:
+            if image.name == "vmaker-"+self.openstack_image_name:
+                # if instance exists delete it
+                STREAM.debug(" -> Detected instance with the same name.")
+                self.delete_instance(nova, image)
+                STREAM.debug(" -> Deleted instance that already exist.")
 
     def cluster_connect(self, target_cluster):
         """Method to connect to the openstack cluster"""
@@ -79,22 +102,29 @@ class Keyword(object):
         nova = Client('2', session=sess)
         return nova
 
-    def create_instance(self, connection):
+    def create_instance(self, connection, node=None):
         image = connection.glance.find_image(self.openstack_image_name)
         flavor = connection.flavors.find(name=self.openstack_flavor)
         network = connection.neutron.find_network(name=self.openstack_network)
         instance = connection.servers.create(name="vmaker-"+self.openstack_image_name,
                                              image=image.id,
                                              flavor=flavor.id,
-                                             nics=[{'net-id': network.id}])
+                                             nics=[{'net-id': network.id}],
+                                             availability_zone=node)
         return instance
 
     def delete_instance(self, connection, server):
-        connection.servers.force_delete(server)
+        try:
+            connection.servers.delete(server)
+        except:
+            connection.servers.force_delete(server)
 
     def get_instance_status(self, connection, id):
         instance = connection.servers.find(id=id)
         return instance.status
+
+    def get_nodes(self, zone):
+        return [node.strip() for node in zone.split(",")]
 
     def get_running_instances(self, connection):
         """Method to get images from the openstack cluster"""

@@ -20,7 +20,7 @@ class Keyword:
 
     @exception_interceptor
     def main(self):
-        # - Config attributes
+        # - Attributes taken from config
         self.vm_name = self.vm_name
         self.vagrant_catalog = self.vagrant_catalog
         # ----------------------------
