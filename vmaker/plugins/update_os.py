@@ -33,6 +33,7 @@ class Keyword:
         self.credentials = self.credentials
         self.management_type = self.management_type
         # -------------------------------------------
+        # Setting attributes to invoked plugins
         vbox_stop.vm_name = self.vm_name
         vbox_start.vm_name = self.vm_name
         STREAM.info("==> Updating VirtualMachine.")
@@ -173,6 +174,7 @@ class Keyword:
         STREAM.success(" -> Command executed successfully")
 
     def reboot_and_connect(self):
+        """Reboot VirtualMachine and connect to ssh"""
         vbox_stop().main()
         vbox_start().main()
         ssh = self.ssh_connect_to_vm()
@@ -189,7 +191,7 @@ class Keyword:
                 return decoded
             except UnicodeDecodeError:
                 pass
-        return u"Can't decode line"
+        return u"Can't decode line! To add additional encodings go to 'get_decoded' method of update_os keyword."
 
 # Update methods.
 # -----------------------------------------------------------------------------------

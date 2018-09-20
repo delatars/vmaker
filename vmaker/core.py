@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 import re
-from subprocess import Popen, PIPE
-from datetime import datetime
 from time import sleep
 from multiprocessing import Process
 from vmaker.init.settings import LoadSettings
@@ -15,7 +13,6 @@ class Core(Engine):
         - union plugins with objects
         - execute plugins in child processes
         - control child processes execution
-        - taking/restoring/deleting snapshots
 
         Inheritence:
         config  ->
@@ -41,8 +38,6 @@ class Core(Engine):
         self.current_vm_obj = None
         # Current working config section name
         self.current_vm = None
-        # Flag if snapshot needed for vm
-        self.exists_snapshot = False
         try:
             self.main()
         except KeyboardInterrupt:
@@ -51,21 +46,11 @@ class Core(Engine):
             STREAM.error("==> Job was interrupted by user.")
             STREAM.notice("==> Clearing ourselves")
             self.vbox_stop()
-            if self.exists_snapshot:
-                self.restore_from_snapshot(self.current_vm_obj.vm_name)
 
     def main(self):
         for vm in self.config_sequence:
             self.current_vm = vm
             self.current_vm_obj = self.config[vm]
-            try:
-                # if vm exists "backup_snapshot" attribute, creating snapshot
-                if self.current_vm_obj.backup_snapshot.lower() == "true":
-                    self.exists_snapshot = True
-                    self.vbox_stop(logger_action="backup_snapshot")
-                    self.take_snapshot(self.current_vm_obj.vm_name)
-            except AttributeError:
-                pass
             # Set logger filter
             LoggerOptions.set_component(self.current_vm)
             result = self.do_actions(self.current_vm_obj.actions)
@@ -73,9 +58,6 @@ class Core(Engine):
                 STREAM.notice("==> There are no more Keywords, going next vm.")
             else:
                 pass
-            # If all actions are ok, delete a snapshot.
-            if self.exists_snapshot:
-                self.delete_snapshot(self.current_vm_obj.vm_name)
         self.reports.send_reports()
         STREAM.notice("==> There are no more virtual machines, exiting")
         STREAM.notice("==> END.")
@@ -102,8 +84,6 @@ class Core(Engine):
             STREAM.error(" -> Can't proceed with this vm")
             STREAM.notice("==> Clearing ourselves")
             self.vbox_stop()
-            if self.exists_snapshot:
-                self.restore_from_snapshot(self.current_vm_obj.vm_name)
 
         def _get_timeout():
             """The function searches for a timeout for the keyword termination"""
@@ -185,38 +165,15 @@ class Core(Engine):
         mutual_keyword = type("Keyword", (keyword, self.current_vm_obj), {})
         return mutual_keyword
 
-    def vbox_stop(self, logger_action="clearing"):
+    def vbox_stop(self):
         """Uses plugin vbox_stop"""
-        LoggerOptions.set_action(logger_action)
+        LoggerOptions.set_action("clearing")
         invoked = self.invoke_plugin("vbox_stop")
         try:
             getattr(invoked, "vm_name")
             invoked().main()
         except AttributeError:
             pass
-        LoggerOptions.set_action(None)
-
-    def take_snapshot(self, vm_name):
-        LoggerOptions.set_action("backup snapshot")
-        STREAM.info("==> Taking a backup snapshot")
-        self.current_vm_obj_snapshot = vm_name+"__"+str(datetime.now())[:-7].replace(" ", "_")
-        Popen('VBoxManage snapshot %s take %s' % (vm_name, self.current_vm_obj_snapshot),
-              shell=True, stdout=PIPE, stderr=PIPE).communicate()
-        LoggerOptions.set_action(None)
-
-    def restore_from_snapshot(self, vm_name):
-        LoggerOptions.set_action("backup snapshot")
-        STREAM.info("==> Restoring to previous state...")
-        Popen('VBoxManage snapshot %s restore %s' % (vm_name, self.current_vm_obj_snapshot),
-              shell=True, stdout=PIPE, stderr=PIPE).communicate()
-        STREAM.info(" -> Restore complete.")
-        LoggerOptions.set_action(None)
-
-    def delete_snapshot(self, vm_name):
-        LoggerOptions.set_action("backup snapshot")
-        STREAM.info("==> Deleting backup snapshot.")
-        Popen('VBoxManage snapshot %s delete %s' % (vm_name, self.current_vm_obj_snapshot),
-              shell=True, stdout=PIPE, stderr=PIPE).communicate()
         LoggerOptions.set_action(None)
 
 
