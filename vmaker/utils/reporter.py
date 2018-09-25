@@ -32,6 +32,7 @@ class Reporter:
     SMTP_PORT = None
     SMTP_USER = None
     SMTP_PASS = None
+    SMTP_SEND_FROM = None
     CHILD_ERR = None
 
     def __init__(self, vms_objects):
@@ -39,6 +40,7 @@ class Reporter:
         self.VMS = vms_objects
         self._get_connection_settings()
         self.reports = {}
+        self.errors_counter = 0
 
     def _get_email(self, vm):
         """get email from virtual machine object"""
@@ -52,6 +54,7 @@ class Reporter:
         self.SMTP_PORT = LoadSettings.SMTP_PORT
         self.SMTP_USER = LoadSettings.SMTP_USER
         self.SMTP_PASS = LoadSettings.SMTP_PASS
+        self.SMTP_SEND_FROM = LoadSettings.SMTP_SEND_FROM
         if self.SMTP_SERVER != "":
             self.ENABLE_HARVESTER = True
             STREAM.notice("Email notifications: ON")
@@ -61,7 +64,7 @@ class Reporter:
     def _send_report(self, emailto, subject, body, filepath=None):
         if not self.ENABLE_HARVESTER:
             return False
-        fromaddr = "vmaker@drweb.com"
+        fromaddr = self.SMTP_SEND_FROM
         msg = MIMEMultipart()
         msg['From'] = fromaddr
         msg['To'] = emailto
@@ -89,12 +92,14 @@ class Reporter:
         if self.ENABLE_HARVESTER and email is not None:
             try:
                 self.reports[email] += [_Report(vm, action, report, email)]
+                self.errors_counter += 1
             except KeyError:
                 self.reports[email] = [_Report(vm, action, report, email)]
+                self.errors_counter += 1
 
     def send_reports(self):
         """Sending all harvested reports"""
-        STREAM.debug("There are %s error reports found" % len(self.reports))
+        STREAM.debug("There are %s error reports found" % self.errors_counter)
         for email, report in self.reports.items():
             msg = "You received this message because you are subscribed to" \
                   " vmaker notifications about VM errors.\nErrors:\n" \
