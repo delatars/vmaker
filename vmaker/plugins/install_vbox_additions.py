@@ -91,21 +91,19 @@ class Keyword:
 
     def vbox_guestadditions_update(self, ssh):
         """Method to update Virtual Box Guest Additions in VirtualMachine"""
-        def line_buffered(f, f2):
-            while not f.channel.exit_status_ready():
-                yield f.readline().strip(), f2.readline().strip()
 
         STREAM.info("==> Updating VboxGuestAdditions.")
         if not self.mount_vbox_guestadditions(ssh):
             return
         STREAM.debug(" -> Execute update GuestAdditions.")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("/mnt/dvd/VBoxLinuxAdditions.run")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("/mnt/dvd/VBoxLinuxAdditions.run 2>&1")
         ssh_stdin.write("y\n")
         ssh_stdin.flush()
-        for l, l2 in line_buffered(ssh_stdout, ssh_stderr):
-            STREAM.debug(l)
-            STREAM.debug(l2)
-        STREAM.success(" -> VboxGuestAdditions updated")
+        stdout = ssh_stdout.read()
+        if "VirtualBox Guest Additions: Running kernel modules will not be replaced until the system is restarted" in stdout:
+            STREAM.success(" -> VboxGuestAdditions updated")
+        else:
+            STREAM.error(stdout)
 
     def mount_vbox_guestadditions(self, ssh):
         """Method to mount VirtualBoxGuestAdditions.iso to VirtualMachine"""
