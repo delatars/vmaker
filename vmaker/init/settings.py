@@ -40,7 +40,7 @@ class LoadSettings:
     SMTP_PORT = 25
     SMTP_USER = ""
     SMTP_PASS = ""
-    SMTP_SEND_FROM = ""
+    SMTP_MAIL_FROM = ""
 
     def __init__(self):
         self.log = verboselogs.VerboseLogger(__name__)
