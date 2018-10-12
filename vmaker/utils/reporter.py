@@ -19,18 +19,18 @@ class MailTemplate:
 
     def add_block(self, vm_name, status, action):
         self.template += "Virtual machine: <b>%s</b><br>" % vm_name
-        self.template += "Status: <b>%s</b><br>" % status
         if action is not None:
-            self.template += "Failed keyword: <b>%s</b><br><br>" % action
+            self.template += 'Status: <b style="color:red">%s</b> <b>(failed action: %s)</b><br>' % (status, action)
         else:
-            self.template += "<br><br>"
+            self.template += 'Status: <b style="color:darkgreen">%s</b><br>' % status
 
     def initialize_caption(self):
-        self.template += "<b>Vmaker report</b><br>"
+        self.template += "<b>Vmaker Report (id: %s)</b><br>" % self.VMAKER_SESSION
+        self.template += "=================================================<br><br>"
+
+    def initialize_footer(self):
+        self.template += "<br><br>=================================================<br>"
         self.template += "You received this message because you are subscribed to vmaker notifications.<br>"
-        self.template += "=================================================<br>"
-        self.template += "Task ID: <b>%s</b><br>" % self.VMAKER_SESSION
-        self.template += "=========<br><br><br>"
 
     def generate_body(self):
         return self.template
@@ -136,6 +136,7 @@ class Reporter:
             self.mail_template.initialize_caption()
             for rep in report:
                 self.mail_template.add_block(rep.vm_name, rep.status, rep.failed_action)
+            self.mail_template.initialize_footer()
             STREAM.debug("==> Sending a report to: %s" % email)
             try:
                 self._send_report(email, self.mail_template.generate_subject(), self.mail_template.generate_body())

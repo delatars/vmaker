@@ -68,7 +68,7 @@ class Core(Engine):
             """The function restore vm to previous state"""
             LoggerOptions.set_component("Core")
             LoggerOptions.set_action(None)
-            self.reports.add_report(self.current_vm_obj.__name__, "Error", action)
+            self.reports.add_report(self.current_vm_obj.__name__, "ERROR", action)
             STREAM.error(" -> %s" % exception)
             STREAM.error(" -> Can't proceed with this vm")
             STREAM.notice("==> Clearing ourselves")
