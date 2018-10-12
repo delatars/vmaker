@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import re
 from time import sleep
 from multiprocessing import Process
 from vmaker.init.settings import LoadSettings
@@ -56,6 +55,7 @@ class Core(Engine):
             result = self.do_actions(self.current_vm_obj.actions)
             if result:
                 STREAM.notice("==> There are no more Keywords, going next vm.")
+                self.reports.add_report(self.current_vm_obj.__name__, "Success")
             else:
                 pass
         self.reports.send_reports()
@@ -68,18 +68,7 @@ class Core(Engine):
             """The function restore vm to previous state"""
             LoggerOptions.set_component("Core")
             LoggerOptions.set_action(None)
-            if LoadSettings.DEBUG:
-                with open(LoadSettings.LOG, "r") as log:
-                    log.seek(-3000, 2)
-                    data = log.read()
-                    index = data.rfind("Traceback")
-                    report_exc = data[index:]
-                    report_exc = re.sub(r"\d\d\d\d-\d\d-\d\d.*", r"", report_exc).strip()
-                self.reports.add_report(self.current_vm_obj.__name__, action, report_exc)
-            else:
-                with open(LoadSettings.LOG, "r") as log:
-                    report_exc = log.readlines()[-1]
-                self.reports.add_report(self.current_vm_obj.__name__, action, report_exc)
+            self.reports.add_report(self.current_vm_obj.__name__, "Error", action)
             STREAM.error(" -> %s" % exception)
             STREAM.error(" -> Can't proceed with this vm")
             STREAM.notice("==> Clearing ourselves")

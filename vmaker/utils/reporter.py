@@ -6,7 +6,40 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 from vmaker.init.settings import LoadSettings
-from vmaker.utils.logger import STREAM
+from vmaker.utils.logger import STREAM, LoggerOptions
+
+
+class MailTemplate:
+    """mail template"""
+    VMAKER_SESSION = LoggerOptions._SESSION_ID
+    ERRORS = 0
+
+    def __init__(self):
+        self.template = ""
+
+    def add_block(self, vm_name, status, action):
+        self.template += "Virtual machine: <b>%s</b><br>" % vm_name
+        self.template += "Status: <b>%s</b><br>" % status
+        if action is not None:
+            self.template += "Failed keyword: <b>%s</b><br><br>" % action
+        else:
+            self.template += "<br><br>"
+
+    def initialize_caption(self):
+        self.template += "<b>Vmaker report</b><br>"
+        self.template += "You received this message because you are subscribed to vmaker notifications.<br>"
+        self.template += "=================================================<br>"
+        self.template += "Task ID: <b>%s</b><br>" % self.VMAKER_SESSION
+        self.template += "=========<br><br><br>"
+
+    def generate_body(self):
+        return self.template
+
+    def generate_subject(self):
+        if self.ERRORS > 0:
+            return "[vmaker][notifications][VirtualMachines]: Unstable"
+        else:
+            return "[vmaker][notifications][VirtualMachines]: Success"
 
 
 class _Report:
@@ -14,12 +47,12 @@ class _Report:
     vm_name = None
     failed_action = None
     email = None
-    msg = None
+    status = None
 
-    def __init__(self, vm_name, failed_action, msg, email):
+    def __init__(self, vm_name, status, failed_action, email):
         self.vm_name = vm_name
         self.failed_action = failed_action
-        self.msg = msg
+        self.status = status
         self.email = email
 
 
@@ -33,14 +66,13 @@ class Reporter:
     SMTP_USER = None
     SMTP_PASS = None
     SMTP_MAIL_FROM = None
-    CHILD_ERR = None
 
     def __init__(self, vms_objects):
         """gets dict with virtual machines objects"""
         self.VMS = vms_objects
         self._get_connection_settings()
+        self.mail_template = MailTemplate()
         self.reports = {}
-        self.errors_counter = 0
 
     def _get_email(self, vm):
         """get email from virtual machine object"""
@@ -70,7 +102,7 @@ class Reporter:
         msg['To'] = emailto
         msg['Subject'] = subject
         body = body
-        msg.attach(MIMEText(body, 'plain'))
+        msg.attach(MIMEText(body, 'html'))
         if filepath is not None:
             attachment = open(filepath, "rb")
             part = MIMEBase("application", "octet-stream")
@@ -86,33 +118,27 @@ class Reporter:
         smtp.sendmail(fromaddr, emailto, text)
         smtp.quit()
 
-    def add_report(self, vm, action, report):
+    def add_report(self, vm, status, action=None):
         """add report to harvester"""
         email = self._get_email(vm)
         if self.ENABLE_HARVESTER and email is not None:
+            if action is not None:
+                self.mail_template.ERRORS += 1
             try:
-                self.reports[email] += [_Report(vm, action, report, email)]
-                self.errors_counter += 1
+                self.reports[email] += [_Report(vm, status, action, email)]
             except KeyError:
-                self.reports[email] = [_Report(vm, action, report, email)]
-                self.errors_counter += 1
+                self.reports[email] = [_Report(vm, status, action, email)]
 
     def send_reports(self):
         """Sending all harvested reports"""
-        STREAM.debug("There are %s error reports found" % self.errors_counter)
+        STREAM.debug("There are %s errors in VirtualMachines found" % self.mail_template.ERRORS)
         for email, report in self.reports.items():
-            msg = "<b>You received this message because you are subscribed to" \
-                  " vmaker notifications about VM errors.\nErrors:\n" \
-                  "-------------------------------"
+            self.mail_template.initialize_caption()
             for rep in report:
-                msg += """
-    Virtual machine:  %s
-    Action:  %s\n
-    Error: \n%s
--------------------------------------------------------------------\n""" % (rep.vm_name, rep.failed_action, rep.msg)
+                self.mail_template.add_block(rep.vm_name, rep.status, rep.failed_action)
             STREAM.debug("==> Sending a report to: %s" % email)
             try:
-                self._send_report(email, "vmaker:notifications:VirtualMachines:errors", msg)
+                self._send_report(email, self.mail_template.generate_subject(), self.mail_template.generate_body())
                 STREAM.debug(" -> OK")
             except Exception as exc:
                 STREAM.debug(" -> Failed (%s)" % exc)
