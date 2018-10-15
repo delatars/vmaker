@@ -18,11 +18,11 @@ class MailTemplate:
         self.template = ""
 
     def add_block(self, vm_name, status, action):
-        self.template += "Virtual machine: <b>%s</b><br>" % vm_name
         if action is not None:
-            self.template += 'Status: <b style="color:red">%s</b> <b>(failed action: %s)</b><br>' % (status, action)
+            self.template += 'Virtual machine: <b>%s,</b> <b style="color:red">%s</b> ' \
+                             '<b>(failed action: %s)</b><br>' % (vm_name, status, action)
         else:
-            self.template += 'Status: <b style="color:darkgreen">%s</b><br>' % status
+            self.template += 'Virtual machine: <b>%s,</b> <b style="color:darkgreen">%s</b><br>' % (vm_name, status)
 
     def initialize_caption(self):
         self.template += "<b>Vmaker Report (id: %s)</b><br>" % self.VMAKER_SESSION
