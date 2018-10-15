@@ -37,28 +37,35 @@ class Engine(object):
 
     def check_attributes_dependencies(self):
         STREAM.info("==> Checking for plugins required attributes.")
-        req_args = set()
         for vm in self.config_sequence:
+            req_args = set()
+            STREAM.debug("==> VirtualMachine: %s" % vm)
             for action in self.config[vm].actions:
                 try:
+                    STREAM.debug(" -> action: %s" % action)
+                    # List of required attributes for the Keyword to work
                     req_attr = self.loaded_plugins[action].REQUIRED_CONFIG_ATTRS
+                    # Set of required attributes for the Keyword to work
                     req_args = set(req_args) | set(req_attr)
                 except KeyError:
                     try:
+                        # Check aliases actions for required attributes
                         for act in self.config[vm].aliases[action]:
                             req_attr = self.loaded_plugins[act].REQUIRED_CONFIG_ATTRS
                             req_args = set(req_args) | set(req_attr)
                     except KeyError as key:
                         STREAM.error("The plugin (%s) you use in the configuration file does not exist or is not enabled." % key)
                         STREAM.warning("You can't use this plugin until you turn it on in .vmaker.ini")
-                        sys.exit()
+                        sys.exit(1)
                     except AttributeError:
                         STREAM.error("The plugin (u'%s') you use in the configuration file does not exist or is not enabled." % action)
                         STREAM.warning("You can't use this plugin until you turn it on in .vmaker.ini")
-                        sys.exit()
+                        sys.exit(1)
             vm_attrs = [name for name in dir(self.config[vm]) if not name.startswith('__')]
             req_args = set(req_args)
             vm_attrs = set(vm_attrs)
+            STREAM.debug(" -> required attributes: %s" % req_args)
+            STREAM.debug(" -> VirtualMachines attributes: %s" % vm_attrs)
             result = req_args - vm_attrs
             if len(result) > 0:
                 STREAM.error(" -> Section <%s> missed required attributes %s." % (vm, list(result)))
