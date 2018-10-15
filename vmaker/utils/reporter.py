@@ -19,13 +19,13 @@ class MailTemplate:
 
     def add_block(self, vm_name, status, action):
         if action is not None:
-            self.template += 'Virtual machine: <b>%s,</b> <b style="color:red">%s</b> ' \
+            self.template += '<b>%s,</b> <b style="color:red">%s</b> ' \
                              '<b>(failed action: %s)</b><br>' % (vm_name, status, action)
         else:
-            self.template += 'Virtual machine: <b>%s,</b> <b style="color:darkgreen">%s</b><br>' % (vm_name, status)
+            self.template += '<b>%s,</b> <b style="color:darkgreen">%s</b><br>' % (vm_name, status)
 
     def initialize_caption(self):
-        self.template += "<b>Vmaker Report (id: %s)</b><br>" % self.VMAKER_SESSION
+        self.template += "<b>VMaker Report (id: %s)</b><br>" % self.VMAKER_SESSION
         self.template += "=================================================<br><br>"
 
     def initialize_footer(self):

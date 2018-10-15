@@ -38,14 +38,14 @@ class Engine(object):
     def check_attributes_dependencies(self):
         STREAM.info("==> Checking for plugins required attributes.")
         for vm in self.config_sequence:
+            # Set of required attributes for all Keywords used in the VirtualMachine
             req_args = set()
             STREAM.debug("==> VirtualMachine: %s" % vm)
             for action in self.config[vm].actions:
                 try:
-                    STREAM.debug(" -> action: %s" % action)
                     # List of required attributes for the Keyword to work
                     req_attr = self.loaded_plugins[action].REQUIRED_CONFIG_ATTRS
-                    # Set of required attributes for the Keyword to work
+                    # Add required attributes of current action to summary set
                     req_args = set(req_args) | set(req_attr)
                 except KeyError:
                     try:
@@ -66,6 +66,7 @@ class Engine(object):
             vm_attrs = set(vm_attrs)
             STREAM.debug(" -> required attributes: %s" % req_args)
             STREAM.debug(" -> VirtualMachines attributes: %s" % vm_attrs)
+            # Attributes comparison
             result = req_args - vm_attrs
             if len(result) > 0:
                 STREAM.error(" -> Section <%s> missed required attributes %s." % (vm, list(result)))
