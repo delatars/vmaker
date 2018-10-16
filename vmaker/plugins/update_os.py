@@ -24,6 +24,7 @@ class Keyword:
     ssh_port = None
     ssh_user = None
     ssh_password = None
+    connections_limit = 20
 
     @exception_interceptor
     def main(self):
@@ -119,19 +120,20 @@ class Keyword:
         """Method connects to VirtualMachine via ssh"""
         def try_connect(ssh):
             """Recursive function to enable multiple connection attempts"""
+            self.connect_tries += 1
             try:
                 ssh.connect(self.ssh_server, port=int(self.ssh_port), username=self.ssh_user, password=self.ssh_password)
                 STREAM.success(" -> Connection established")
             except Exception as err:
                 STREAM.warning(" -> Fail (%s)" % err)
-                if "ecdsakey" in str(err):
+                if "ecdsakey" in str(err).lower():
                     STREAM.warning("ECDSAKey error, try to fix.")
                     Popen('ssh-keygen -f %s -R "[%s]:%s"' %
                           (os.path.join(os.path.expanduser("~"), ".ssh/known_hosts"), self.ssh_server, self.ssh_port),
                           shell=True, stdout=PIPE, stderr=PIPE).communicate()
-                if self.connect_tries > 20:
-                    raise paramiko.ssh_exception.SSHException("Connection retries limit exceed!")
-                self.connect_tries += 1
+                if self.connect_tries == self.connections_limit:
+                    raise paramiko.ssh_exception.SSHException("Connection retries limit(%s) exceed!"
+                                                              % self.connections_limit)
                 STREAM.info(" -> Connection retry %s:" % self.connect_tries)
                 sleep(15)
                 try_connect(ssh)
