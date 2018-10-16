@@ -71,6 +71,7 @@ class Keyword(object):
                 STREAM.warning(" -> Unexpected error while launch instance")
                 STREAM.warning(" -> Trying to cache image again.")
                 self.cache_image(nova)
+                break
 
     # To do
     def cache_image_multi(self, nova, nodes):

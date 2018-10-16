@@ -137,7 +137,7 @@ class Keyword:
             return None
 
     def get_vboxga_latest_realese(self):
-        """Method to get the last release of Virtual Box Guest Additions from Virtual Box server"""
+        """Method to get version of the last release of Virtual Box Guest Additions from Virtual Box server"""
         versions = requests.get(self.vbox_url)
         soup = BeautifulSoup(versions.content, 'html.parser')
         data = soup.find_all('a')
@@ -152,7 +152,7 @@ class Keyword:
         download_path = os.path.join(LoadSettings.WORK_DIR, filename)
         if os.path.exists(download_path):
             return download_path
-        Popen('rm -rf *.iso', shell=True, stdout=PIPE, stderr=PIPE).communicate()
+        Popen('rm -rf %s' % os.path.join(LoadSettings.WORK_DIR, "*.iso"), shell=True, stdout=PIPE, stderr=PIPE).communicate()
         download_link = self.vbox_url+version+"/"+filename
         STREAM.debug(" -> download link: %s" % download_link)
         iso = requests.get(download_link).content
