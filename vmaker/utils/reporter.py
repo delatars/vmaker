@@ -7,6 +7,7 @@ from email.mime.base import MIMEBase
 from email import encoders
 from vmaker.init.settings import LoadSettings
 from vmaker.utils.logger import STREAM, LoggerOptions
+from hashlib import md5
 
 
 class MailTemplate:
@@ -35,11 +36,11 @@ class MailTemplate:
     def generate_body(self):
         return self.template
 
-    def generate_subject(self):
+    def generate_subject(self, description):
         if self.ERRORS > 0:
-            return "[vmaker][notifications][VirtualMachines]: Unstable"
+            return "[vmaker][%s]: Unstable" % description if description is not None else "[vmaker]: Unstable"
         else:
-            return "[vmaker][notifications][VirtualMachines]: Success"
+            return "[vmaker][%s]: Success" % description if description is not None else "[vmaker]: Success"
 
 
 class _Report:
@@ -49,16 +50,18 @@ class _Report:
     email = None
     status = None
 
-    def __init__(self, vm_name, status, failed_action, email):
+    def __init__(self, vm_name, status, failed_action, email, description):
         self.vm_name = vm_name
         self.failed_action = failed_action
         self.status = status
         self.email = email
+        self.description = description
 
 
 class Reporter:
     """Class to harvest error reports and sending notifications via email"""
     CONFIG_OPTION = "alert"
+    DESCRIPTION_OPTION = "alert_description"
     VMS = {}
     ENABLE_HARVESTER = False
     SMTP_SERVER = None
@@ -78,6 +81,13 @@ class Reporter:
         """get email from virtual machine object"""
         try:
             return getattr(self.VMS[vm], self.CONFIG_OPTION)
+        except AttributeError:
+            return None
+
+    def _get_description(self, vm):
+        """get email from virtual machine object"""
+        try:
+            return getattr(self.VMS[vm], self.DESCRIPTION_OPTION)
         except AttributeError:
             return None
 
@@ -113,6 +123,7 @@ class Reporter:
         text = msg.as_string()
         smtp = smtplib.SMTP()
         smtp.connect(self.SMTP_SERVER, self.SMTP_PORT)
+        smtp.set_debuglevel(1)
         if self.SMTP_USER != "" and self.SMTP_PASS != "":
             smtp.login(self.SMTP_USER, self.SMTP_PASS)
         smtp.sendmail(fromaddr, emailto, text)
@@ -121,25 +132,32 @@ class Reporter:
     def add_report(self, vm, status, action=None):
         """add report to harvester"""
         email = self._get_email(vm)
+        description = self._get_description(vm)
+        if description is None:
+            mail_uid = md5(email).hexdigest()
+        else:
+            mail_uid = md5(email+description).hexdigest()
         if self.ENABLE_HARVESTER and email is not None:
             if action is not None:
                 self.mail_template.ERRORS += 1
             try:
-                self.reports[email] += [_Report(vm, status, action, email)]
+                self.reports[mail_uid] += [_Report(vm, status, action, email, description)]
             except KeyError:
-                self.reports[email] = [_Report(vm, status, action, email)]
+                self.reports[mail_uid] = [_Report(vm, status, action, email, description)]
 
     def send_reports(self):
         """Sending all harvested reports"""
         STREAM.debug("There are %s errors in VirtualMachines found" % self.mail_template.ERRORS)
-        for email, report in self.reports.items():
+        for mail_uid, report in self.reports.items():
             self.mail_template.initialize_caption()
+            email = report[0].email
+            desc = report[0].description
             for rep in report:
                 self.mail_template.add_block(rep.vm_name, rep.status, rep.failed_action)
             self.mail_template.initialize_footer()
             STREAM.debug("==> Sending a report to: %s" % email)
             try:
-                self._send_report(email, self.mail_template.generate_subject(), self.mail_template.generate_body())
+                self._send_report(email, self.mail_template.generate_subject(desc), self.mail_template.generate_body())
                 STREAM.debug(" -> OK")
             except Exception as exc:
                 STREAM.debug(" -> Failed (%s)" % exc)
