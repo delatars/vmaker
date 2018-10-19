@@ -7,7 +7,8 @@ from ConfigParser import ConfigParser
 from vmaker.init.settings import LoadSettings
 from vmaker.utils.logger import STREAM
 from vmaker.utils.auxilary import exception_interceptor
-from multiprocessing import Process
+from pathos.multiprocessing import ProcessPool as Pool
+from functools import partial
 
 
 class Keyword(object):
@@ -26,6 +27,7 @@ class Keyword(object):
     """
     REQUIRED_CONFIG_ATTRS = ["openstack_cluster", "openstack_image_name", "openstack_flavor", "openstack_network"]
     THREADS = 4
+    NOVA = None
 
     @exception_interceptor
     def main(self):
@@ -53,7 +55,8 @@ class Keyword(object):
         if self.openstack_availability_zone is None:
             self.cache_image(nova)
         else:
-            self.cache_image_multi(nova, nodes)
+            self.cache_image(nova)
+            # self.cache_image_multi(nova, nodes)
 
     def cache_image(self, nova):
         server = self.create_instance(nova)
@@ -73,9 +76,36 @@ class Keyword(object):
                 self.cache_image(nova)
                 break
 
-    # To do
+    # TODO parralel image cache on multiple nodes
     def cache_image_multi(self, nova, nodes):
-        pass
+        pool = Pool(self.THREADS)
+        cache_func = partial(Keyword().parallel_cache, nova)
+        for status in pool.map(cache_func, nodes):
+            if "ERROR" in status:
+                STREAM.error(status)
+            else:
+                STREAM.success(status)
+
+    # TODO parralel image cache on multiple nodes
+    def parallel_cache(self, nova, node, depth=2):
+        worker_name = "worker_%s" % node
+        setattr(_parallel_status_flag, worker_name, False)
+        server = self.create_instance(nova, node)
+        while True:
+            status = self.get_instance_status(nova, server.id)
+            if status == "ACTIVE":
+                setattr(_parallel_status_flag, worker_name, True)
+                self.delete_instance(nova, server)
+                break
+            elif status == "ERROR":
+                if depth == 0:
+                    break
+                self.delete_instance(nova, server)
+                self.parallel_cache(nova, node, depth=depth-1)
+                break
+        if getattr(_parallel_status_flag, worker_name):
+            return "%s -> Cached" % node
+        return "%s -> ERROR" % node
 
     def check_for_running_instances(self, nova):
         images = self.get_running_instances(nova)
@@ -155,6 +185,11 @@ class Keyword(object):
         STREAM.info(" -> Target Openstack cluster set to: %s" % section)
         target_cluster_name = section
         return target_cluster_name
+
+
+# TODO parralel image cache on multiple nodes
+class _parallel_status_flag:
+    worker = False
 
 
 if __name__ == "__main__":
