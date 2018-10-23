@@ -123,7 +123,6 @@ class Reporter:
         text = msg.as_string()
         smtp = smtplib.SMTP()
         smtp.connect(self.SMTP_SERVER, self.SMTP_PORT)
-        smtp.set_debuglevel(1)
         if self.SMTP_USER != "" and self.SMTP_PASS != "":
             smtp.login(self.SMTP_USER, self.SMTP_PASS)
         smtp.sendmail(fromaddr, emailto, text)

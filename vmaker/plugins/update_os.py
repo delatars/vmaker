@@ -247,8 +247,6 @@ class Keyword:
     def update_freebsd(self, ssh):
         self.command_exec(ssh, "export IGNORE_OSVERSION=yes; pkg update", "y\n")
         self.command_exec(ssh, "pkg upgrade -y")
-        self.command_exec(ssh, "freebsd-update fetch --not-running-from-cron")
-        self.command_exec(ssh, "freebsd-update install")
         ssh = self.reboot_and_connect()
         self.close_ssh_connection(ssh)
 
