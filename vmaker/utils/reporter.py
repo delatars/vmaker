@@ -32,6 +32,7 @@ class MailTemplate:
     def initialize_footer(self):
         self.template += "<br><br>=================================================<br>"
         self.template += "You received this message because you are subscribed to vmaker notifications.<br>"
+        self.template += "https://github.com/delatars/vmaker<br>"
 
     def generate_body(self):
         return self.template
@@ -121,11 +122,12 @@ class Reporter:
             part.add_header("Content-Disposition", "attachment; filename= %s" % os.path.basename(filepath))
             msg.attach(part)
         text = msg.as_string()
+        rcpts = [rcpt.strip() for rcpt in emailto.strip().split(",")]
         smtp = smtplib.SMTP()
         smtp.connect(self.SMTP_SERVER, self.SMTP_PORT)
         if self.SMTP_USER != "" and self.SMTP_PASS != "":
             smtp.login(self.SMTP_USER, self.SMTP_PASS)
-        smtp.sendmail(fromaddr, emailto, text)
+        smtp.sendmail(fromaddr, rcpts, text)
         smtp.quit()
 
     def add_report(self, vm, status, action=None):
