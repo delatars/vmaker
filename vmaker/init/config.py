@@ -172,45 +172,50 @@ class ConfigController:
     def generate_default_config(config_file):
         template = """; You can create vm objects and assign them any actions.
 ; Specify preffered section name.
-[vm1]
+[debian9-x86-template]
 ; Mandatory keys.
 ;   Key specifies, which type of object will be created (vm, group, alias).
 type = vm
-;   Key specifies plugins which will be performed for this object.
-actions = vbox_start, vbox_stop
+;   Key specifies Keywords which will be performed for this VirtualMachine
+actions = port_forwarding, vbox_start, execute_command, vbox_stop, create_base_snapshot
 ; Variable keys
 ;   Key specifies to which group this object belongs.
 group = linux
-;  If you need to create snapshot executing doing all actions you can specify a special key.
-;  Snapshot will be created before executing actions, and will be deleted if all actions are completed successfully.
-;backup_snapshot = true
-; You may specify email to receive notifications about plugin's errors.
+; You may specify email to receive notifications about Keyword's errors.
 ;alert = user@mail.ru
-; You can specify a timeout for each plugin after which the process will be terminated (ex: <plugin_name>_timeout)
-;vagrant_export_timeout = 15
-; User keys.
-;   You can specify your keys and use it in your plugin's classobj attributes. ex: self.vm_name
+; That description will be shown in subject of the email
+;alert_description = install curl in vm
+; Attributes needed for the correct work of a Keyword's
 ; name of the virtual machine in VirtualBox.
-vm_name = centos7-template
-; The catalog in which the vagrant boxes are stored.
-vagrant_catalog = /vagrant/boxes
+vm_name = debian9-x86-template
+; Command which will be executed in VirtualMachine by Keyword "execute_command"
+execute_command = apt-get install -y clamav
 
-[vm2]
+[fedora27-amd64]
 type = vm
-actions = port_forwarding, vbox_start, unix_update, vbox_stop, vagrant_export
-vm_name = centos6-template
-vagrant_catalog = /vagrant/boxes
+; actions will be inherited from group
+group = linux
+vm_name = fedora27-amd64
+execute_command = dnf install -y clamav
+ 
+[freebsd10-amd64]
+type = vm
+group = linux
+vm_name = freebsd10-amd64
+execute_command = pkg install -y clamav
 
 ; You can create groups and combine it with other objects.
 ;   Groups support attribute inheritance (groups attributes have a lower priority than vm attributes).
 ;   Specify name of the group.
 [linux]
-; Mandatory keys.
+; Mandatory key.
 type = group
-; User keys.
-;actions = vbox_start, ...
+;   Key specifies keywords which will be performed for the group of VirtualMachines.
+actions = port_forwarding, vbox_start, execute_command, vbox_stop
+; You can specify a timeout for each Keyword after which the process will be terminated (ex: <Keyword_name>_timeout)
+execute_command_timeout = 10
 
-; You can combine some plugins in one action, named alias.
+; You can combine some Keywords in one action, named alias.
 [linux_aliases]
 type = alias
 ; By default aliases extends to all objects, but you can assign aliases at specific group

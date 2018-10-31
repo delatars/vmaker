@@ -134,13 +134,13 @@ class Reporter:
         """add report to harvester"""
         email = self._get_email(vm)
         description = self._get_description(vm)
-        if description is None:
-            mail_uid = md5(email).hexdigest()
-        else:
-            mail_uid = md5(email+description).hexdigest()
+        if action is not None:
+            self.mail_template.ERRORS += 1
         if self.ENABLE_HARVESTER and email is not None:
-            if action is not None:
-                self.mail_template.ERRORS += 1
+            if description is None:
+                mail_uid = md5(email).hexdigest()
+            else:
+                mail_uid = md5(email+description).hexdigest()
             try:
                 self.reports[mail_uid] += [_Report(vm, status, action, email, description)]
             except KeyError:
@@ -148,7 +148,7 @@ class Reporter:
 
     def send_reports(self):
         """Sending all harvested reports"""
-        STREAM.debug("There are %s errors in VirtualMachines found" % self.mail_template.ERRORS)
+        STREAM.debug("There are %s error(s) in VirtualMachines found." % self.mail_template.ERRORS)
         for mail_uid, report in self.reports.items():
             self.mail_template.initialize_caption()
             email = report[0].email
