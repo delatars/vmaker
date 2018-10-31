@@ -32,14 +32,14 @@ def exception_interceptor(f):
         in child processes and redirect it to logger handler"""
     def wrapper(self, *args, **kwargs):
         try:
-            f(self, *args, **kwargs)
+            res = f(self, *args, **kwargs)
         except KeyboardInterrupt:
             sys.exit(1)
         except Exception as exc:
             STREAM.error(exc)
             STREAM.debug(format_exc())
             sys.exit(1)
-        return True
+        return res
     return wrapper
 
 
