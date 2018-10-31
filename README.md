@@ -9,7 +9,7 @@ https://wiki.dev.drweb.com:8443/display/testlab/vmaker
 
 Install from GitLab
 
-    pip install git+https://github.com/delatars/vmaker
+    pip install git+https://gitlab.i.drweb.ru/testlab-unix/vmaker
     
 ### Usage
 
