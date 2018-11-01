@@ -19,7 +19,7 @@ except ImportError as err:
 
 
 class LoadSettings:
-    """Class loads and stores base settings of vmaker
+    """ Class loads and stores base settings of vmaker
         - Load settings
         - Store settings
         - Generate base configuration file"""

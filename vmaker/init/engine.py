@@ -10,7 +10,7 @@ from vmaker.utils.logger import STREAM
 
 
 class Engine(object):
-    """Class controls prerun of the program
+    """ Class controls prerun of the program
         - Parse command-line arguments
         - Execute config module
         - Execute plugins module

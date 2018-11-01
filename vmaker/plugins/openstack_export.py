@@ -46,7 +46,7 @@ class Keyword(object):
         self.upload_image(glance)
 
     def openstack_credentials_harvester(self):
-        """Method to get cluster's connection settings from the configuration file"""
+        """ Method to get cluster's connection settings from the configuration file """
         STREAM.info("==> Get Openstack cluster connection settings")
         try:
             configfile, section = self.openstack_cluster.split("::")
@@ -69,7 +69,7 @@ class Keyword(object):
         return target_cluster_name
 
     def cluster_connect(self, target_cluster):
-        """Method to connect to the openstack cluster"""
+        """ Method to connect to the openstack cluster """
         cluster = self.clusters[target_cluster]
         os.environ["REQUESTS_CA_BUNDLE"] = cluster["ca_cert"]
         loader = loading.get_plugin_loader('password')
@@ -85,7 +85,7 @@ class Keyword(object):
         return glance
 
     def get_image_properties(self):
-        """Method to get image properties from configuration attributes"""
+        """ Method to get image properties from configuration attributes """
         base_properties = {key: value for key, value in
                            [prop.split(":") for prop in
                             [prop.strip() for prop in self.openstack_image_properties.split(",")]]}
@@ -99,11 +99,11 @@ class Keyword(object):
         return args
 
     def delete_image(self, connection, id):
-        """Method to delete image from the openstack cluster"""
+        """ Method to delete image from the openstack cluster """
         connection.images.delete(id)
 
     def find_vm_files(self):
-        """Method to find VirtualMachine files location"""
+        """ Method to find VirtualMachine files location """
         try:
             vbox_path = getattr(self, "openstack_vbox_catalog")
         except AttributeError:
@@ -129,7 +129,7 @@ class Keyword(object):
             return None
 
     def upload_image(self, connection):
-        """Method to upload image to the openstack cluster"""
+        """ Method to upload image to the openstack cluster """
         args = self.get_image_properties()
         args["name"] = self.openstack_image_name
         STREAM.info("==> Uploading image...")
@@ -163,7 +163,7 @@ class Keyword(object):
             STREAM.success(" -> Removed.")
 
     def image_exists(self, connection, name):
-        """Method to check if image already exists"""
+        """ Method to check if image already exists """
         images = self.get_images(connection)
         for image in images:
             if image["name"] == name:
@@ -172,7 +172,7 @@ class Keyword(object):
         return None
 
     def get_images(self, connection):
-        """Method to get images from the openstack cluster"""
+        """ Method to get images from the openstack cluster """
         images = connection.images.list()
         return images
 

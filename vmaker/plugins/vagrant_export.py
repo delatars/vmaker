@@ -44,13 +44,13 @@ class Keyword:
             STREAM.success("==> Exporting into vagrant successfully completed.")
 
     def _calculate_box_hash(self):
-        """Method to calculate vagrant box hashsum"""
+        """ Method to calculate vagrant box hashsum """
         hash = Popen('sha1sum %s' % os.path.join(self.work_dir, self.boxname), shell=True, stdout=PIPE, stderr=PIPE).communicate()
         hash = hash[0].split(" ")[0]
         return hash
 
     def create_box(self):
-        """Method to create vagrant box from exported configuration"""
+        """ Method to create vagrant box from exported configuration """
         STREAM.info("==> Creating box...")
         with tarfile.open(os.path.join(self.work_dir, self.boxname), "w") as tar:
             for fil in os.listdir(self.tmp_dir):
@@ -59,7 +59,7 @@ class Keyword:
         shutil.rmtree(self.tmp_dir)
 
     def create_metadata_file(self):
-        """Method to create metadata.json file"""
+        """ Method to create metadata.json file """
         STREAM.debug("==> Creating metadata.json")
         STREAM.debug(" -> Calculating box checksum...")
         checksum = self._calculate_box_hash()
@@ -90,7 +90,7 @@ class Keyword:
             metadata.write(template)
 
     def create_vagrant_template(self):
-        """Method to create Vagrantfile template"""
+        """ Method to create Vagrantfile template """
         STREAM.debug("==> Create Vagrantfile.")
         template = """
 Vagrant::Config.run do |config|
@@ -109,7 +109,7 @@ load include_vagrantfile if File.exist?(include_vagrantfile)
             vagrant_file.write(template)
 
     def export_vm_configuration(self):
-        """Method to export VirtualMachine configuration from Virtual Vox"""
+        """ Method to export VirtualMachine configuration from Virtual Vox """
         STREAM.info("==> Checking if vm exists...")
         vms = Popen("vboxmanage list vms |awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE).communicate()
         vms = vms[0]
@@ -153,7 +153,7 @@ load include_vagrantfile if File.exist?(include_vagrantfile)
         return True
 
     def renew_vm(self):
-        """Method to replace the old box"""
+        """ Method to replace the old box """
         for fil in os.listdir(self.work_dir):
             if fil.endswith(".box"):
                 STREAM.info("==> Renew old box...")

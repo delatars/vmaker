@@ -50,7 +50,7 @@ class Keyword:
         STREAM.success(" -> VirtualMachine has been updated.")
 
     def get_connection_settings(self):
-        """Method get connection settings from configuration file attributes"""
+        """ Method get connection settings from configuration file attributes """
         self.ssh_port = get_manage_port(self.vm_name)
         if self.ssh_port is None:
             raise Exception("Manage port not specified! You need to use plugin 'port_forwarding' first.")
@@ -62,7 +62,7 @@ class Keyword:
         self.ssh_password = password.strip()
 
     def get_vm_platform(self, ssh):
-        """Method detects platform in VirtualMachine"""
+        """ Method detects platform in VirtualMachine """
         known_oses = [
             "arch",
             "altlinux",
@@ -117,9 +117,9 @@ class Keyword:
         raise KeyError("Unknown os! (Not in list of 'known_oses')")
 
     def ssh_connect_to_vm(self):
-        """Method connects to VirtualMachine via ssh"""
+        """ Method connects to VirtualMachine via ssh """
         def try_connect(ssh):
-            """Recursive function to enable multiple connection attempts"""
+            """ Recursive function to enable multiple connection attempts """
             self.connect_tries += 1
             try:
                 ssh.connect(self.ssh_server, port=int(self.ssh_port), username=self.ssh_user, password=self.ssh_password)
@@ -148,13 +148,13 @@ class Keyword:
         return ssh
 
     def close_ssh_connection(self, ssh):
-        """Method to close connection"""
+        """ Method to close connection """
         ssh.close()
 
     def command_exec(self, ssh, command, stdin="", get_pty=False):
-        """Method to execute remote command via ssh connection"""
+        """ Method to execute remote command via ssh connection """
         def line_buffered(f):
-            """Iterator object to get output in realtime from stdout buffer"""
+            """ Iterator object to get output in realtime from stdout buffer """
             while not f.channel.exit_status_ready():
                 yield f.readline().strip()
 
@@ -176,7 +176,7 @@ class Keyword:
         STREAM.success(" -> Command executed successfully")
 
     def reboot_and_connect(self):
-        """Reboot VirtualMachine and connect to ssh"""
+        """ Reboot VirtualMachine and connect to ssh """
         vbox_stop().main()
         vbox_start().main()
         ssh = self.ssh_connect_to_vm()
@@ -272,7 +272,7 @@ class Keyword:
         self.close_ssh_connection(ssh)
 
     def update_redhat(self, ssh):
-        """Rhel"""
+        """ Rhel """
         self.command_exec(ssh, "yum update -y")
         self.command_exec(ssh, "depmod > /dev/null 2>&1")
         ssh = self.reboot_and_connect()
@@ -280,7 +280,7 @@ class Keyword:
         self.close_ssh_connection(ssh)
 
     def update_suse(self, ssh):
-        """Sles"""
+        """ Sles """
         self.command_exec(ssh, "zypper clean", "a\n")
         self.command_exec(ssh, "zypper refresh", "a\n")
         self.command_exec(ssh, "zypper update -y")

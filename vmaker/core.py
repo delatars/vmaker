@@ -8,7 +8,7 @@ from vmaker.utils.reporter import Reporter
 
 
 class Core(Engine):
-    """Main Class
+    """ Main Class
         - union plugins with objects
         - execute plugins in child processes
         - control child processes execution
@@ -65,7 +65,7 @@ class Core(Engine):
     # recursion function which unpack aliases
     def do_actions(self, actions_list):
         def _restore(exception, action):
-            """The function restore vm to previous state"""
+            """ The function restore vm to previous state """
             LoggerOptions.set_component("Core")
             LoggerOptions.set_action(None)
             self.reports.add_report(self.current_vm_obj.__name__, "ERROR", action)
@@ -75,7 +75,7 @@ class Core(Engine):
             self.vbox_stop()
 
         def _get_timeout():
-            """The function searches for a timeout for the keyword termination"""
+            """ The function searches for a timeout for the keyword termination """
             try:
                 ttk = getattr(self.current_vm_obj, "%s_timeout" % action)
                 LoggerOptions.set_component("Core")
@@ -148,14 +148,14 @@ class Core(Engine):
         return True
 
     def invoke_plugin(self, plugin_name):
-        """Method allows to invoke any existed plugin"""
+        """ Method allows to invoke any existed plugin """
         keyword = self.loaded_plugins[plugin_name]
         # Injecting config attributes to plugin
         mutual_keyword = type("Keyword", (keyword, self.current_vm_obj), {})
         return mutual_keyword
 
     def vbox_stop(self):
-        """Uses plugin vbox_stop"""
+        """ Uses plugin vbox_stop """
         LoggerOptions.set_action("clearing")
         invoked = self.invoke_plugin("vbox_stop")
         try:

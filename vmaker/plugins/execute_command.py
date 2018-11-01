@@ -37,9 +37,9 @@ class Keyword(object):
         self.close_ssh_connection(ssh)
 
     def connect_to_vm(self):
-        """Method connects to VirtualMachine via ssh"""
+        """ Method connects to VirtualMachine via ssh """
         def try_connect(ssh):
-            """Recursive function to enable multiple connection attempts"""
+            """ Recursive function to enable multiple connection attempts """
             self.connect_tries += 1
             try:
                 ssh.connect(self.ssh_server, port=int(self.ssh_port), username=self.ssh_user, password=self.ssh_password)
@@ -68,11 +68,11 @@ class Keyword(object):
         return ssh
 
     def close_ssh_connection(self, ssh):
-        """Method to close connection"""
+        """ Method to close connection """
         ssh.close()
 
     def command_exec(self, ssh, command, stdin=""):
-        """Method to execute remote command via ssh connection"""
+        """ Method to execute remote command via ssh connection """
         STREAM.info(" -> Executing command: %s" % command)
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
         ssh_stdin.write(stdin)
@@ -90,7 +90,7 @@ class Keyword(object):
             raise Exception("Executed command exit status not 0")
 
     def get_connection_settings(self):
-        """Method get connection settings from configuration file attributes"""
+        """ Method get connection settings from configuration file attributes """
         self.ssh_port = get_manage_port(self.vm_name)
         if self.ssh_port is None:
             raise Exception("Manage port not specified! You need to use plugin 'port_forwarding' first.")

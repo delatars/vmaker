@@ -8,7 +8,7 @@ from vmaker.init.settings import LoadSettings
 
 
 class _Commmon_filter(logging.Filter):
-    """Class added additional records to logger formatter"""
+    """ Class added additional records to logger formatter """
     def filter(self, record):
         record.component = LoggerOptions._COMPONENT
         record.action = LoggerOptions._ACTION
@@ -17,7 +17,7 @@ class _Commmon_filter(logging.Filter):
 
 
 class LoggerOptions:
-    """Class to set up logger options"""
+    """ Class to set up logger options """
     _LOGFILE = LoadSettings.LOG
     DEBUG = LoadSettings.DEBUG
     _COMPONENT = "Core"
@@ -37,7 +37,7 @@ class LoggerOptions:
 
     @staticmethod
     def logger():
-        """Function setting options and return logger object"""
+        """ Function setting options and return logger object """
         LoggerOptions._SESSION_ID = LoggerOptions.generate_session_id()
         logfile = open(LoggerOptions._LOGFILE, "a")
         handler = logging.StreamHandler(stream=logfile)

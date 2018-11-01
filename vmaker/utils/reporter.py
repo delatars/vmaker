@@ -11,7 +11,7 @@ from hashlib import md5
 
 
 class MailTemplate:
-    """mail template"""
+    """ Mail template """
     VMAKER_SESSION = LoggerOptions._SESSION_ID
     ERRORS = 0
 
@@ -45,7 +45,7 @@ class MailTemplate:
 
 
 class _Report:
-    """Object report"""
+    """ Object report """
     vm_name = None
     failed_action = None
     email = None
@@ -60,7 +60,7 @@ class _Report:
 
 
 class Reporter:
-    """Class to harvest error reports and sending notifications via email"""
+    """ Class to harvest error reports and sending notifications via email """
     CONFIG_OPTION = "alert"
     DESCRIPTION_OPTION = "alert_description"
     VMS = {}
@@ -72,21 +72,21 @@ class Reporter:
     SMTP_MAIL_FROM = None
 
     def __init__(self, vms_objects):
-        """gets dict with virtual machines objects"""
+        """ Gets dict with virtual machines objects """
         self.VMS = vms_objects
         self._get_connection_settings()
         self.mail_template = MailTemplate()
         self.reports = {}
 
     def _get_email(self, vm):
-        """get email from virtual machine object"""
+        """ Get email from virtual machine object """
         try:
             return getattr(self.VMS[vm], self.CONFIG_OPTION)
         except AttributeError:
             return None
 
     def _get_description(self, vm):
-        """get email from virtual machine object"""
+        """ Get email from virtual machine object """
         try:
             return getattr(self.VMS[vm], self.DESCRIPTION_OPTION)
         except AttributeError:
@@ -131,7 +131,7 @@ class Reporter:
         smtp.quit()
 
     def add_report(self, vm, status, action=None):
-        """add report to harvester"""
+        """ Add report to harvester """
         email = self._get_email(vm)
         description = self._get_description(vm)
         if action is not None:
@@ -147,7 +147,7 @@ class Reporter:
                 self.reports[mail_uid] = [_Report(vm, status, action, email, description)]
 
     def send_reports(self):
-        """Sending all harvested reports"""
+        """ Sending all harvested reports """
         STREAM.debug("There are %s error(s) in VirtualMachines found." % self.mail_template.ERRORS)
         for mail_uid, report in self.reports.items():
             self.mail_template.initialize_caption()

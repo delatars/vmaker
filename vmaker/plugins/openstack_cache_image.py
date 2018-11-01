@@ -25,8 +25,12 @@ class Keyword(object):
             openstack_cluster = /home/user/clusters.ini::openstack_cluster_1
             openstack_cluster = openstack_cluster_1 (target section will be searched in vmaker.ini)
     openstack_image_name = name of the VirtualMachine in Openstack cluster (example: openstack_image_name = ubuntu1610)
-    openstack_flavor =
-    openstack_network =
+    openstack_flavor = name of the resource that controls the amount of resources allocated
+                        for the instance in Openstack cluster
+    openstack_network = name of the resource that manages the creation of subnets
+    Optional argument:
+    openstack_availability_zone = list of nodes where image will be cached
+                                (example: openstack_availability_zone = ZONE:HOST:NODE, ZONE:HOST:NODE, ...)
     """
     REQUIRED_CONFIG_ATTRS = ["openstack_cluster", "openstack_image_name", "openstack_flavor", "openstack_network"]
 
@@ -63,7 +67,7 @@ class Keyword(object):
             self.cache_image_multi_nodes(nova, nodes)
 
     def cache_image(self, nova):
-        """Method to cache image on one random node."""
+        """ Method to cache image on one random node. """
         STREAM.info(" -> Running cache on random node.")
         server = self.create_instance(nova)
         STREAM.debug(" -> Created instance: %s" % server)
@@ -84,16 +88,16 @@ class Keyword(object):
                 break
 
     def cache_image_multi_nodes(self, nova, nodes):
-        """Method to cache image on specified nodes.
-            Used when config option 'openstack_availability_zone' is specified."""
+        """ Method to parallel cache image on specified nodes.
+            Used when config option 'openstack_availability_zone' is specified. """
         STREAM.info(" -> Running parallel cache on specified nodes.")
         STREAM.info(" -> Number of worker processes: %s" % self.WORKERS)
         cache = parallel_cache_image(nova, nodes, self.openstack_image_name, self.openstack_flavor, self.openstack_network)
         cache.start_cache()
 
     def check_for_running_instances(self, nova):
-        """Method to check if exists already running instances
-            with name("vmaker-"+self.openstack_image_name) in Openstack cluster"""
+        """ Method to check if exists already running instances
+            with name("vmaker-"+self.openstack_image_name) in Openstack cluster """
         images = self.get_running_instances(nova)
         STREAM.debug(" -> Running instances: %s" % images)
         for image in images:
@@ -104,7 +108,7 @@ class Keyword(object):
                 STREAM.debug(" -> Deleted instance that already exist.")
 
     def cluster_connect(self, target_cluster):
-        """Method to connect to the openstack cluster"""
+        """ Method to connect to the openstack cluster """
         cluster = self.clusters[target_cluster]
         os.environ["REQUESTS_CA_BUNDLE"] = cluster["ca_cert"]
         loader = loading.get_plugin_loader('password')
@@ -120,7 +124,7 @@ class Keyword(object):
         return nova
 
     def create_instance(self, connection, node=None):
-        """Method create instance in openstack cluster"""
+        """ Method create instance in openstack cluster """
         image = connection.glance.find_image(self.openstack_image_name)
         flavor = connection.flavors.find(name=self.openstack_flavor)
         network = connection.neutron.find_network(name=self.openstack_network)
@@ -132,28 +136,28 @@ class Keyword(object):
         return instance
 
     def delete_instance(self, connection, server):
-        """Method delete instance in openstack cluster"""
+        """ Method delete instance in openstack cluster """
         try:
             connection.servers.delete(server)
         except:
             connection.servers.force_delete(server)
 
     def get_instance_status(self, connection, id):
-        """Method get instance status in openstack cluster"""
+        """ Method get instance status in openstack cluster """
         instance = connection.servers.find(id=id)
         return instance.status
 
     def get_nodes(self, zone):
-        """Method return list of nodes taken from self.openstack_availability_zone """
+        """ Method return list of nodes taken from self.openstack_availability_zone """
         return [node.strip() for node in zone.split(",")]
 
     def get_running_instances(self, connection):
-        """Method to get running instances in the openstack cluster"""
+        """ Method to get running instances in the openstack cluster """
         images = connection.servers.list()
         return images
 
     def openstack_credentials_harvester(self):
-        """Method to get cluster's connection settings from the configuration file"""
+        """ Method to get cluster's connection settings from the configuration file """
         STREAM.info("==> Get Openstack cluster connection settings")
         try:
             configfile, section = self.openstack_cluster.split("::")
@@ -178,8 +182,8 @@ class Keyword(object):
 
 
 class parallel_cache_image(Keyword):
-    """Class to parralel cache image on multiple nodes.
-        Use pool of workers (default=4)"""
+    """ Class to parralel cache image on multiple nodes.
+        Use pool of workers (default=4) """
 
     def __init__(self, nova, nodes, openstack_image_name, openstack_flavor, openstack_network):
         self.nova = nova
@@ -223,7 +227,7 @@ class parallel_cache_image(Keyword):
 
 
 class _parallel_status_flag:
-    """class to collect worker's statuses"""
+    """ Class to collect worker's statuses """
     worker = False
     # worker_ + nodename = status
     # ...

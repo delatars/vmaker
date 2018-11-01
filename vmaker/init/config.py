@@ -8,10 +8,10 @@ from vmaker.utils.logger import STREAM
 
 
 class ConfigController:
-    """Class works with configuration files
+    """ Class works with configuration files
         - Loads general configuration file options
         - Creates vm/group/alias objects based on user configuration file
-        - Generates default user configuration file"""
+        - Generates default user configuration file """
 
     def __init__(self, config_file):
         self.CONFIG_FILE = config_file
@@ -154,7 +154,7 @@ class ConfigController:
 
     @staticmethod
     def generate_from_path(path):
-        """Generating config based on path to Virtual box"""
+        """ Generating config based on path to Virtual box """
 
         cfg = os.path.join(LoadSettings.WORK_DIR, "generated.ini")
         config = ConfigParser()

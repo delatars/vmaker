@@ -44,7 +44,7 @@ class Keyword:
         self.vbox_guestadditions_update(ssh)
 
     def get_connection_settings(self):
-        """Method get connection settings from configuration file attributes"""
+        """ Method get connection settings from configuration file attributes """
         self.ssh_port = get_manage_port(self.vm_name)
         if self.ssh_port is None:
             raise Exception("Manage port not specified! You need to use plugin 'port_forwarding' first.")
@@ -56,9 +56,9 @@ class Keyword:
         self.ssh_password = password.strip()
 
     def ssh_connect_to_vm(self):
-        """Method connects to VirtualMachine via ssh"""
+        """ Method connects to VirtualMachine via ssh """
         def try_connect(ssh):
-            """Recursive function to enable multiple connection attempts"""
+            """ Recursive function to enable multiple connection attempts """
             try:
                 ssh.connect(self.ssh_server, port=int(self.ssh_port), username=self.ssh_user, password=self.ssh_password)
                 STREAM.success(" -> Connection established")
@@ -86,11 +86,11 @@ class Keyword:
         return ssh
 
     def close_ssh_connection(self, ssh):
-        """Method to close connection"""
+        """ Method to close connection """
         ssh.close()
 
     def vbox_guestadditions_update(self, ssh):
-        """Method to update Virtual Box Guest Additions in VirtualMachine"""
+        """ Method to update Virtual Box Guest Additions in VirtualMachine """
 
         STREAM.info("==> Updating VboxGuestAdditions.")
         if not self.mount_vbox_guestadditions(ssh):
@@ -106,7 +106,7 @@ class Keyword:
             STREAM.error(stdout)
 
     def mount_vbox_guestadditions(self, ssh):
-        """Method to mount VirtualBoxGuestAdditions.iso to VirtualMachine"""
+        """ Method to mount VirtualBoxGuestAdditions.iso to VirtualMachine """
         Popen('vboxmanage storageattach %s --storagectl "IDE" --port 1 --device 0'
                         ' --type dvddrive --medium %s --forceunmount' % (self.vm_name, "emptydrive"),
                         shell=True, stdout=PIPE, stderr=PIPE).communicate()
@@ -125,7 +125,7 @@ class Keyword:
         return True
 
     def check_vbox_guestadditions_version(self, ssh):
-        """Method to check version of Virtual Box Guest Additions in VirtualMachine"""
+        """ Method to check version of Virtual Box Guest Additions in VirtualMachine """
         STREAM.debug(" -> Checking VboxGuestAdditions version")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("modinfo vboxguest |grep -iw version| awk '{print $2}'")
         version = ssh_stdout.read()
@@ -137,7 +137,7 @@ class Keyword:
             return None
 
     def get_vboxga_latest_realese(self):
-        """Method to get version of the last release of Virtual Box Guest Additions from Virtual Box server"""
+        """ Method to get version of the last release of Virtual Box Guest Additions from Virtual Box server """
         versions = requests.get(self.vbox_url)
         soup = BeautifulSoup(versions.content, 'html.parser')
         data = soup.find_all('a')
@@ -147,7 +147,7 @@ class Keyword:
         return last_release
 
     def get_vbox_guestadditions_iso(self, version):
-        """Method to download VirtualBoxGuestAdditions.iso from Virtual Box server"""
+        """ Method to download VirtualBoxGuestAdditions.iso from Virtual Box server """
         filename = "VBoxGuestAdditions_%s.iso" % version
         download_path = os.path.join(LoadSettings.WORK_DIR, filename)
         if os.path.exists(download_path):

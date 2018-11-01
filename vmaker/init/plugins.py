@@ -7,7 +7,7 @@ from vmaker.utils.logger import STREAM
 
 
 class PluginController:
-    """Class controls loading plugins
+    """ Class controls loading plugins
         - Check plugins
         - Load plugins"""
     

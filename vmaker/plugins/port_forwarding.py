@@ -89,7 +89,7 @@ class Keyword:
 
 
 def get_manage_port(vm_name):
-    """Function you can use in your plugins, to get manage port of VirtualMachine"""
+    """ Function you can use in your plugins, to get manage port of VirtualMachine """
     manage_port = None
     check = Popen("vboxmanage showvminfo %s |grep -i %s" % (vm_name, "vmaker_manage"),
                   shell=True, stdout=PIPE, stderr=PIPE).communicate()
