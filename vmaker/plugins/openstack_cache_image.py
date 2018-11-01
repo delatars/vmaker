@@ -8,12 +8,15 @@ from ConfigParser import ConfigParser
 from vmaker.init.settings import LoadSettings
 from vmaker.utils.logger import STREAM
 from vmaker.utils.auxilary import exception_interceptor
+# Use pathos.multiprocessing because it use dill(can serialise more objects) instead of cPickle
 from pathos.multiprocessing import ProcessPool as Pool
 
 
 class Keyword(object):
     """
     This plugin create a hot cache of VirtualMachine in Openstack cluster.
+    Create and up instance then delete it, in result of it,
+             virtual hard drive will be converted to raw format and saved in cache.
     Arguments of user configuration file:
     vm_name = name of the VirtualMachine in Virtual Box (example: vm_name = ubuntu1610-amd64)
     openstack_cluster = <path to configuration file which contains cluster connection settings>::<target_section>
@@ -26,6 +29,8 @@ class Keyword(object):
     openstack_network =
     """
     REQUIRED_CONFIG_ATTRS = ["openstack_cluster", "openstack_image_name", "openstack_flavor", "openstack_network"]
+
+    # pool of workers for parallel image cache
     WORKERS = 4
 
     @exception_interceptor
@@ -58,6 +63,7 @@ class Keyword(object):
             self.cache_image_multi_nodes(nova, nodes)
 
     def cache_image(self, nova):
+        """Method to cache image on one random node."""
         STREAM.info(" -> Running cache on random node.")
         server = self.create_instance(nova)
         STREAM.debug(" -> Created instance: %s" % server)
@@ -78,12 +84,16 @@ class Keyword(object):
                 break
 
     def cache_image_multi_nodes(self, nova, nodes):
+        """Method to cache image on specified nodes.
+            Used when config option 'openstack_availability_zone' is specified."""
         STREAM.info(" -> Running parallel cache on specified nodes.")
         STREAM.info(" -> Number of worker processes: %s" % self.WORKERS)
         cache = parallel_cache_image(nova, nodes, self.openstack_image_name, self.openstack_flavor, self.openstack_network)
         cache.start_cache()
 
     def check_for_running_instances(self, nova):
+        """Method to check if exists already running instances
+            with name("vmaker-"+self.openstack_image_name) in Openstack cluster"""
         images = self.get_running_instances(nova)
         STREAM.debug(" -> Running instances: %s" % images)
         for image in images:
@@ -110,6 +120,7 @@ class Keyword(object):
         return nova
 
     def create_instance(self, connection, node=None):
+        """Method create instance in openstack cluster"""
         image = connection.glance.find_image(self.openstack_image_name)
         flavor = connection.flavors.find(name=self.openstack_flavor)
         network = connection.neutron.find_network(name=self.openstack_network)
@@ -121,20 +132,23 @@ class Keyword(object):
         return instance
 
     def delete_instance(self, connection, server):
+        """Method delete instance in openstack cluster"""
         try:
             connection.servers.delete(server)
         except:
             connection.servers.force_delete(server)
 
     def get_instance_status(self, connection, id):
+        """Method get instance status in openstack cluster"""
         instance = connection.servers.find(id=id)
         return instance.status
 
     def get_nodes(self, zone):
+        """Method return list of nodes taken from self.openstack_availability_zone """
         return [node.strip() for node in zone.split(",")]
 
     def get_running_instances(self, connection):
-        """Method to get images from the openstack cluster"""
+        """Method to get running instances in the openstack cluster"""
         images = connection.servers.list()
         return images
 
@@ -164,6 +178,8 @@ class Keyword(object):
 
 
 class parallel_cache_image(Keyword):
+    """Class to parralel cache image on multiple nodes.
+        Use pool of workers (default=4)"""
 
     def __init__(self, nova, nodes, openstack_image_name, openstack_flavor, openstack_network):
         self.nova = nova
@@ -207,7 +223,10 @@ class parallel_cache_image(Keyword):
 
 
 class _parallel_status_flag:
+    """class to collect worker's statuses"""
     worker = False
+    # worker_ + nodename = status
+    # ...
 
 
 if __name__ == "__main__":
