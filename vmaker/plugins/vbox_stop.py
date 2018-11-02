@@ -18,7 +18,7 @@ class Keyword:
         self.vm_name = self.vm_name
         # - Optional attribute taken from config
         try:
-            self.vbox_stop_noforce = getattr(self, "vbox_stop_windows")
+            self.vbox_stop_noforce = getattr(self, "vbox_stop_noforce")
             if self.vbox_stop_noforce.lower() == "true":
                 self.vbox_stop_noforce = True
             else:
