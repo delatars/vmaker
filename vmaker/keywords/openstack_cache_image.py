@@ -66,7 +66,7 @@ class Keyword(object):
             # self.cache_image(nova)
             self.cache_image_multi_nodes(nova, nodes)
 
-    def cache_image(self, nova):
+    def cache_image(self, nova, depth=3):
         """ Method to cache image on one random node. """
         STREAM.info(" -> Running cache on random node.")
         server = self.create_instance(nova)
@@ -81,10 +81,12 @@ class Keyword(object):
                 STREAM.success(" -> Image has been cached.")
                 break
             elif status == "ERROR":
+                if depth == 0:
+                    break
                 self.delete_instance(nova, server)
                 STREAM.warning(" -> Unexpected error while launch instance")
                 STREAM.warning(" -> Trying to cache image again.")
-                self.cache_image(nova)
+                self.cache_image(nova, depth=depth-1)
                 break
 
     def cache_image_multi_nodes(self, nova, nodes):
