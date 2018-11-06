@@ -16,11 +16,10 @@ class KeywordController:
 
     def load_keywords(self):
         lst_of_keywords = self.enabled_keywords
-        STREAM.info("==> Checking keywords...")
+        STREAM.info("==> Checking and loading keywords...")
         for keyword in lst_of_keywords:
             KeywordController.check_keyword(keyword)
         loaded_keywords = {}
-        STREAM.info("==> Loading keywords...")
         for keyword in lst_of_keywords:
             loaded_keywords[keyword] = self.load_keyword(keyword)
         return loaded_keywords
@@ -28,7 +27,6 @@ class KeywordController:
     def load_keyword(self, keyword_name):
         keyword = importlib.import_module("vmaker.keywords.%s" % keyword_name)
         cls = getattr(keyword, "Keyword")
-        STREAM.success(_aligner(" -> Loading keyword <%s>" % keyword_name, "OK"))
         sleep(0.1)
         return cls        
 
@@ -47,13 +45,13 @@ class KeywordController:
             STREAM.debug(" -> Check for REQUIRED_CONFIG_ATTRS:")
             entry = getattr(cls, "REQUIRED_CONFIG_ATTRS")
             STREAM.debug("    %s" % entry)
-            STREAM.success(_aligner(" -> Checking keyword <%s>" % keyword_name, "OK"))
+            STREAM.success(_aligner(" -> Checking and loading keyword <%s>" % keyword_name, "OK"))
         except ImportError as err:
-            STREAM.warning(_aligner(" -> Checking keyword <%s>" % keyword_name, "FAILED"))
+            STREAM.warning(_aligner(" -> Checking and loading keyword <%s>" % keyword_name, "FAILED"))
             STREAM.critical("  -> %s" % err)
             sys.exit()
         except AttributeError as err:
-            STREAM.warning(_aligner(" -> Checking keyword <%s>" % keyword_name, "FAILED"))
+            STREAM.warning(_aligner(" -> Checking and loading keyword <%s>" % keyword_name, "FAILED"))
             STREAM.critical("  -> %s" % err)
             sys.exit()
         finally:
