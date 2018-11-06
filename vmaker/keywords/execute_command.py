@@ -5,12 +5,12 @@ from time import sleep
 from subprocess import Popen, PIPE
 from vmaker.utils.logger import STREAM
 from vmaker.utils.auxilary import exception_interceptor
-from vmaker.plugins.port_forwarding import get_manage_port
+from vmaker.keywords.port_forwarding import get_manage_port
 
 
 class Keyword(object):
     """
-    This plugin allows to execute arbitrary command in VirtualMachine.
+    This keyword allows to execute arbitrary command in VirtualMachine.
         Command must return exitcode 0 if success, otherwise Exception raised.
     Arguments of user configuration file:
     vm_name = name of the VirtualMachine in Virtual Box (example: vm_name = ubuntu1610-amd64)
@@ -93,7 +93,7 @@ class Keyword(object):
         """ Method get connection settings from configuration file attributes """
         self.ssh_port = get_manage_port(self.vm_name)
         if self.ssh_port is None:
-            raise Exception("Manage port not specified! You need to use plugin 'port_forwarding' first.")
+            raise Exception("Manage port not specified! You need to use keyword 'port_forwarding' first.")
         try:
             user, password = self.credentials.split(":")
         except ValueError:

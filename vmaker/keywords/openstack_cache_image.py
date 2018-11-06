@@ -14,7 +14,7 @@ from pathos.multiprocessing import ProcessPool as Pool
 
 class Keyword(object):
     """
-    This plugin create a hot cache of VirtualMachine in Openstack cluster.
+    This keyword create a hot cache of VirtualMachine in Openstack cluster.
     Create and up instance then delete it, in result of it,
              virtual hard drive will be converted to raw format and saved in cache.
     Arguments of user configuration file:
@@ -71,7 +71,7 @@ class Keyword(object):
         STREAM.info(" -> Running cache on random node.")
         server = self.create_instance(nova)
         STREAM.debug(" -> Created instance: %s" % server)
-        # if recursion will not breaked, whatever plugin will be terminated by vmaker timeout.
+        # if recursion will not breaked, whatever keyword will be terminated by vmaker timeout.
         while True:
             sleep(2)
             status = self.get_instance_status(nova, server.id)

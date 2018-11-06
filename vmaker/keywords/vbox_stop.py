@@ -6,7 +6,7 @@ from vmaker.utils.auxilary import exception_interceptor
 
 class Keyword:
     """
-    This plugin allows to stop your VirtualMachine.
+    This keyword allows to stop your VirtualMachine.
     Arguments of user configuration file:
     vm_name = name of the VirtualMachine in Virtual Box (example: vm_name = ubuntu1610-amd64)
     """

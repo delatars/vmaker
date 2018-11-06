@@ -11,7 +11,7 @@ from vmaker.utils.auxilary import exception_interceptor
 
 class Keyword:
     """
-    This plugin allows to export your VirtualMachine, to vagrant catalog.
+    This keyword allows to export your VirtualMachine, to vagrant catalog.
     Arguments of user configuration file:
     vm_name = name of the VirtualMachine in Virtual Box (example: vm_name = ubuntu1610-amd64)
     vagrant_catalog = path to vagrant catalog (example: vagrant_catalog = /var/www/vagrant)

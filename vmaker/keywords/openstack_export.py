@@ -11,7 +11,7 @@ from vmaker.utils.auxilary import exception_interceptor
 
 class Keyword(object):
     """
-    This plugin allows to export your VirtualMachine, to openstack cluster.
+    This keyword allows to export your VirtualMachine, to openstack cluster.
     Arguments of user configuration file:
     vm_name = name of the VirtualMachine in Virtual Box (example: vm_name = ubuntu1610-amd64)
     openstack_cluster = <path to configuration file which contains cluster connection settings>::<target_section>

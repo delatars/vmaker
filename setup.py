@@ -14,7 +14,7 @@ setup(
     author='Aleksandr Morokov',
     author_email='morocov.ap.muz@gmail.com',
     license='BSD',
-    packages=['vmaker', "vmaker.init", "vmaker.plugins", "vmaker.utils"],
+    packages=['vmaker', "vmaker.init", "vmaker.keywords", "vmaker.utils"],
     install_requires=get_requirements(),
     entry_points={
         'console_scripts': ['vmaker=vmaker.__main__:entry'],

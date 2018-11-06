@@ -9,7 +9,7 @@ class Keyword(object):
 
     @exception_interceptor
     def main(self):
-        STREAM.info("This is a test plugin %s")
+        STREAM.info("This is a test keyword %s")
         # print s
         # s = 1
         # while 1:

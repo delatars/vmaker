@@ -30,7 +30,7 @@ class LoadSettings:
     GENERAL_CONFIG = os.path.join(WORK_DIR, GENERAL_CONFIG_FILENAME)
     CONFIG_FILE_PATH = os.path.join(WORK_DIR, 'default.ini')
 
-    ENABLED_PLUGINS = []
+    ENABLED_KEYWORDS = []
     TIMEOUT = 20
     LOG = os.path.join(WORK_DIR, "stdout.log")
     DEBUG = False
@@ -65,13 +65,13 @@ class LoadSettings:
     def generate_general_config(self):
         template = """;Mandatory section.      
 [General]
-; List of enabled plugins, you can create your plugin, put it to the plugins dir and enabling it here.
+; List of enabled keywords, you can create your keyword, put it to the keywords dir and enabling it here.
 ; Examles:
-;   enabled_plugins = plugin1, plugin2 - enable only 'plugin1' and 'plugin2'
-;   enabled_plugins = all - enable all plugins in plugins dir
-;   enabled_plugins = all!(plugin1, plugin2) - enable all plugins in plugins dir except 'plugin1' and 'plugin2'
-enabled_plugins = all!(test)
-; Global parameter (in minutes) to the end of which plugin process will be terminated.
+;   enabled_keywords = keyword1, keyword2 - enable only 'keyword1' and 'keyword2'
+;   enabled_keywords = all - enable all keywords in keywords dir
+;   enabled_keywords = all!(keyword1, keyword2) - enable all keywords in keywords dir except 'keyword1' and 'keyword2'
+enabled_keywords = all!(test)
+; Global parameter (in minutes) to the end of which keyword process will be terminated.
 ;   You can specify your own "timeout" parameter for each action in vm, like <action>_timeout = 10
 ;   Example: vbox_start_timeout = 5
 timeout = 20
@@ -89,7 +89,7 @@ debug = false
 ;smtp_user = 
 ;smtp_pass = 
 
-; You can specify cluster connection settings here to use it in openstack_export plugin
+; You can specify cluster connection settings here to use it in openstack_export keyword
 ;  Or you may use separate configuration file to keep cluster settings
 ;[openstack_cluster1]
 ;auth_url=https://localhost:5000/v3
@@ -103,21 +103,21 @@ debug = false
         with open(self.GENERAL_CONFIG, "w") as config:
             config.write(template)
 
-    def enabled_plugins_parser(self, values):
+    def enabled_keywords_parser(self, values):
         if values.lower().strip() == "all":
-            import vmaker.plugins
-            plugins = [plugin[:-3] for plugin in os.listdir(os.path.dirname(vmaker.plugins.__file__))
-                       if not plugin.startswith("_") and plugin.endswith("py")]
+            import vmaker.keywords
+            keywords = [keyword[:-3] for keyword in os.listdir(os.path.dirname(vmaker.keywords.__file__))
+                       if not keyword.startswith("_") and keyword.endswith("py")]
         elif re.match(r"all!\(.*\)$", values.strip()):
-            except_plugins = [plugin.strip() for plugin in
+            except_keywords = [keyword.strip() for keyword in
                               values.replace("(", "").replace(")", "").split("!")[1].split(",")]
-            import vmaker.plugins
-            plugins = [plugin[:-3] for plugin in os.listdir(os.path.dirname(vmaker.plugins.__file__))
-                       if not plugin.startswith("_") and plugin.endswith("py")]
-            plugins = set(plugins) - set(except_plugins)
+            import vmaker.keywords
+            keywords = [keyword[:-3] for keyword in os.listdir(os.path.dirname(vmaker.keywords.__file__))
+                       if not keyword.startswith("_") and keyword.endswith("py")]
+            keywords = set(keywords) - set(except_keywords)
         else:
-            plugins = [val.strip() for val in values.split(",")]
-        return list(plugins)
+            keywords = [val.strip() for val in values.split(",")]
+        return list(keywords)
 
     def load_general_config(self):
         config = ConfigParser()
@@ -137,8 +137,8 @@ debug = false
                     pass
                 else:
                     if isinstance(attr, list):
-                        if key == "enabled_plugins":
-                            values = self.enabled_plugins_parser(value)
+                        if key == "enabled_keywords":
+                            values = self.enabled_keywords_parser(value)
                         else:
                             values = [val.strip() for val in value.split(",")]
                         setattr(LoadSettings, key.upper(), values)

@@ -9,12 +9,12 @@ from subprocess import PIPE, Popen
 from vmaker.init.settings import LoadSettings
 from vmaker.utils.logger import STREAM
 from vmaker.utils.auxilary import exception_interceptor
-from vmaker.plugins.port_forwarding import get_manage_port
+from vmaker.keywords.port_forwarding import get_manage_port
 
 
 class Keyword:
     """
-    This plugin allows to install VirtualBox Guest Additions in your VirtualMachines.
+    This keyword allows to install VirtualBox Guest Additions in your VirtualMachines.
     Arguments of user configuration file:
     vm_name = name of the VirtualMachine in Virtual Box (example: vm_name = ubuntu1610-amd64)
     credentials = credentials to connect to VirtualMachine via management_type (example: credentials = root:toor)
@@ -47,7 +47,7 @@ class Keyword:
         """ Method get connection settings from configuration file attributes """
         self.ssh_port = get_manage_port(self.vm_name)
         if self.ssh_port is None:
-            raise Exception("Manage port not specified! You need to use plugin 'port_forwarding' first.")
+            raise Exception("Manage port not specified! You need to use keyword 'port_forwarding' first.")
         try:
             user, password = self.credentials.split(":")
         except ValueError:

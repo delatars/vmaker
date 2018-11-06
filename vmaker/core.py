@@ -9,14 +9,14 @@ from vmaker.utils.reporter import Reporter
 
 class Core(Engine):
     """ Main Class
-        - union plugins with objects
-        - execute plugins in child processes
+        - union keywords with objects
+        - execute keywords in child processes
         - control child processes execution
 
         Inheritence:
-        config  ->
+        config   ->
                    --> engine -> core
-        plugins ->
+        keywords ->
         """
 
     def __init__(self):
@@ -29,7 +29,7 @@ class Core(Engine):
         # inherited attributes:
         #   self.config - dict with vm objects {vm_name: object(vm)}
         #   self.config_sequence - sequence to work with virtual machines list[vm_name, ...]
-        #   self.loaded_plugins - dict with loaded plugins {plugin_name: object(plugin)}
+        #   self.loaded_keywords - dict with loaded keywords {keyword_name: object(keyword)}
         STREAM.notice("==> BEGIN.")
         # Connect notification module
         self.reports = Reporter(self.config)
@@ -120,13 +120,13 @@ class Core(Engine):
 
         for action in actions_list:
             try:
-                invoked_plugin = self.invoke_plugin(action)
+                invoked_keyword = self.invoke_keyword(action)
                 timeout = _get_timeout()
                 try:
                     LoggerOptions.set_component(self.current_vm)
                     LoggerOptions.set_action(action)
-                    # Execute plugin in child process
-                    keyword_process = Process(target=invoked_plugin().main)
+                    # Execute keyword in child process
+                    keyword_process = Process(target=invoked_keyword().main)
                     keyword_process.start()
                     # Monitoring running proccess
                     _process_guard(timeout, keyword_process)
@@ -147,17 +147,17 @@ class Core(Engine):
             LoggerOptions.set_action(None)
         return True
 
-    def invoke_plugin(self, plugin_name):
-        """ Method allows to invoke any existed plugin """
-        keyword = self.loaded_plugins[plugin_name]
-        # Injecting config attributes to plugin
+    def invoke_keyword(self, keyword_name):
+        """ Method allows to invoke any existed keyword """
+        keyword = self.loaded_keywords[keyword_name]
+        # Injecting config attributes to keyword
         mutual_keyword = type("Keyword", (keyword, self.current_vm_obj), {})
         return mutual_keyword
 
     def vbox_stop(self):
-        """ Uses plugin vbox_stop """
+        """ Uses keyword vbox_stop """
         LoggerOptions.set_action("clearing")
-        invoked = self.invoke_plugin("vbox_stop")
+        invoked = self.invoke_keyword("vbox_stop")
         try:
             getattr(invoked, "vm_name")
             invoked().main()

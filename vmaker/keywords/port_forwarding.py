@@ -8,7 +8,7 @@ from vmaker.utils.auxilary import exception_interceptor
 
 class Keyword:
     """
-    This plugin allows to forwarding ports beetwen guest and host machines.
+    This keyword allows to forwarding ports beetwen guest and host machines.
     Arguments of user configuration file:
     vm_name = name of the VirtualMachine in Virtual Box (example: vm_name = ubuntu1610-amd64)
     forwarding_ports = label:guest:host, ... (example: forwarding_ports = manage:22:2020, icap:1344:1234)
@@ -89,7 +89,7 @@ class Keyword:
 
 
 def get_manage_port(vm_name):
-    """ Function you can use in your plugins, to get manage port of VirtualMachine """
+    """ Function you can use in your keywords, to get manage port of VirtualMachine """
     manage_port = None
     check = Popen("vboxmanage showvminfo %s |grep -i %s" % (vm_name, "vmaker_manage"),
                   shell=True, stdout=PIPE, stderr=PIPE).communicate()

@@ -5,14 +5,14 @@ from time import sleep
 from subprocess import PIPE, Popen
 from vmaker.utils.logger import STREAM
 from vmaker.utils.auxilary import exception_interceptor
-from vmaker.plugins.vbox_stop import Keyword as vbox_stop
-from vmaker.plugins.vbox_start import Keyword as vbox_start
-from vmaker.plugins.port_forwarding import get_manage_port
+from vmaker.keywords.vbox_stop import Keyword as vbox_stop
+from vmaker.keywords.vbox_start import Keyword as vbox_start
+from vmaker.keywords.port_forwarding import get_manage_port
 
 
 class Keyword:
     """
-    This plugin allows to automatically update your VirtualMachines.
+    This keyword allows to automatically update your VirtualMachines.
     Arguments of user configuration file:
     vm_name = name of the VirtualMachine in Virtual Box (example: vm_name = ubuntu1610-amd64)
     credentials = credentials to connect to VirtualMachine via management_type (example: credentials = root:toor)
@@ -34,7 +34,7 @@ class Keyword:
         self.credentials = self.credentials
         self.management_type = self.management_type
         # -------------------------------------------
-        # Setting attributes to invoked plugins
+        # Setting attributes to invoked keywords
         vbox_stop.vm_name = self.vm_name
         vbox_start.vm_name = self.vm_name
         STREAM.info("==> Updating VirtualMachine.")
@@ -53,7 +53,7 @@ class Keyword:
         """ Method get connection settings from configuration file attributes """
         self.ssh_port = get_manage_port(self.vm_name)
         if self.ssh_port is None:
-            raise Exception("Manage port not specified! You need to use plugin 'port_forwarding' first.")
+            raise Exception("Manage port not specified! You need to use keyword 'port_forwarding' first.")
         try:
             user, password = self.credentials.split(":")
         except ValueError:
