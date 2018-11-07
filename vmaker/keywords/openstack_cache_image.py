@@ -9,7 +9,7 @@ from vmaker.init.settings import LoadSettings
 from vmaker.utils.logger import STREAM
 from vmaker.utils.auxilary import exception_interceptor
 # Use pathos.multiprocessing because it use dill(can serialise more objects) instead of cPickle
-from pathos.multiprocessing import ProcessPool as Pool
+from pathos.multiprocessing import cpu_count, ProcessPool as Pool
 
 
 class Keyword(object):
@@ -35,7 +35,7 @@ class Keyword(object):
     REQUIRED_CONFIG_ATTRS = ["openstack_cluster", "openstack_image_name", "openstack_flavor", "openstack_network"]
 
     # pool of workers for parallel image cache
-    WORKERS = 4
+    WORKERS = cpu_count()
 
     @exception_interceptor
     def main(self):
