@@ -81,10 +81,10 @@ class Keyword(object):
                 STREAM.success(" -> Image has been cached.")
                 break
             elif status == "ERROR":
-                if depth == 0:
-                    break
                 self.delete_instance(nova, server)
                 STREAM.warning(" -> Unexpected error while launch instance")
+                if depth == 0:
+                    break
                 STREAM.warning(" -> Trying to cache image again.")
                 self.cache_image(nova, depth=depth-1)
                 break
@@ -218,9 +218,9 @@ class parallel_cache_image(Keyword):
                 self.delete_instance(self.nova, server)
                 break
             elif status == "ERROR":
+                self.delete_instance(self.nova, server)
                 if depth == 0:
                     break
-                self.delete_instance(self.nova, server)
                 self.parallel_cache(node, depth=depth-1)
                 break
         if getattr(_parallel_status_flag, worker_name):
