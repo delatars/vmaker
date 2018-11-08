@@ -46,6 +46,30 @@ class Keyword:
             if self.vm_name in data:
                 break
         STREAM.info(" -> VirtualMachine successfully booted.")
+
+    def clearing(self):
+        STREAM.info(" -> Attempting to gracefull shutdown VirtualMachine")
+        if not self.check_vm_status():
+            STREAM.info(" -> VirtualMachine is already stoped")
+            return
+        process = Popen("VBoxManage controlvm %s acpipowerbutton" % self.vm_name, shell=True,
+                        stdout=PIPE, stderr=PIPE).communicate()
+        stderr = process[1]
+        if len(stderr) > 0:
+            raise Exception(stderr)
+        tries = 0
+        while 1:
+            rvms = Popen("VBoxManage list runningvms | awk '{print $1}'", shell=True, stdout=PIPE, stderr=PIPE)
+            data = rvms.stdout.read()
+            if self.vm_name not in data:
+                break
+            if tries > 5:
+                STREAM.info(" -> Forcing shutdown VirtualMachine")
+                Popen("VBoxManage controlvm %s poweroff soft" % self.vm_name, shell=True,
+                      stdout=PIPE, stderr=PIPE).communicate()
+                break
+            tries += 1
+            sleep(5)
     
 
 if __name__ == "__main__":

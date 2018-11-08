@@ -35,8 +35,8 @@ class Core(Engine):
         self.reports = Reporter(self.config)
         # Current working vm object
         self.current_vm_obj = None
-        # Current working config section name
-        self.current_vm = None
+        # Contains list of already done actions for current working vm object
+        self.actions_progress = []
         try:
             self.main()
         except KeyboardInterrupt:
@@ -44,14 +44,14 @@ class Core(Engine):
             LoggerOptions.set_action(None)
             STREAM.error("==> Job was interrupted by user.")
             STREAM.notice("==> Clearing ourselves")
-            self.vbox_stop()
+            self.clearing()
 
     def main(self):
         for vm in self.config_sequence:
-            self.current_vm = vm
             self.current_vm_obj = self.config[vm]
+            self.actions_progress = []
             # Set logger filter
-            LoggerOptions.set_component(self.current_vm)
+            LoggerOptions.set_component(self.current_vm_obj.__name__)
             result = self.do_actions(self.current_vm_obj.actions)
             if result:
                 STREAM.notice("==> There are no more Keywords, going next vm.")
@@ -72,7 +72,7 @@ class Core(Engine):
             STREAM.error(" -> %s" % exception)
             STREAM.error(" -> Can't proceed with this vm")
             STREAM.notice("==> Clearing ourselves")
-            self.vbox_stop()
+            self.clearing()
 
         def _get_timeout():
             """ The function searches for a timeout for the keyword termination """
@@ -81,14 +81,14 @@ class Core(Engine):
                 LoggerOptions.set_component("Core")
                 LoggerOptions.set_action(None)
                 STREAM.debug(" Assigned 'timeout' for action: %s = %s min" % (action, ttk))
-                LoggerOptions.set_component(self.current_vm)
+                LoggerOptions.set_component(self.current_vm_obj.__name__)
                 LoggerOptions.set_action(action)
             except AttributeError:
                 ttk = LoadSettings.TIMEOUT
                 LoggerOptions.set_component("Core")
                 LoggerOptions.set_action(None)
                 STREAM.debug(" Parameter 'timeout' not assigned, for action (%s), using global: %s min" % (action, ttk))
-                LoggerOptions.set_component(self.current_vm)
+                LoggerOptions.set_component(self.current_vm_obj.__name__)
                 LoggerOptions.set_action(action)
             ttk = int(ttk)*60
             return ttk
@@ -114,16 +114,17 @@ class Core(Engine):
                     LoggerOptions.set_component("Core")
                     LoggerOptions.set_action(None)
                     STREAM.debug("%s min remaining to terminate Keyword!" % str((timeout-timer)/60))
-                    LoggerOptions.set_component(self.current_vm)
+                    LoggerOptions.set_component(self.current_vm_obj.__name__)
                     LoggerOptions.set_action(action)
                 timer += 1
 
         for action in actions_list:
+            self.actions_progress.append(action)
             try:
                 invoked_keyword = self.invoke_keyword(action)
                 timeout = _get_timeout()
                 try:
-                    LoggerOptions.set_component(self.current_vm)
+                    LoggerOptions.set_component(self.current_vm_obj.__name__)
                     LoggerOptions.set_action(action)
                     # Execute keyword in child process
                     keyword_process = Process(target=invoked_keyword().main)
@@ -150,19 +151,24 @@ class Core(Engine):
     def invoke_keyword(self, keyword_name):
         """ Method allows to invoke any existed keyword """
         keyword = self.loaded_keywords[keyword_name]
-        # Injecting config attributes to keyword
+        # Injecting config attributes to keyword obj
         mutual_keyword = type("Keyword", (keyword, self.current_vm_obj), {})
         return mutual_keyword
 
-    def vbox_stop(self):
-        """ Uses keyword vbox_stop """
+    def clearing(self):
+        """ Clearing method, invoked if job is interrupted or complete unsuccessfully.
+            Reverse already done actions by invoking 'clearing' method in each keyword.
+            If 'clearing' method not implemented in keyword, doing nothing. """
         LoggerOptions.set_action("clearing")
-        invoked = self.invoke_keyword("vbox_stop")
-        try:
-            getattr(invoked, "vm_name")
-            invoked().main()
-        except AttributeError:
-            pass
+        for action in reversed(self.actions_progress):
+            STREAM.info("==> Reverse action '%s':" % action)
+            try:
+                invoke = self.invoke_keyword(action)
+                getattr(invoke, "clearing")
+                invoke().clearing()
+            except AttributeError:
+                STREAM.info(" -> Method clearing not implemented in keyword, nothing to do.")
+                pass
         LoggerOptions.set_action(None)
 
 

@@ -33,19 +33,25 @@ class Keyword:
     # actions = test
     # info = Hello
     # ...
+    #
+    # keywords/test.py
+    #  ...
     #  class Keyword(object):
     #      def main(self):
     #          print self.info
+    #  ...
+    # Output will be:
+    # >>> Hello
     # ########################
     #
     # REQUIRED_CONFIG_ATTRS - mandatory attribute
     # List of mandatory arguments taken from the user configuration file necessary for the correct work of the keyword.
     REQUIRED_CONFIG_ATTRS = ["info"]
 
-    # wrap function to intercept exceptions.
+    # Wrap function to intercept exceptions in child proccesses.
     @exception_interceptor
-    # Mandatory method which represents an entrypoint of the keyword.
     def main(self):
+        """ Mandatory method, invoked by vmaker Core process, which represents an entrypoint of the keyword. """
         STREAM.info("keyword's start.")
         # Attribute which automatically taken from the user configuration file.
         # self.info = self.info
@@ -61,6 +67,11 @@ class Keyword:
     #
     # ...
     # ...
+
+    def clearing(self):
+        """ This method, invoked by vmaker Core process, if keyword was interrupted or complete unsuccessfully.
+            If this method is not implemented, doing nothing. """
+        print "Clear actions"
 
 
 if __name__ == "__main__":

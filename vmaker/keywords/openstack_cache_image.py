@@ -61,14 +61,15 @@ class Keyword(object):
         STREAM.debug(" -> Check for running instances with the same name")
         self.check_for_running_instances(nova)
         if self.openstack_availability_zone is None:
+            STREAM.info(" -> Running cache on random node.")
             self.cache_image(nova)
         else:
-            # self.cache_image(nova)
+            STREAM.info(" -> Running parallel cache on specified nodes.")
+            STREAM.info(" -> Number of worker processes: %s" % self.WORKERS)
             self.cache_image_multi_nodes(nova, nodes)
 
     def cache_image(self, nova, depth=3):
         """ Method to cache image on one random node. """
-        STREAM.info(" -> Running cache on random node.")
         server = self.create_instance(nova)
         STREAM.debug(" -> Created instance: %s" % server)
         # if recursion will not breaked, whatever keyword will be terminated by vmaker timeout.
@@ -92,8 +93,6 @@ class Keyword(object):
     def cache_image_multi_nodes(self, nova, nodes):
         """ Method to parallel cache image on specified nodes.
             Used when config option 'openstack_availability_zone' is specified. """
-        STREAM.info(" -> Running parallel cache on specified nodes.")
-        STREAM.info(" -> Number of worker processes: %s" % self.WORKERS)
         cache = parallel_cache_image(nova, nodes, self.openstack_image_name, self.openstack_flavor, self.openstack_network)
         cache.start_cache()
 
@@ -182,10 +181,13 @@ class Keyword(object):
         target_cluster_name = section
         return target_cluster_name
 
+    def clearing(self):
+        pass
+
 
 class parallel_cache_image(Keyword):
     """ Class to parralel cache image on multiple nodes.
-        Use pool of workers (default=4) """
+        Use pool of workers (default=cpu_count()) """
 
     def __init__(self, nova, nodes, openstack_image_name, openstack_flavor, openstack_network):
         self.nova = nova
