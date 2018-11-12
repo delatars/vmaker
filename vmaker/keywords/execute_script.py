@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import paramiko
+from scp import SCPClient
 from time import sleep
 from subprocess import Popen, PIPE
 from vmaker.utils.logger import STREAM
@@ -10,12 +11,15 @@ from vmaker.keywords.port_forwarding import get_manage_port
 
 class Keyword(object):
     """
-    This keyword allows to execute arbitrary command in VirtualMachine.
+    This keyword allows to execute local script in VirtualMachine.
         Command must return exitcode 0 if success, otherwise Exception raised.
     Arguments of user configuration file:
     vm_name = name of the VirtualMachine in Virtual Box (example: vm_name = ubuntu1610-amd64)
     credentials = credentials to connect to VirtualMachine via management_type (example: credentials = root:toor)
-    execute_command = command which will be executed in VirtualMachine (example: execute_command = dnf install -y curl)
+    execute_script = local script which will be executed in VirtualMachine
+        (example: execute_command = /home/user/script.sh # uses the default shell
+         example: execute_command = python:/home/user/myscript.py
+         example: execute_command = /usr/bin/python3:/home/user/myscript.py)
     """
     REQUIRED_CONFIG_ATTRS = ['vm_name', 'credentials', 'execute_command']
     ssh_server = "localhost"
@@ -28,14 +32,12 @@ class Keyword(object):
     def main(self):
         # - Attributes taken from config
         self.vm_name = self.vm_name
-        self.execute_command = self.execute_command
+        self.execute_script = self.execute_script
         self.credentials = self.credentials
         # -------------------------------------------
         self.get_connection_settings()
         ssh = self.connect_to_vm()
-        if self.execute_command.strip().startswith("exec:"):
-            self.execute_command = self.execute_command[5:]
-        self.command_exec(ssh, self.execute_command.strip())
+        self.upload_script_and_execute(ssh, self.execute_script)
         self.close_ssh_connection(ssh)
 
     def connect_to_vm(self):
@@ -61,6 +63,7 @@ class Keyword(object):
                 try_connect(ssh)
 
         STREAM.info("==> Connecting to VirtualMachine (port = %s)." % self.ssh_port)
+
         ssh = paramiko.SSHClient()
         ssh.load_system_host_keys()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -73,23 +76,48 @@ class Keyword(object):
         """ Method to close connection """
         ssh.close()
 
-    def command_exec(self, ssh, command, stdin=""):
-        """ Method to execute remote command via ssh connection """
-        STREAM.info(" -> Executing command: %s" % command)
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
-        ssh_stdin.write(stdin)
-        ssh_stdin.flush()
+    def upload_script_and_execute(self, ssh, parameter):
+        Platform = self.get_platform(ssh)
+        if parameter.strip().startswith("script:"):
+            parameter = parameter[7:]
+        try:
+            shell, filepath = parameter.strip().split(":")
+        except ValueError:
+            shell = None
+            filepath = parameter.strip()
+        if Platform == "win-like":
+            STREAM.debug(" -> Remote system probably is windows type")
+            temppath = os.path.join("C:\Windows\Temp", os.path.basename(filepath))
+            default_shell = r"C:\Windows\System32\cmd.exe /c start"
+        else:
+            STREAM.debug(" -> Remote system probably is unix type")
+            temppath = os.path.join("/tmp", os.path.basename(filepath))
+            default_shell = "bash"
+        if shell is None:
+            shell = default_shell
+        scp = SCPClient(ssh.get_transport())
+        scp.put(filepath, temppath)
+        scp.close()
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("%s %s" % (shell, temppath))
         stdout = ssh_stdout.read()
         stderr = ssh_stderr.read()
         STREAM.debug(self.get_decoded(stdout))
         if len(stderr) > 0:
             STREAM.debug(self.get_decoded(stderr))
         exit_code = ssh_stdout.channel.recv_exit_status()
-        STREAM.debug(" -> Command exitcode: %s" % exit_code)
+        STREAM.debug(" -> Script exitcode: %s" % exit_code)
         if exit_code == 0:
-            STREAM.success(" -> Command executed successfully")
+            STREAM.success(" -> Script executed successfully")
         else:
-            raise Exception("Executed command exit status not 0")
+            raise Exception("Executed script exit status not 0")
+
+    def get_platform(self, ssh):
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("systeminfo /?")
+        exit_code = ssh_stdout.channel.recv_exit_status()
+        if exit_code == 0:
+            return "win-like"
+        else:
+            return "unix-like"
 
     def get_connection_settings(self):
         """ Method get connection settings from configuration file attributes """

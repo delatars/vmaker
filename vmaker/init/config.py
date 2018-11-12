@@ -23,7 +23,7 @@ class ConfigController:
         STREAM.info("==> Loading user configuration file...")
         config = ConfigParser()
         config.read(self.CONFIG_FILE)
-        aliases, groups, vms = {}, {}, {}
+        aliases, groups, vms, cmds = {}, {}, {}, {}
         # - Generating aliases objects
         STREAM.debug("==> Generating alias objects...")
         for sec in config.sections():
@@ -46,9 +46,9 @@ class ConfigController:
                 else:
                     STREAM.debug("    [%s] Section doesn't seem like alias object. Passed..." % sec)
             except KeyError as wrong_key:
-                STREAM.error(" -> Config Error: Wrong section '%s' Key '%s' not specified" % (sec, wrong_key))
+                STREAM.error(" -> Config Error: Wrong section '%s' Key %s not specified" % (sec, wrong_key))
                 sys.exit()
-        STREAM.debug("==> Generated alias objects: %s\n" % aliases)
+        STREAM.debug("[*] ==> Generated alias objects: %s\n" % aliases)
         # - Generating group objects
         STREAM.debug("==> Generating group objects...")
         for sec in config.sections():
@@ -91,7 +91,7 @@ class ConfigController:
             except KeyError as wrong_key:
                 STREAM.error(" -> Config Error: Wrong section '%s' Key '%s' not specified" % (sec, wrong_key))
                 sys.exit()
-        STREAM.debug("==> Generated group objects: %s\n" % groups)
+        STREAM.debug("[*] ==> Generated group objects: %s\n" % groups)
         # - Generating VM objects
         STREAM.debug("==> Generating vm objects...")
         vms_work_sequence = []
@@ -147,10 +147,21 @@ class ConfigController:
             except KeyError as wrong_key:
                 STREAM.error(" -> Config Error: Wrong section '%s' Key '%s' not specified" % (sec, wrong_key))
                 sys.exit()
-        STREAM.debug("==> Generated vm objects: %s" % vms)
-        STREAM.debug("==> Generated vm objects work sequence: %s" % vms_work_sequence)
+        STREAM.debug("[*] ==> Generated vm objects: %s" % vms)
+        STREAM.debug("[*] ==> Generated vm objects work sequence: %s" % vms_work_sequence)
+        STREAM.debug("==> Finding sections with execution...")
+        for sec in config.sections():
+            try:
+                if config[sec]["type"] == "execution":
+                    STREAM.debug(" -> Found section '%s'" % sec)
+                    args = {key: value for key, value in config.items(sec) if key != "type"}
+                    cmds = dict(cmds, **args)
+            except KeyError as wrong_key:
+                STREAM.error(" -> Config Error: Wrong section '%s' Key '%s' not specified" % (sec, wrong_key))
+                sys.exit()
+        STREAM.debug("[*] ==> Found execution aliases: %s" % cmds)
         STREAM.success(" -> User configuration file loaded")
-        return vms, vms_work_sequence
+        return vms, vms_work_sequence, cmds
 
     @staticmethod
     def generate_from_path(path):

@@ -30,7 +30,7 @@ class Engine(object):
         self.args()
         config = ConfigController(self._CONFIG_FILE)
         # Load user configuration file and sequence to move on.
-        self.config, self.config_sequence = config.load_config()
+        self.config, self.config_sequence, self.executions = config.load_config()
         # Check and load keywords.
         self.loaded_keywords = KeywordController(LoadSettings.ENABLED_KEYWORDS).load_keywords()
         self.check_attributes_dependencies()
@@ -48,19 +48,24 @@ class Engine(object):
                     # Add required attributes of current action to summary set
                     req_args = set(req_args) | set(req_attr)
                 except KeyError:
-                    try:
+                    # If action not in executions section, check for aliases
+                    if action not in self.executions.keys():
                         # Check aliases actions for required attributes
-                        for act in self.config[vm].aliases[action]:
+                        try:
+                            aliases = self.config[vm].aliases[action]
+                        # Intercept if VirtualMachine have no aliases
+                        except KeyError as key:
+                            STREAM.error("The keyword (%s) you use in the configuration file does not exist or is not enabled." % key)
+                            STREAM.warning("You can't use this keyword until you turn it on in .vmaker.ini")
+                            sys.exit(1)
+                        # Intercept if VirtualMachine have no aliases
+                        except AttributeError:
+                            STREAM.error("The keyword (u'%s') you use in the configuration file does not exist or is not enabled." % action)
+                            STREAM.warning("You can't use this keyword until you turn it on in .vmaker.ini")
+                            sys.exit(1)
+                        for act in aliases:
                             req_attr = self.loaded_keywords[act].REQUIRED_CONFIG_ATTRS
                             req_args = set(req_args) | set(req_attr)
-                    except KeyError as key:
-                        STREAM.error("The keyword (%s) you use in the configuration file does not exist or is not enabled." % key)
-                        STREAM.warning("You can't use this keyword until you turn it on in .vmaker.ini")
-                        sys.exit(1)
-                    except AttributeError:
-                        STREAM.error("The keyword (u'%s') you use in the configuration file does not exist or is not enabled." % action)
-                        STREAM.warning("You can't use this keyword until you turn it on in .vmaker.ini")
-                        sys.exit(1)
             vm_attrs = [name for name in dir(self.config[vm]) if not name.startswith('__')]
             req_args = set(req_args)
             vm_attrs = set(vm_attrs)

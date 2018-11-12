@@ -24,9 +24,11 @@ class Core(Engine):
         try:
             super(Core, self).__init__()
         except KeyboardInterrupt:
-            print "\nJob was interrupted by user."
+            print "\n[!] Job was interrupted by user."
             exit(1)
         # inherited attributes:
+        #   self.executions - dict with executions that could be executed like keywords by invoking plugin 'execute_command'
+        #                    {action_name: command}
         #   self.config - dict with vm objects {vm_name: object(vm)}
         #   self.config_sequence - sequence to work with virtual machines list[vm_name, ...]
         #   self.loaded_keywords - dict with loaded keywords {keyword_name: object(keyword)}
@@ -42,7 +44,7 @@ class Core(Engine):
         except KeyboardInterrupt:
             LoggerOptions.set_component("Core")
             LoggerOptions.set_action(None)
-            STREAM.error("==> Job was interrupted by user.")
+            STREAM.error("[!] Job was interrupted by user.")
             STREAM.notice("==> Clearing ourselves")
             self.clearing()
 
@@ -119,6 +121,10 @@ class Core(Engine):
                 timer += 1
 
         for action in actions_list:
+            if action in self.executions.keys():
+                keyword = self.execution_get_keyword(self.executions[action])
+                setattr(self.current_vm_obj, keyword, self.executions[action])
+                action = keyword
             self.actions_progress.append(action)
             try:
                 invoked_keyword = self.invoke_keyword(action)
@@ -148,6 +154,15 @@ class Core(Engine):
             LoggerOptions.set_action(None)
         return True
 
+    def execution_get_keyword(self, execution_line):
+        """ Method to parse command and make dicision which keyword to use for it """
+        if execution_line.strip().startswith("exec:"):
+            return "execute_command"
+        elif execution_line.strip().startswith("script:"):
+            return "execute_script"
+        else:
+            return "execute_command"
+
     def invoke_keyword(self, keyword_name):
         """ Method allows to invoke any existed keyword """
         keyword = self.loaded_keywords[keyword_name]
@@ -161,13 +176,14 @@ class Core(Engine):
             If 'clearing' method not implemented in keyword, doing nothing. """
         LoggerOptions.set_action("clearing")
         for action in reversed(self.actions_progress):
-            STREAM.info("==> Reverse action '%s':" % action)
             try:
                 invoke = self.invoke_keyword(action)
                 getattr(invoke, "clearing")
+                STREAM.info("==> Reverse action '%s':" % action)
                 invoke().clearing()
             except AttributeError:
-                STREAM.info(" -> Method clearing not implemented in keyword, nothing to do.")
+                STREAM.debug("==> Reverse action '%s':" % action)
+                STREAM.debug(" -> Method 'clearing' not implemented in keyword, nothing to do.")
                 pass
         LoggerOptions.set_action(None)
 
