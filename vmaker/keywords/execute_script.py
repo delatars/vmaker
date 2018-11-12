@@ -85,6 +85,7 @@ class Keyword(object):
         except ValueError:
             shell = None
             filepath = parameter.strip()
+        STREAM.info(" -> Executing script: %s" % filepath)
         if Platform == "win-like":
             STREAM.debug(" -> Remote system probably is windows type")
             temppath = os.path.join("C:\Windows\Temp", os.path.basename(filepath))
@@ -94,6 +95,7 @@ class Keyword(object):
             temppath = os.path.join("/tmp", os.path.basename(filepath))
             default_shell = "bash"
         if shell is None:
+            STREAM.debug(" -> Shell is not specified, using default: %s" % default_shell)
             shell = default_shell
         scp = SCPClient(ssh.get_transport())
         scp.put(filepath, temppath)
