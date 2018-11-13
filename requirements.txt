@@ -4,6 +4,7 @@ verboselogs == 1.7
 python-glanceclient
 python-novaclient
 paramiko == 2.4.2
+scp
 requests
 bs4
 pathos
