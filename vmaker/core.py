@@ -67,7 +67,7 @@ class Core(Engine):
     # recursion function which unpack aliases
     def do_actions(self, actions_list):
         def _restore(exception, action):
-            """ The function restore vm to previous state """
+            """ The function reverse actions and add ERROR report to reporter """
             LoggerOptions.set_component("Core")
             LoggerOptions.set_action(None)
             self.reports.add_report(self.current_vm_obj.__name__, "ERROR", action)
@@ -125,9 +125,9 @@ class Core(Engine):
                 keyword = self.execution_get_keyword(self.executions[action])
                 setattr(self.current_vm_obj, keyword, self.executions[action])
                 action = keyword
-            self.actions_progress.append(action)
             try:
                 invoked_keyword = self.invoke_keyword(action)
+                self.actions_progress.append(action)
                 timeout = _get_timeout()
                 try:
                     LoggerOptions.set_component(self.current_vm_obj.__name__)
