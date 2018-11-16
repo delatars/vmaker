@@ -206,10 +206,10 @@ class Keyword:
 
     def update_altlinux(self, ssh):
         self.command_exec(ssh, "fuser -k /var/lib/dpkg/lock")
-        self.command_exec(ssh, "dpkg --configure -a")
+        self.command_exec(ssh, "dpkg --configure -a", get_pty=True)
         self.command_exec(ssh, "apt-get update")
         self.command_exec(ssh, "apt-get upgrade -y", get_pty=True)
-        self.command_exec(ssh, "apt-get autoremove -y")
+        self.command_exec(ssh, "apt-get autoremove -y", get_pty=True)
         self.command_exec(ssh, "apt-get clean")
         self.command_exec(ssh, "depmod > /dev/null 2>&1")
         ssh = self.reboot_and_connect()
@@ -226,10 +226,10 @@ class Keyword:
 
     def update_debian(self, ssh):
         self.command_exec(ssh, "fuser -k /var/lib/dpkg/lock")
-        self.command_exec(ssh, "dpkg --configure -a")
+        self.command_exec(ssh, "dpkg --configure -a", get_pty=True)
         self.command_exec(ssh, "apt-get update")
         self.command_exec(ssh, "export DEBIAN_FRONTEND=noninteractive; apt-get upgrade -y", get_pty=True)
-        self.command_exec(ssh, "apt-get autoremove -y")
+        self.command_exec(ssh, "apt-get autoremove -y", get_pty=True)
         self.command_exec(ssh, "apt-get clean")
         self.command_exec(ssh, "depmod > /dev/null 2>&1")
         ssh = self.reboot_and_connect()
@@ -252,10 +252,10 @@ class Keyword:
 
     def update_linuxmint(self, ssh):
         self.command_exec(ssh, "fuser -k /var/lib/dpkg/lock")
-        self.command_exec(ssh, "dpkg --configure -a")
+        self.command_exec(ssh, "dpkg --configure -a", get_pty=True)
         self.command_exec(ssh, "apt-get update")
         self.command_exec(ssh, "export DEBIAN_FRONTEND=noninteractive; apt-get upgrade -y", get_pty=True)
-        self.command_exec(ssh, "apt-get autoremove -y")
+        self.command_exec(ssh, "apt-get autoremove -y", get_pty=True)
         self.command_exec(ssh, "apt-get clean")
         self.command_exec(ssh, "depmod > /dev/null 2>&1")
         ssh = self.reboot_and_connect()
@@ -291,10 +291,10 @@ class Keyword:
 
     def update_ubuntu(self, ssh):
         self.command_exec(ssh, "fuser -k /var/lib/dpkg/lock")
-        self.command_exec(ssh, "dpkg --configure -a")
+        self.command_exec(ssh, "dpkg --configure -a", get_pty=True)
         self.command_exec(ssh, "apt-get update")
         self.command_exec(ssh, "export DEBIAN_FRONTEND=noninteractive; apt-get upgrade -y", get_pty=True)
-        self.command_exec(ssh, "apt-get autoremove -y")
+        self.command_exec(ssh, "apt-get autoremove -y", get_pty=True)
         self.command_exec(ssh, "apt-get clean")
         self.command_exec(ssh, "depmod > /dev/null 2>&1")
         ssh = self.reboot_and_connect()
