@@ -169,12 +169,18 @@ class Keyword(object):
 
     def image_exists(self, connection, name):
         """ Method to check if image already exists """
+        same_images = []
         images = self.get_images(connection)
         for image in images:
             if image["name"] == name:
-                exists_image = image["id"]
-                return exists_image
-        return None
+                same_images.append(image["id"])
+        if len(same_images) == 1:
+            return same_images[0]
+        elif len(same_images) > 1:
+            raise Exception("There are %s images with name '%s' found in Openstack cluster!\n"
+                            "Don't know which one i should replace with new." % (len(same_images), name))
+        else:
+            return None
 
     def get_images(self, connection):
         """ Method to get images from the openstack cluster """
