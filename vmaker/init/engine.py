@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
-import os
 import argparse
-from subprocess import Popen, PIPE
 from vmaker.init.config import ConfigController
 from vmaker.init.keywords import KeywordController
 from vmaker.init.settings import LoadSettings
@@ -14,18 +12,12 @@ class Engine(object):
         - Parse command-line arguments
         - Execute config module
         - Execute keywords module
-        - Creating PID file
-        - Creating Session file
-        - Control session
         """
     _SESSION_FILE = LoadSettings.SESSION_FILE
-    _PID_FILE = LoadSettings.PID_FILE
     _GENERAL_CONFIG = LoadSettings.GENERAL_CONFIG
     _CONFIG_FILE = LoadSettings.CONFIG_FILE_PATH
 
     def __init__(self):
-        # Check if one instance of the program is already running.
-        self.check_running_state()
         # Parse command-line arguments.
         self.args()
         config = ConfigController(self._CONFIG_FILE)
@@ -69,8 +61,8 @@ class Engine(object):
             vm_attrs = [name for name in dir(self.config[vm]) if not name.startswith('__')]
             req_args = set(req_args)
             vm_attrs = set(vm_attrs)
-            STREAM.debug(" -> required attributes: %s" % req_args)
-            STREAM.debug(" -> VirtualMachines attributes: %s" % vm_attrs)
+            STREAM.debug(" -> [%s] Required attributes for actions: %s" % (vm, req_args))
+            STREAM.debug(" -> [%s] VirtualMachines attributes: %s" % (vm, vm_attrs))
             # Attributes comparison
             result = req_args - vm_attrs
             if len(result) > 0:
@@ -78,22 +70,6 @@ class Engine(object):
                 STREAM.error(" -> This causes problems in the operation of some keywords. Check your user configuration file.")
                 sys.exit()
         STREAM.success(" -> All attributes are present.")
-
-    def check_running_state(self):
-        if os.path.exists(self._PID_FILE):
-            with open(self._PID_FILE, "r") as pf:
-                pid = pf.readline().strip()
-            proc = Popen("ps -aux|awk '{print $2}'", shell=True, stdout=PIPE, stderr=PIPE)
-            pids = proc.stdout.read()
-            if pid in pids:
-                STREAM.warning("Already running! PID: %s" % pid)
-                sys.exit()
-        else:
-            self.create_pid()
-
-    def create_pid(self):
-        with open(self._PID_FILE, "w") as pf:
-            pf.write(str(os.getpid()))
 
     def args(self):
         parser = argparse.ArgumentParser('vmaker',

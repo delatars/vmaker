@@ -179,12 +179,12 @@ class Core(Engine):
             try:
                 invoke = self.invoke_keyword(action)
                 getattr(invoke, "clearing")
-                STREAM.info("==> Reverse action '%s':" % action)
-                invoke().clearing()
             except AttributeError:
                 STREAM.debug("==> Reverse action '%s':" % action)
                 STREAM.debug(" -> Method 'clearing' not implemented in keyword, nothing to do.")
-                pass
+            else:
+                STREAM.info("==> Reverse action '%s':" % action)
+                invoke().clearing()
         LoggerOptions.set_action(None)
 
 

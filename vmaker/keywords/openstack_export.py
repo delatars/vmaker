@@ -13,7 +13,7 @@ class Keyword(object):
     """
     This keyword allows to export your VirtualMachine, to openstack cluster.
     Arguments of user configuration file:
-    vm_name = name of the VirtualMachine in Virtual Box (example: vm_name = ubuntu1610-amd64)
+    vm_name = name of the VirtualMachine in Virtual Box (example: vm_namek = ubuntu1610-amd64)
     openstack_cluster = <path to configuration file which contains cluster connection settings>::<target_section>
         if path not specified connection settings will be searched in the vmaker.ini
         (example:
@@ -39,14 +39,13 @@ class Keyword(object):
         self.openstack_image_properties = self.openstack_image_properties
         self.openstack_image_custom_properties = self.openstack_image_custom_properties
         # --------------------------------
-        # List of available clusters
-        self.clusters = {}
         target_cluster = self.openstack_credentials_harvester()
         glance = self.cluster_connect(target_cluster)
         self.upload_image(glance)
 
     def openstack_credentials_harvester(self):
         """ Method to get cluster's connection settings from the configuration file """
+        self.clusters = {}
         STREAM.info("==> Get Openstack cluster connection settings")
         try:
             configfile, section = self.openstack_cluster.split("::")
@@ -61,7 +60,7 @@ class Keyword(object):
         self.clusters[section] = args
         if self.clusters == {}:
             STREAM.error(" -> There are no connection settings for the Openstack clusters found!")
-            STREAM.error(" -> Export passed.")
+            STREAM.error(" -> Export canceled.")
             sys.exit(1)
         STREAM.info(" -> Found connection settings for the Openstack cluster")
         STREAM.info(" -> Target Openstack cluster set to: %s" % section)
@@ -146,16 +145,22 @@ class Keyword(object):
         if disk is None:
             STREAM.error("%s disk not found in %s\nMake sure that you are specify a right disk_format "
                          "in parameter(openstack_image_properties) or the disk exists." % (args["disk_format"], vm_dir))
-            STREAM.error("Export in openstack passed.")
+            STREAM.error("Export in openstack canceled.")
             return
         STREAM.debug(" -> VirtualMachine's virtual hard drive location: %s" % disk)
         # Get image id, if image with specified name already exists
         old_image_id = self.image_exists(connection, args["name"])
         # Create image object with specified properties.
         image = connection.images.create(**args)
+        # create file with created image id
+        image_id_file = os.path.join(LoadSettings.WORK_DIR, ".openstack_export.tmp")
+        with open(image_id_file, "w") as tmp:
+            tmp.write(image.id)
         # Uploading image.
         connection.images.upload(image.id, open(disk, 'rb'))
         STREAM.success(" -> Uploading complete.")
+        # if all ok remove tmp file
+        os.remove(image_id_file)
         if old_image_id is not None:
             STREAM.info(" -> Remove old image.")
             self.delete_image(connection, old_image_id)
@@ -175,6 +180,19 @@ class Keyword(object):
         """ Method to get images from the openstack cluster """
         images = connection.images.list()
         return images
+
+    def clearing(self):
+        image_id_file = os.path.join(LoadSettings.WORK_DIR, ".openstack_export.tmp")
+        if os.path.exists(image_id_file):
+            with open(image_id_file, "r") as tmp:
+                old_image_id = tmp.read()
+            target_cluster = self.openstack_credentials_harvester()
+            glance = self.cluster_connect(target_cluster)
+            self.delete_image(glance, old_image_id)
+            STREAM.info(" -> Removed just created image with id %s" % old_image_id)
+            os.remove(image_id_file)
+        else:
+            STREAM.info(" -> Nothing to clean.")
 
 
 if __name__ == "__main__":

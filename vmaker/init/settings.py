@@ -12,6 +12,8 @@ try:
     import glanceclient
     import novaclient
     import paramiko
+    import pathos
+    import scp
     from configparser import ConfigParser, NoSectionError
 except ImportError as err:
     sys.stderr.write("Can't start vmaker! %s\nYou can install it by using 'pip install'.\n" % err)
@@ -25,7 +27,6 @@ class LoadSettings:
         - Generate base configuration file"""
     WORK_DIR = os.path.join(os.path.expanduser("~"), ".vmaker")
     SESSION_FILE = os.path.join(WORK_DIR, '.vms.session')
-    PID_FILE = os.path.join(WORK_DIR, '.vms.pid')
     GENERAL_CONFIG_FILENAME = 'vmaker.ini'
     GENERAL_CONFIG = os.path.join(WORK_DIR, GENERAL_CONFIG_FILENAME)
     CONFIG_FILE_PATH = os.path.join(WORK_DIR, 'default.ini')
