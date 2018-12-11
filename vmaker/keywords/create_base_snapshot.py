@@ -36,13 +36,14 @@ class Keyword:
         result = Popen('VBoxManage snapshot %s list' % self.vm_name, shell=True,
                        stdout=PIPE, stderr=PIPE).communicate()
         data = result[0].strip().split("\n")
-        if 'This machine does not have any snapshots' in data:
-            return {"": ""}
         snapshots = {}
         for snap in data:
-            name = re.findall(r'Name:\s[^\s]*\s', snap.strip())[0].split(":")[1].strip()
-            uuid = re.findall(r'UUID:\s.*\)', snap.strip())[0][:-1].split(":")[1].strip()
-            snapshots[uuid] = name
+            try:
+                name = re.findall(r'Name:\s(.*)\s\(', snap.strip())[0]
+                uuid = re.findall(r'UUID:\s(.*)\)', snap.strip())[0]
+                snapshots[uuid] = name
+            except IndexError:
+                pass
         return snapshots
 
     def create_base_snapshot(self):
@@ -72,7 +73,7 @@ class Keyword:
             recursion_depth -= 1
             deletor(recursion_depth)
         STREAM.debug(" -> Delete existed base snapshots.")
-        deletor(10)
+        deletor(5)
     
 
 if __name__ == "__main__":
