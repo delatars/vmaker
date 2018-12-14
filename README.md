@@ -8,7 +8,7 @@ VirtualMachines must be placed on the same host where vmaker installed.
 Vmaker supports such a thing as "Keyword" (action), which can be performed on a virtual machine. Actions can be combined, and build from them a variety of sequences of actions.
 
 ### List of current available keywords
-|         keyword        | description  | supported VM OSes |
+|         keyword        | description  | supported OS |
 |          :--          |     :--     |       :--:        |
 | create_base_snapshot   | Create a snapshot of the virtual machine with the name "base" | All |
 | execute_command        | Run a command in a virtual machine | Unix/Windows |
