@@ -9,7 +9,7 @@ Vmaker supports such a thing as "Keyword" (action), which can be performed on a 
 
 ### List of current available keywords
 |         keyword        | description  | supported VM OSes |
-|          :--:          |     :--:     |       :--:        |
+|          :--          |     :--     |       :--:        |
 | create_base_snapshot   | Create a snapshot of the virtual machine with the name "base" | All |
 | execute_command        | Run a command in a virtual machine | Unix/Windows |
 | execute_script         | Run script in virtual machine | Unix/Windows |
