@@ -1,14 +1,22 @@
 # vmaker
 
 ### Description
-The program is intended to automate routine work on VirtualBox VirtualMachines.
+Vmaker is intended to automate routine work on VirtualBox VirtualMachines.
+It will likely work fine on most UNIX systems
 
 VirtualMachines must be placed on the same host where vmaker installed.
 
 Vmaker supports such a thing as "Keyword" (action), which can be performed on a virtual machine. Actions can be combined, and build from them a variety of sequences of actions.
 
+#### Supported platforms
+Vmaker has been tested and is known to run on Linux (Ubuntu, Gentoo), it will likely work fine on most UNIX systems.
+
+Vmaker will not run at all under any version of Windows.
+
+Vmaker is intended to work on Python 2 version 2.7.
+
 ### List of current available keywords
-|         keyword        | description  | supported OS |
+|         keyword        | description  | VirtualMachine OS |
 |          :--          |     :--     |       :--:        |
 | create_base_snapshot   | Create a snapshot of the virtual machine with the name "base" | All |
 | execute_command        | Run a command in a virtual machine | Unix/Windows |
