@@ -33,7 +33,7 @@ Vmaker is intended to work on Python 2 version 2.7.
 
 ### Installation
 
-Install from GitLab
+Install from Github
 
     pip install git+https://github.com/delatars/vmaker
     

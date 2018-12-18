@@ -45,7 +45,7 @@ class Keyword:
     def generate_auto(self):
         name = "vmaker_manage"
         guest = self.MANAGE_TYPES_DEFAULT[self.management_type]
-        host = randint(49152, 65535)
+        host = randint(49152, 65535)  # IANA dynamic port range
         return name, guest, host
 
     def forward(self):
@@ -76,7 +76,8 @@ class Keyword:
                 STREAM.debug(" -> Set up new rule: %s" % name)
                 result = Popen("vboxmanage modifyvm %s --natpf1 %s,tcp,127.0.0.1,%s,,%s" %
                                (self.vm_name, name, host, guest), shell=True, stdout=PIPE, stderr=PIPE).communicate()
-                STREAM.debug(result)
+                if len(result[1]) > 0:
+                    raise Exception(result[1])
             else:
                 check_port = Popen("vboxmanage showvminfo %s |grep -i 'host port = %s'" % (self.vm_name, host),
                                    shell=True, stdout=PIPE, stderr=PIPE).communicate()
@@ -84,6 +85,8 @@ class Keyword:
                     raise Exception(" -> Host port(%s) already in use! Check your VirtualMachine settings." % host)
                 result = Popen("vboxmanage modifyvm %s --natpf1 %s,tcp,127.0.0.1,%s,,%s" %
                                (self.vm_name, name, host, guest), shell=True, stdout=PIPE, stderr=PIPE).communicate()
+                if len(result[1]) > 0:
+                    raise Exception(result[1])
                 STREAM.debug(result)
             STREAM.success(" -> Forwarded ports %s(guest) => %s(host)" % (guest, host))
 
@@ -94,7 +97,7 @@ def get_manage_port(vm_name):
     check = Popen("vboxmanage showvminfo %s |grep -i %s" % (vm_name, "vmaker_manage"),
                   shell=True, stdout=PIPE, stderr=PIPE).communicate()
     try:
-        manage_port = int(re.findall(r"host port = \d*", check[0])[0].split("=")[1].strip())
+        manage_port = int(re.findall(r"host port = (\d*)", check[0])[0])
     except:
         pass
     return manage_port

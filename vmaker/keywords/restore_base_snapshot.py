@@ -34,8 +34,11 @@ class Keyword:
         STREAM.info("==> Restore to base state")
         result = Popen('VBoxManage snapshot %s restore %s' % (self.vm_name, "base"),
                        shell=True, stdout=PIPE, stderr=PIPE).communicate()
-        if "VBOX_E_OBJECT_NOT_FOUND" in result[1]:
-            raise Exception("base snapshot not found for this VirtualMachine")
+        if len(result[1]) > 0:
+            if "VBOX_E_OBJECT_NOT_FOUND" in result[1]:
+                raise Exception("base snapshot not found for this VirtualMachine")
+            else:
+                raise Exception(result[1])
         STREAM.debug(result)
         STREAM.success(" -> Restore complete.")
     
