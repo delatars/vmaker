@@ -133,6 +133,7 @@ load include_vagrantfile if File.exist?(include_vagrantfile)
             if "Errno 17" in str(errno):
                 STREAM.debug("==> Temporary directory detected, cleaning before start...")
                 shutil.rmtree(self.tmp_dir)
+                STREAM.debug(" -> Removed: %s" % self.tmp_dir)
                 os.makedirs(self.tmp_dir)
             else:
                 STREAM.error(errno)
