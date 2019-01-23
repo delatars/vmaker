@@ -132,18 +132,13 @@ load include_vagrantfile if File.exist?(include_vagrantfile)
         except OSError as errno:
             if "Errno 17" in str(errno):
                 STREAM.debug("==> Temporary directory detected, cleaning before start...")
-                STREAM.debug(" -> Removed: %s" % self.tmp_dir)
                 shutil.rmtree(self.tmp_dir)
                 os.makedirs(self.tmp_dir)
             else:
                 STREAM.error(errno)
                 return False
-        result = Popen('VBoxManage export %s --output %s' %
-                       (self.vm_name, os.path.join(self.tmp_dir, self.vm_name + ".ovf")),
-                       shell=True, stdout=PIPE, stderr=PIPE).communicate()
-        if len(result[1]) > 0:
-            STREAM.error("Fail while exporting configuration\n %s" % result[1])
-            return False
+        Popen('VBoxManage export %s --output %s' % (self.vm_name, os.path.join(self.tmp_dir, self.vm_name + ".ovf")),
+              shell=True, stdout=PIPE, stderr=PIPE).communicate()
         diskname = ""
         for fil in os.listdir(self.tmp_dir):
             if fil.endswith(".vmdk"):
