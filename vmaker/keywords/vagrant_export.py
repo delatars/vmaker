@@ -138,8 +138,12 @@ load include_vagrantfile if File.exist?(include_vagrantfile)
             else:
                 STREAM.error(errno)
                 return False
-        Popen('VBoxManage export %s --output %s' % (self.vm_name, os.path.join(self.tmp_dir, self.vm_name + ".ovf")),
-              shell=True, stdout=PIPE, stderr=PIPE).communicate()
+        result = Popen('VBoxManage export %s --output %s' %
+                       (self.vm_name, os.path.join(self.tmp_dir, self.vm_name + ".ovf")),
+                       shell=True, stdout=PIPE, stderr=PIPE).communicate()
+        if len(result[1]) > 0:
+            if "0%...10%...20%...30%...40%...50%...60%...70%...80%...90%...100%" not in result[1]:
+                raise Exception(result[1])
         diskname = ""
         for fil in os.listdir(self.tmp_dir):
             if fil.endswith(".vmdk"):
