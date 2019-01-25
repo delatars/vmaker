@@ -12,16 +12,16 @@ from vmaker.keywords.port_forwarding import get_manage_port
 class Keyword(object):
     """
     This keyword allows to execute local script in VirtualMachine.
-        Command must return exitcode 0 if success, otherwise Exception raised.
+        Script must return exitcode 0 if success, otherwise Exception raised.
     Arguments of user configuration file:
     vm_name = name of the VirtualMachine in Virtual Box (example: vm_name = ubuntu1610-amd64)
     credentials = credentials to connect to VirtualMachine via management_type (example: credentials = root:toor)
     execute_script = local script which will be executed in VirtualMachine
-        (example: execute_command = /home/user/script.sh # uses the default shell
-         example: execute_command = python:/home/user/myscript.py
-         example: execute_command = /usr/bin/python3:/home/user/myscript.py)
+        (example: execute_script = /home/user/script.sh # uses the default shell
+         example: execute_script = python:/home/user/myscript.py
+         example: execute_script = /usr/bin/python3:/home/user/myscript.py)
     """
-    REQUIRED_CONFIG_ATTRS = ['vm_name', 'credentials', 'execute_command']
+    REQUIRED_CONFIG_ATTRS = ['vm_name', 'credentials', 'execute_script']
     ssh_server = "localhost"
     ssh_port = None
     ssh_user = None
