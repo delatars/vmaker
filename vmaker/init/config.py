@@ -149,17 +149,17 @@ class ConfigController:
                 sys.exit()
         STREAM.debug("[*] ==> Generated vm objects: %s" % vms)
         STREAM.debug("[*] ==> Generated vm objects work sequence: %s" % vms_work_sequence)
-        STREAM.debug("==> Finding sections with execution...")
+        STREAM.debug("==> Finding sections with executions...")
         for sec in config.sections():
             try:
-                if config[sec]["type"] == "execution":
+                if config[sec]["type"] == "executions":
                     STREAM.debug(" -> Found section '%s'" % sec)
                     args = {key: value for key, value in config.items(sec) if key != "type"}
                     cmds = dict(cmds, **args)
             except KeyError as wrong_key:
                 STREAM.error(" -> Config Error: Wrong section '%s' Key '%s' not specified" % (sec, wrong_key))
                 sys.exit()
-        STREAM.debug("[*] ==> Found execution aliases: %s" % cmds)
+        STREAM.debug("[*] ==> Found executions aliases: %s" % cmds)
         STREAM.success(" -> User configuration file loaded")
         return vms, vms_work_sequence, cmds
 
