@@ -74,7 +74,7 @@ class Engine(object):
     def args(self):
         parser = argparse.ArgumentParser('vmaker',
                                          formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=50))
-        parser.add_argument("-c", dest="config_path", type=str, metavar="<path>", help="specify configuration file")
+        parser.add_argument("-c", dest="config_path", type=str, metavar="<path>", help="specify configuration file to use")
         parser.add_argument("-g", dest="generate_default", action="store_true",
                             help="generate default configuration file")
         parser.add_argument("--generate-from-path", dest="generate_from_path", metavar="<path>", type=str,

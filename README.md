@@ -46,7 +46,7 @@ usage: vmaker [-h] [-c <path>] [-g] [--generate-from-path <path>]
  
 optional arguments:
   -h, --help                    show this help message and exit
-  -c <path>                     specify configuration file
+  -c <path>                     specify configuration file to use
   -g                            generate default configuration file
   --generate-from-path <path>   generate configuration file with Virtual
                                 machines objects, based on names of specified
