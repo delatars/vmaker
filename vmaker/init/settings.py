@@ -41,7 +41,7 @@ class LoadSettings:
     SMTP_PORT = 25
     SMTP_USER = ""
     SMTP_PASS = ""
-    SMTP_MAIL_FROM = ""
+    SMTP_MAIL_FROM = "reports@vmaker.com"
 
     def __init__(self):
         self.log = verboselogs.VerboseLogger(__name__)
@@ -64,34 +64,31 @@ class LoadSettings:
         self.load_general_config()
 
     def generate_general_config(self):
-        template = """;Mandatory section.      
-[General]
-; List of enabled keywords, you can create your keyword, put it to the keywords dir and enabling it here.
-; Examles:
-;   enabled_keywords = keyword1, keyword2 - enable only 'keyword1' and 'keyword2'
-;   enabled_keywords = all - enable all keywords in keywords dir
-;   enabled_keywords = all!(keyword1, keyword2) - enable all keywords in keywords dir except 'keyword1' and 'keyword2'
-enabled_keywords = all!(test)
-; Global parameter (in minutes) to the end of which keyword process will be terminated.
-;   You can specify your own "timeout" parameter for each action in vm, like <action>_timeout = 10
-;   Example: vbox_start_timeout = 5
+        template = """[General]
+; The list of Keywords with which will work "vmaker" (directory: vmaker/keywords).
+; Examples:
+;   enabled_keywords = vbox_start, vbox_stop - enable only 'vbox_start' and 'vbox_stop'
+;   enabled_keywords = all - enable all keywords
+;   enabled_keywords = all!(vbox_start, vbox_stop) - enable all keywords, excepts 'vbox_start' and 'vbox_stop'
+enabled_keywords = all
+; Global parameter that sets a time limit for keyword execution, after which the keyword will be terminated. (time sets in minutes)
 timeout = 20
-; Specify path to output log
+; Log file location
 log = %s
-; Enable/Disable debug prints
+; Enable/Disable debug messages
 debug = false
-; Url to your vagrant server
+; Url of the Vagrant server
 ;vagrant_server_url = "http:\\localhost"
 
-; Email notifications connection settings
+; The following Settings used for connecting to the smtp server to send email notifications
 ;smtp_server = 
-;smtp_port = 
+;smtp_port = 25
+;smtp_mail_from = reports@vmaker.com
 ; Authentication
 ;smtp_user = 
 ;smtp_pass = 
 
-; You can specify cluster connection settings here to use it in openstack_export keyword
-;  Or you may use separate configuration file to keep cluster settings
+; Also you can specify cluster connection settings here (used for keywords that work with openstack)
 ;[openstack_cluster1]
 ;auth_url=https://localhost:5000/v3
 ;username=root
