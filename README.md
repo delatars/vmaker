@@ -56,7 +56,7 @@ optional arguments:
 
 ### Wiki
 - [Usability](https://github.com/delatars/vmaker/wiki/Usability)
-- The structure of the main configuration file (vmaker.ini)
+- [The structure of the main configuration file (vmaker.ini)](https://github.com/delatars/vmaker/wiki/main-configuration-file-structure)
 - The structure of the user configuration file (for example: generated.ini)
 - Advanced vmaker options
 - Keywords
