@@ -31,7 +31,7 @@ class Keyword:
             raise Exception("Parameter 'vagrant_server_url' not specified, you must specify it in vmaker.ini")
         if self.vagrant_server_url.endswith("/"):
             self.vagrant_server_url = self.vagrant_server_url[:-1]
-        self.vagrant_server_url = LoadSettings.VAGRANT_SERVER_URL.replace("//", "\/")
+        self.vagrant_server_url = LoadSettings.VAGRANT_SERVER_URL.replace("//", "\/\/")
         self.provider = "virtualbox"
         self.version = datetime.now().strftime("%Y%m%d%H%M")
         self.boxname = "%s_%s_%s.box.prep" % (self.vm_name, self.version, self.provider)
@@ -64,7 +64,7 @@ class Keyword:
         STREAM.debug(" -> Calculating box checksum...")
         checksum = self._calculate_box_hash()
         STREAM.debug(" -> sha1 checksum: %s" % checksum)
-        rel_path = self.vagrant_catalog[self.vagrant_catalog.find("html")+4:]
+        rel_path = self.vagrant_catalog[self.vagrant_catalog.find("html")+5:]
         rel_path = rel_path.split("/")
         url_rebuild = "\/".join(rel_path)
         url = "\/".join([self.vagrant_server_url, url_rebuild, self.vm_name, self.boxname[:-5]])
