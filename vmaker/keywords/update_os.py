@@ -157,7 +157,7 @@ class Keyword:
         def line_buffered(f):
             """ Iterator object to get output in realtime from stdout buffer """
             while not f.channel.exit_status_ready():
-                yield self.get_decoded(f.readline().strip())
+                yield f.readline().strip()
 
         STREAM.info(" -> Executing command: %s" % command)
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command, get_pty=get_pty)
