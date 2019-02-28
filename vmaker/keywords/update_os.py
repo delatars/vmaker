@@ -177,8 +177,10 @@ class Keyword:
                 raise Exception(self.get_decoded(stderr))
         STREAM.success(" -> Command executed successfully")
 
-    def reboot_and_connect(self):
+    def reboot_and_connect(self, noforce=False):
         """ Reboot VirtualMachine and connect to ssh """
+        if noforce:
+            vbox_stop.vbox_stop_noforce = "true"
         vbox_stop().main()
         sleep(5)
         vbox_start().main()
@@ -306,7 +308,7 @@ class Keyword:
 
     def update_windows(self, ssh):
         self.command_exec(ssh, r"powershell.exe -ExecutionPolicy Bypass -File \\testlab-node1.i.drweb.ru\testlab-e-tools\scripts\vagrant\WindowsUpdate\WUTask-Run.PS1")
-        ssh = self.reboot_and_connect()
+        ssh = self.reboot_and_connect(noforce=True)
         self.command_exec(ssh, r"powershell.exe -ExecutionPolicy Bypass -File \\testlab-node1.i.drweb.ru\testlab-e-tools\scripts\vagrant\WindowsUpdate\WUTask-Run.PS1")
         self.command_exec(ssh, r"powershell.exe -ExecutionPolicy Bypass -File \\testlab-node1.i.drweb.ru\testlab-e-tools\scripts\vagrant\WindowsUpdate\WU-CopyReports.PS1")
         self.close_ssh_connection(ssh)
