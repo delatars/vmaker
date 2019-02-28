@@ -74,7 +74,8 @@ class Keyword:
             "opensuse",
             "redhat",
             "suse",
-            "ubuntu"
+            "ubuntu",
+            "windows"
         ]
 
         def try_harder():
@@ -299,6 +300,13 @@ class Keyword:
         self.command_exec(ssh, "depmod > /dev/null 2>&1")
         ssh = self.reboot_and_connect()
         self.command_exec(ssh, "depmod > /dev/null 2>&1")
+        self.close_ssh_connection(ssh)
+
+    def update_windows(self, ssh):
+        self.command_exec(ssh, r"powershell.exe -ExecutionPolicy Bypass -File \\testlab-node1.i.drweb.ru\testlab-e-tools\scripts\vagrant\WindowsUpdate\WUTask-Run.PS1")
+        ssh = self.reboot_and_connect()
+        self.command_exec(ssh, r"powershell.exe -ExecutionPolicy Bypass -File \\testlab-node1.i.drweb.ru\testlab-e-tools\scripts\vagrant\WindowsUpdate\WUTask-Run.PS1")
+        self.command_exec(ssh, r"powershell.exe -ExecutionPolicy Bypass -File \\testlab-node1.i.drweb.ru\testlab-e-tools\scripts\vagrant\WindowsUpdate\WU-CopyReports.PS1")
         self.close_ssh_connection(ssh)
 
 
