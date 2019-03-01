@@ -157,7 +157,7 @@ class Keyword:
         def line_buffered(f):
             """ Iterator object to get output in realtime from stdout buffer """
             while not f.channel.exit_status_ready():
-                yield f.readline().strip()
+                yield self.get_decoded(f.readline().strip())
 
         STREAM.info(" -> Executing command: %s" % command)
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command, get_pty=get_pty)
@@ -165,10 +165,7 @@ class Keyword:
         ssh_stdin.write(stdin)
         ssh_stdin.flush()
         for l in line_buffered(ssh_stdout):
-            try:
-                STREAM.debug(l)
-            except UnicodeDecodeError:
-                STREAM.debug(self.get_decoded(l))
+            STREAM.debug(l)
         stderr = ssh_stderr.read()
         if len(stderr) > 0:
             try:
