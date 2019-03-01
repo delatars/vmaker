@@ -313,8 +313,8 @@ class Keyword:
         ssh = self.reboot_and_connect(noforce=True)
         self.command_exec(ssh, PsExec + r'"Get-WuList >>C:\Update_Log\$(get-date -f dd-MM-yyy)\updatelistlog.log" 2>&1')
         self.command_exec(ssh, PsExec + r'"Get-WUInstall -AcceptAll -IgnoreReboot >>C:\Update_Log\$(get-date -f dd-MM-yyy)\updatelog.log" 2>&1')
-        self.command_exec(ssh, PsExec + r'"Move-Item "C:\Update_Log\$(get-date -f dd-MM-yyy)" '
-        r'\\testlab-node1.i.drweb.ru\testlab-e-reports\WU_Logs\$([System.Net.Dns]::GetHostName())\ -Force" 2>&1')
+        self.command_exec(ssh, PsExec + r'"Move-Item -path "C:\Update_Log\$(get-date -f dd-MM-yyy)" '
+        r'-destination \\testlab-node1.i.drweb.ru\testlab-e-reports\WU_Logs\$([System.Net.Dns]::GetHostName())\ -Force" 2>&1')
         self.command_exec(ssh, r'Powershell.exe "Remove-Item C:\Update_Log\ -Recurse -Force" 2>&1')
         self.close_ssh_connection(ssh)
 
