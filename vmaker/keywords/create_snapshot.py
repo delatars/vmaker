@@ -6,21 +6,23 @@ from vmaker.utils.auxilary import exception_interceptor
 
 class Keyword:
     """
-    This keyword allows to create a base snapshot (using snapshot name: 'base').
+    This keyword allows to create a snapshot of the VirtualMachine.
     Arguments of user configuration file:
     vm_name = name of the VirtualMachine in Virtual Box (example: vm_name = ubuntu1610-amd64)
+    snapshot_name = name of the snapshot (example: snapshot_name = base)
     """
-    REQUIRED_CONFIG_ATTRS = ['vm_name']
+    REQUIRED_CONFIG_ATTRS = ['vm_name', 'snapshot_name']
 
     @exception_interceptor
     def main(self):
         # - Attributes taken from config
         self.vm_name = self.vm_name
+        self.snapshot_name = self.snapshot_name
         #----------------------------------
         if self.check_vm_status():
-            raise Exception("Unable to create base snapshot, VirtualMachine is booted.")
-        self.delete_base_snapshot()
-        self.create_base_snapshot()
+            raise Exception("Unable to create snapshot, VirtualMachine is booted.")
+        self.delete_snapshot()
+        self.create_snapshot()
 
     def check_vm_status(self):
         STREAM.debug("==> Check Vm status.")
@@ -46,14 +48,14 @@ class Keyword:
                 pass
         return snapshots
 
-    def create_base_snapshot(self):
-        STREAM.info("==> Create a base snapshot")
-        result = Popen('VBoxManage snapshot %s take %s' % (self.vm_name, "base"),
+    def create_snapshot(self):
+        STREAM.info("==> Create a snapshot with name: '%s'" % self.snapshot_name)
+        result = Popen('VBoxManage snapshot %s take %s' % (self.vm_name, self.snapshot_name),
                        shell=True, stdout=PIPE, stderr=PIPE).communicate()
         STREAM.debug(result)
-        STREAM.success(" -> Base snapshot created")
+        STREAM.success(" -> Snapshot created")
 
-    def delete_base_snapshot(self):
+    def delete_snapshot(self):
 
         def delete_snap(uuid):
             result = Popen('VBoxManage snapshot %s delete %s' % (self.vm_name, uuid),
@@ -63,16 +65,16 @@ class Keyword:
         def deletor(recursion_depth):
             snapshots = self.get_snapshots_list()
             STREAM.debug(" -> VirtualMachine snapshots: %s" % snapshots)
-            if "base" not in snapshots.values():
+            if self.snapshot_name not in snapshots.values():
                 return
             for uuid, name in snapshots.items():
-                if name == "base":
+                if name == self.snapshot_name:
                     delete_snap(uuid)
             if recursion_depth == 0:
                 return
             recursion_depth -= 1
             deletor(recursion_depth)
-        STREAM.debug(" -> Delete existed base snapshots.")
+        STREAM.debug(" -> Delete existed snapshots with name: '%s'" % self.snapshot_name)
         deletor(5)
     
 
