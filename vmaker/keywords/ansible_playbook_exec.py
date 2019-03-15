@@ -73,12 +73,17 @@ class Keyword:
             'verbosity': None,
             'timeout': 10
         }
-        ansible_kwargs = {attr[8:]: val for attr, val in self.__dict__.items()
-                          if attr.startswith('ansible_') and not attr.startswith('_')}
+        ansible_kwargs = {attr[8:]: getattr(self, attr) for attr in dir(self)
+                          if attr.startswith('ansible_') and not attr.startswith('_')
+                          and not attr == "ansible_playbooks"
+                          and not attr == "ansible_inventory_options"}
         user_can_change = ['connection', 'module_path', 'become', 'become_method',
                            'become_user', 'check', 'diff', 'private_key_file',
                            'ssh_common_args', 'ssh_extra_args', 'sftp_extra_args',
                            'scp_extra_args', 'timeout', 'verbosity']
+        STREAM.debug(" -> Options that user allowed to change: ")
+        map(lambda x: STREAM.debug("  - %s" % x), user_can_change)
+        STREAM.debug(" -> User changed: %s" % ansible_kwargs)
         for key, val in ansible_kwargs.items():
             if key not in user_can_change:
                 continue
@@ -90,6 +95,7 @@ class Keyword:
                 options[key] = int(val)
             except ValueError:
                 options[key] = val
+        STREAM.debug(" -> Result options: %s" % options)
         Options = namedtuple('Options', ['listtags', 'listtasks', 'listhosts', 'syntax', 'connection', 'module_path',
                                          'forks', 'private_key_file', 'ssh_common_args', 'ssh_extra_args',
                                          'sftp_extra_args', 'scp_extra_args', 'become', 'become_method',
@@ -98,7 +104,7 @@ class Keyword:
 
     def parse_playbooks(self):
         ansible_playbooks = [playbook.strip() for playbook in self.ansible_playbooks.split(",")]
-        STREAM.debug("Playbooks: %s" % ansible_playbooks)
+        STREAM.debug(" -> Playbooks: %s" % ansible_playbooks)
         for playbook in ansible_playbooks:
             if not os.path.exists(playbook):
                 raise Exception("the playbook: %s could not be found" % playbook)
