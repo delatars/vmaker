@@ -66,7 +66,8 @@ class Keyword:
             'ssh_extra_args': None,
             'sftp_extra_args': None,
             'scp_extra_args': None,
-            'verbosity': None
+            'verbosity': None,
+            'timeout': 10
         }
         ansible_kwargs = {attr[8:]: val for attr, val in self.__dict__.items()
                           if attr.startswith('ansible_') and not attr.startswith('_')}
@@ -85,7 +86,7 @@ class Keyword:
                 options[key] = int(val)
             except ValueError:
                 options[key] = val
-        Options = namedtuple('Options', ['connection', 'module_path', 'remote_user', 'private_key_file',
+        Options = namedtuple('Options', ['connection', 'module_path', 'forks', 'private_key_file',
                                          'ssh_common_args', 'ssh_extra_args', 'sftp_extra_args', 'scp_extra_args',
                                          'become', 'become_method',  'become_user', 'verbosity', 'timeout',
                                          'check', 'diff'])
