@@ -309,12 +309,14 @@ class Keyword:
         PsExec = '"C:\Program Files\SysinternalsSuite\PsExec.exe" -s -i Powershell.exe '
         self.command_exec(ssh, PsExec + r'"New-Item -Path C:\Update_Log\$(get-date -f dd-MM-yyy)\ -ItemType directory -Force" 2>&1')
         self.command_exec(ssh, PsExec + r'"Get-WindowsUpdate -Install -AcceptAll -IgnoreReboot >>C:\Update_Log\$(get-date -f dd-MM-yyy)\updatelistlog.log" 2>&1')
+        self.command_exec(ssh, 'shutdown -s -f -t 5')
         ssh = self.reboot_and_connect(noforce=True)
         self.command_exec(ssh, PsExec + r'"Get-WindowsUpdate -Install -AcceptAll -IgnoreReboot >>C:\Update_Log\$(get-date -f dd-MM-yyy)\updatelistlog.log" 2>&1')
         self.command_exec(ssh, PsExec + r'"Get-WUHistory -MaxDate $(Get-Date -f d) >>C:\Update_Log\$(get-date -f dd-MM-yyy)\updatelog.log" 2>&1')
         self.command_exec(ssh, PsExec + r'"Move-Item -path "C:\Update_Log\$(get-date -f dd-MM-yyy)" '
         r'-destination \\testlab-node1.i.drweb.ru\testlab-e-reports\WU_Logs\$([System.Net.Dns]::GetHostName())\ -Force" 2>&1')
         self.command_exec(ssh, r'Powershell.exe "Remove-Item C:\Update_Log\ -Recurse -Force" 2>&1')
+        self.command_exec(ssh, 'shutdown -s -f -t 5')
         self.close_ssh_connection(ssh)
 
 
