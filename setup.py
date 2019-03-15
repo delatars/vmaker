@@ -8,7 +8,7 @@ def get_requirements():
 
 setup(
     name='vmaker',
-    version='1.1.2',
+    version='1.1.3',
     description='',
     url='https://github.com/delatars/vmaker',
     author='Aleksandr Morokov',
