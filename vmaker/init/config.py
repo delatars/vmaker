@@ -188,7 +188,7 @@ class ConfigController:
 ;   Key specifies, which type of object will be created (vm, group, alias).
 type = vm
 ;   Key specifies Keywords which will be performed for this VirtualMachine
-actions = port_forwarding, vbox_start, execute_command, vbox_stop, create_base_snapshot
+actions = port_forwarding, vbox_start, execute_command, vbox_stop
 ; Variable keys
 ;   Key specifies to which group this object belongs.
 group = linux

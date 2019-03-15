@@ -18,14 +18,14 @@ Vmaker is intended to work on Python 2 version 2.7.
 ### List of current available keywords
 |         keyword        | description  | VirtualMachine OS |
 |          :--          |     :--     |       :--:        |
-| create_base_snapshot   | Create a snapshot of the virtual machine with the name "base" | All |
+| create_snapshot   | Create a snapshot of the virtual machine with the name "base" | All |
 | execute_command        | Run a command in a virtual machine | Unix/Windows |
 | execute_script         | Run script in virtual machine | Unix/Windows |
 | install_vbox_additions | Install guest OS add-ons in unix virtual machine | Unix |
 | openstack_cache_image  | Creates a virtual machine cache in an openstack cluster | All |
 | openstack_export       | Export Virtual Machine to Openstack Cluster | All |
 | port_forwarding        | Port forwarding to a virtual machine | All |
-| restore_base_snapshot  | Restore the state of the virtual machine from snapshot under the name "base" | All |
+| restore_snapshot  | Restore the state of the virtual machine from snapshot under the name "base" | All |
 | update_os              | Virtual machine update | Unix |
 | vagrant_export         | Uploading a virtual machine to the Vagrant directory | All |
 | vbox_start             | Starting a virtual machine | All |
