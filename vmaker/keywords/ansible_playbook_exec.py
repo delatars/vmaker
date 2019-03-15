@@ -53,9 +53,10 @@ class Keyword:
 
     def parse_options(self):
         options = {
-            'listtags': None,
-            'listtasks': None,
-            'listhosts': None,
+            'listtags': False,
+            'listtasks': False,
+            'listhosts': False,
+            'syntax': False,
             'connection': 'smart',
             'module_path': None,
             'forks': 1,
@@ -89,7 +90,7 @@ class Keyword:
                 options[key] = int(val)
             except ValueError:
                 options[key] = val
-        Options = namedtuple('Options', ['listtags', 'listtasks', 'listhosts', 'connection', 'module_path',
+        Options = namedtuple('Options', ['listtags', 'listtasks', 'listhosts', 'syntax', 'connection', 'module_path',
                                          'forks', 'private_key_file', 'ssh_common_args', 'ssh_extra_args',
                                          'sftp_extra_args', 'scp_extra_args', 'become', 'become_method',
                                          'become_user', 'verbosity', 'timeout', 'check', 'diff'])
