@@ -125,7 +125,7 @@ class Keyword:
         Options = namedtuple('Options', ['listtags', 'listtasks', 'listhosts', 'syntax', 'connection', 'module_path',
                                          'forks', 'private_key_file', 'ssh_common_args', 'ssh_extra_args',
                                          'sftp_extra_args', 'scp_extra_args', 'become', 'become_method',
-                                         'become_user', 'verbosity', 'timeout', 'check', 'diff'])
+                                         'become_user', 'verbosity', 'check', 'diff'])
         return Options(**options)
 
     def parse_playbooks(self):
