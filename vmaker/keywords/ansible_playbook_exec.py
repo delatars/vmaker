@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import shutil
+import socket
 from collections import namedtuple
 from vmaker.utils.logger import STREAM
 from vmaker.init.settings import LoadSettings
@@ -19,6 +20,7 @@ class Keyword:
     REQUIRED_CONFIG_ATTRS = ["vm_name", "ansible_playbooks", "ansible_inventory_options"]
     ANSIBLE_SERVER = "localhost"
     ANSIBLE_PORT = None
+    CONNECTION_TIMEOUT = 30
 
     @exception_interceptor
     def main(self):
@@ -29,13 +31,37 @@ class Keyword:
         self.ansible_inventory_options = self.ansible_inventory_options
         # ----------------------------------
         self.ANSIBLE_PORT = get_manage_port(self.vm_name)
+        self.check_connection()
         playbooks = self.parse_playbooks()
         inventory = self.create_inventory()
         # We will run playbooks one by one to make it easier to detect the problems
         for playbook in playbooks:
             self.run_playbook(playbook, inventory)
 
+    def _port_check(self, ip, port):
+        conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        conn.settimeout(5)
+        try:
+            conn.connect((ip, port))
+            return True
+        except:
+            return False
+        finally:
+            conn.close()
+
+    def check_connection(self):
+        STREAM.info("==> Waiting for the availability of the port: %s:%s" % (self.ANSIBLE_SERVER, self.ANSIBLE_PORT))
+        attempt = 0
+        while True:
+            if self._port_check(self.ANSIBLE_SERVER, self.ANSIBLE_PORT):
+                STREAM.info(" -> Port available.")
+                break
+            if attempt == self.CONNECTION_TIMEOUT//5:
+                STREAM.error(" -> Port unavailable.")
+                break
+
     def create_inventory(self):
+        STREAM.debug(" -> ---------- Inventory.")
         inventory_options = {}
         inventory_file = os.path.join(LoadSettings.WORK_DIR, ".ansible_inventory")
         options = [option.strip().replace(" ", "_") for option in self.ansible_inventory_options.split(",")]
@@ -52,6 +78,7 @@ class Keyword:
         return inventory_file
 
     def parse_options(self):
+        STREAM.debug(" -> ---------- Options.")
         options = {
             'listtags': False,
             'listtasks': False,
@@ -59,7 +86,7 @@ class Keyword:
             'syntax': False,
             'connection': 'smart',
             'module_path': None,
-            'forks': 1,
+            'forks': 10,
             'become': None,
             'become_method': None,
             'become_user': None,
@@ -70,8 +97,7 @@ class Keyword:
             'ssh_extra_args': None,
             'sftp_extra_args': None,
             'scp_extra_args': None,
-            'verbosity': None,
-            'timeout': 10
+            'verbosity': None
         }
         ansible_kwargs = {attr[8:]: getattr(self, attr) for attr in dir(self)
                           if attr.startswith('ansible_') and not attr.startswith('_')
@@ -80,7 +106,7 @@ class Keyword:
         user_can_change = ['connection', 'module_path', 'become', 'become_method',
                            'become_user', 'check', 'diff', 'private_key_file',
                            'ssh_common_args', 'ssh_extra_args', 'sftp_extra_args',
-                           'scp_extra_args', 'timeout', 'verbosity']
+                           'scp_extra_args', 'verbosity']
         STREAM.debug(" -> Options that user allowed to change: ")
         map(lambda x: STREAM.debug("  - %s" % x), user_can_change)
         STREAM.debug(" -> User changed: %s" % ansible_kwargs)
@@ -103,6 +129,7 @@ class Keyword:
         return Options(**options)
 
     def parse_playbooks(self):
+        STREAM.debug(" -> ---------- Playbooks.")
         ansible_playbooks = [playbook.strip() for playbook in self.ansible_playbooks.split(",")]
         STREAM.debug(" -> Playbooks: %s" % ansible_playbooks)
         for playbook in ansible_playbooks:
@@ -113,6 +140,7 @@ class Keyword:
         return ansible_playbooks
 
     def run_playbook(self, playbook, inventory):
+        options = self.parse_options()
         STREAM.info("==> Execute Ansible playbook: %s" % playbook)
         # initialize needed objects
         loader = DataLoader()
@@ -121,13 +149,14 @@ class Keyword:
         variable_manager = VariableManager(loader=loader, inventory=inventory)
         # create the playbook executor, which manages running the plays via a task queue manager
         pbex = PlaybookExecutor(playbooks=[playbook], inventory=inventory, variable_manager=variable_manager,
-                                loader=loader, options=self.parse_options(), passwords=passwords)
+                                loader=loader, options=options, passwords=passwords)
         # run playbook and return exit_code
         results = pbex.run()
         if results == "0":
             STREAM.success(" -> Successfully executed.")
         else:
             raise Exception(" -> Ansible playbook(%s) exited with error_code: %s" % (playbook, results))
+        # Clean ansible temp files
         shutil.rmtree(C.DEFAULT_LOCAL_TMP, True)
 
 
