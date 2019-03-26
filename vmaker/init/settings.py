@@ -5,6 +5,7 @@ import re
 from subprocess import PIPE, Popen
 # Check requirements
 try:
+    import ansible
     import coloredlogs
     import verboselogs
     import requests
