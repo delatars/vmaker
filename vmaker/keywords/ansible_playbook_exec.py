@@ -3,6 +3,7 @@ import os
 import shutil
 import socket
 from collections import namedtuple
+from time import time, sleep
 from vmaker.utils.logger import STREAM
 from vmaker.init.settings import LoadSettings
 from vmaker.utils.auxilary import exception_interceptor
@@ -20,7 +21,7 @@ class Keyword:
     REQUIRED_CONFIG_ATTRS = ["vm_name", "ansible_playbooks", "ansible_inventory_options"]
     ANSIBLE_SERVER = "localhost"
     ANSIBLE_PORT = None
-    CONNECTION_TIMEOUT = 30
+    CONNECTION_TIMEOUT = 60
 
     @exception_interceptor
     def main(self):
@@ -31,6 +32,7 @@ class Keyword:
         self.ansible_inventory_options = self.ansible_inventory_options
         # ----------------------------------
         self.ANSIBLE_PORT = get_manage_port(self.vm_name)
+        self.get_connection_timeout()
         self.check_connection()
         playbooks = self.parse_playbooks()
         inventory = self.create_inventory()
@@ -43,22 +45,28 @@ class Keyword:
         conn.settimeout(5)
         try:
             conn.connect((ip, port))
+            conn.send("check")
+            response = conn.recv(50)
+            STREAM.debug(" -> Check port %s: %s" % (self.ANSIBLE_PORT, response))
             return True
-        except:
+        except Exception as err:
+            STREAM.debug(" -> Check port %s: %s" % (self.ANSIBLE_PORT, err))
             return False
         finally:
             conn.close()
 
     def check_connection(self):
         STREAM.info("==> Waiting for the availability of the port: %s:%s" % (self.ANSIBLE_SERVER, self.ANSIBLE_PORT))
-        attempt = 0
+        STREAM.debug(" -> Connection timeout set to: %s" % self.CONNECTION_TIMEOUT)
+        start_time_point = time()
         while True:
             if self._port_check(self.ANSIBLE_SERVER, self.ANSIBLE_PORT):
                 STREAM.info(" -> Port available.")
                 break
-            if attempt == self.CONNECTION_TIMEOUT//5:
+            if time() - start_time_point > self.CONNECTION_TIMEOUT:
                 STREAM.error(" -> Port unavailable.")
                 break
+            sleep(1)
 
     def create_inventory(self):
         STREAM.debug(" -> ---------- Inventory.")
@@ -76,6 +84,12 @@ class Keyword:
                             (self.ANSIBLE_SERVER, self.ANSIBLE_PORT, extra_options))
         STREAM.debug(" -> Created inventory file: %s" % inventory_file)
         return inventory_file
+
+    def get_connection_timeout(self):
+        try:
+            self.CONNECTION_TIMEOUT = getattr(self, "ansible_connection_timeout")
+        except AttributeError:
+            pass
 
     def parse_options(self):
         STREAM.debug(" -> ---------- Options.")
@@ -103,6 +117,7 @@ class Keyword:
                           if attr.startswith('ansible_') and not attr.startswith('_')
                           and not attr == "ansible_playbooks"
                           and not attr == "ansible_inventory_options"}
+
         user_can_change = ['connection', 'module_path', 'become', 'become_method',
                            'become_user', 'check', 'diff', 'private_key_file',
                            'ssh_common_args', 'ssh_extra_args', 'sftp_extra_args',
@@ -152,7 +167,7 @@ class Keyword:
                                 loader=loader, options=options, passwords=passwords)
         # run playbook and return exit_code
         results = pbex.run()
-        if results == "0":
+        if results == 0:
             STREAM.success(" -> Successfully executed.")
         else:
             raise Exception(" -> Ansible playbook(%s) exited with error_code: %s" % (playbook, results))
