@@ -101,7 +101,7 @@ class Keyword:
         ssh_stdin.write("y\n")
         ssh_stdin.flush()
         stdout = ssh_stdout.read()
-        if "VirtualBox Guest Additions: Running kernel modules will not be replaced until the system is restarted" in stdout:
+        if "Running kernel modules will not be replaced" in stdout:
             STREAM.success(" -> VboxGuestAdditions updated")
         else:
             STREAM.error(stdout)
