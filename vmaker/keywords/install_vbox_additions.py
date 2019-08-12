@@ -96,7 +96,8 @@ class Keyword:
         if not self.mount_vbox_guestadditions(ssh):
             return
         STREAM.debug(" -> Execute update GuestAdditions.")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("/mnt/dvd/VBoxLinuxAdditions.run 2>&1")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("/mnt/dvd/VBoxLinuxAdditions.run 2>&1",
+                                                             environment={"LC_ALL": "C"})
         ssh_stdin.write("y\n")
         ssh_stdin.flush()
         stdout = ssh_stdout.read()
