@@ -2,7 +2,7 @@ ansible
 bs4
 coloredlogs == 9.3.1
 configparser == 3.5.0
-paramiko == 2.4.2
+paramiko == 3.4.0
 pathos
 python-glanceclient
 python-novaclient
